@@ -1,0 +1,175 @@
+plugins {
+    id 'application'
+    id 'io.quarkus' version '1.7.0.Final'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'java'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    google()
+    maven {
+        url "http://download.java.net/maven/2/"
+    }
+    maven {
+        url "http://download.osgeo.org/webdav/geotools/"
+    }
+    maven {
+        url "http://repo.boundlessgeo.com/main/"
+    }
+    maven {
+        url "https://oss.sonatype.org/content/repositories/releases/"
+    }
+    flatDir {
+        dirs 'thirdpartylibs'
+    }
+}
+
+dependencies {
+    implementation enforcedPlatform('io.quarkus:quarkus-bom:1.7.0.Final')
+    implementation 'io.quarkus:quarkus-resteasy:1.7.0.Final'
+
+    implementation 'com.google.code.gson:gson:2.8.6'
+
+    implementation 'org.mongodb:mongodb-driver-sync:4.1.0'
+    //implementation 'org.mongodb:mongodb-driver:3.0.4'
+
+
+    implementation 'org.springframework:spring-web:5.2.1.RELEASE'
+
+    implementation 'org.apache.spark:spark-core_2.12:3.0.0'
+    implementation 'org.apache.spark:spark-sql_2.12:3.0.0'
+    implementation 'io.delta:delta-core_2.12:0.7.0'
+    compile group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.3.0'
+    compile group: 'org.apache.hadoop', name: 'hadoop-auth', version: '3.3.0'
+    compile group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.3.0'
+    compile group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.7.7'
+    compile 'org.mongodb.spark:mongo-spark-connector_2.12:3.0.0'
+    //compile group: 'org.scala-lang', name: 'scala-library', version: '2.13.3' {force = true}
+    //implementation ('org.scala-lang:scala-library:2.12.12') {force=true}
+    //implementation 'org.apache.parquet:parquet-hadoop:1.11.0'
+    //implementation 'org.apache.parquet:parquet-avro:1.11.0'
+    //implementation 'org.apache.parquet:parquet-common:1.11.0'
+    //implementation 'org.apache.parquet:parquet-column:1.11.0'
+    //implementation 'com.univocity:univocity-parsers:2.8.4'
+
+
+    //implementation 'org.apache.spark:spark-core_2.12:2.4.5'
+    //implementation 'org.apache.spark:spark-mllib_2.12:3.0.0'
+    //implementation 'io.delta:delta-core_2.12:0.7.0'
+    //compile group: 'org.apache.hadoop', name: 'hadoop-core', version: '1.2.1'
+    //compile group: 'org.apache.hadoop', name: 'hadoop-auth', version: '3.3.0'
+
+    //implementation ('com.fasterxml.jackson.core:jackson-databind:2.9.10') {force = true}
+    //implementation ('com.fasterxml.jackson.module:jackson-module-scala_2.13:2.11.2')
+    //compile group: 'org.scala-lang', name: 'scala-library', version: '2.13.3'
+    //compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.11.2'
+
+    implementation 'org.apache.xbean:xbean-asm6-shaded:4.10'
+    implementation 'com.github.opendevl:json2flat:1.0.3'
+    implementation 'org.json:json:20200518'
+
+    implementation name: 'eclipse-swt-macos'
+    implementation name: 'jface-3.7.0'
+    implementation name: 'jface-databinding-1.5.0'
+    implementation name: 'eclipse-ui-3.7.0'
+    implementation name: 'eclipse-ui-workbench-3.7.1'
+    implementation name: 'eclipse-core-runtime-3.7.0'
+    implementation name: 'eclipse-core-runtime-auth-3.2.200'
+    implementation name: 'eclipse-core-commands-3.6.0'
+    implementation name: 'runtime_registry_compatibility'
+    implementation name: 'SchemaStoreClient'
+    implementation name: 'porters'
+    implementation name: 'SchemaStoreWarehouse'
+    //implementation name: 'gephi-toolkit'
+    implementation name: 'affinity-fatjar'
+    implementation name: 'LinkCommunityFinder'
+    implementation name: 'collections-generic-4.01'
+    implementation name: 'jung-algorithms-2.0.1'
+    implementation name: 'jung-api-2.0.1'
+    implementation name: 'org.eclipse.equinox.app_1.3.100.v20110321'
+    implementation name: 'org.eclipse.equinox.common_3.6.0.v20110523'
+    implementation name: 'org.eclipse.equinox.launcher_1.2.0.v20110502'
+    implementation name: 'org.eclipse.equinox.launcher_1.2.0.v20110502'
+    implementation name: 'org.eclipse.equinox.preferences_3.4.2.v20120111-2020'
+    implementation name: 'org.eclipse.equinox.registry_3.5.101.R37x_v20110810-1611'
+    implementation name: 'GoogleTranslate'
+
+    implementation 'org.datavec:datavec-api:0.7.2'
+    implementation 'org.deeplearning4j:deeplearning4j-core:0.7.2'
+    implementation 'org.deeplearning4j:deeplearning4j-nlp:0.7.2'
+    implementation 'org.deeplearning4j:deeplearning4j-nn:0.7.2'
+    implementation 'org.nd4j:nd4j-native:0.7.2'
+
+    implementation 'org.apache.lucene:lucene-analyzers-common:8.5.1'
+    implementation 'org.apache.lucene:lucene-queryparser:8.5.1'
+
+    implementation name: 'jep'
+
+    implementation(name: 'machineLearningStorage')
+
+    implementation 'junitperf:junitperf:1.8'
+    implementation 'junit:junit:3.7'
+    implementation enforcedPlatform('io.quarkus:quarkus-bom:1.7.0.Final')
+    implementation 'io.quarkus:quarkus-junit5:1.7.0.Final'
+    implementation 'io.rest-assured:rest-assured:4.3.0'
+
+    //implementation 'org.apache.kafka:kafka-clients:2.4.0'
+    //implementation 'org.springframework.kafka:spring-kafka:2.4.1.RELEASE'
+    //implementation('org.apache.hadoop:hadoop-mapreduce-client-core:2.7.2') {force = true}
+    //implementation('org.apache.hadoop:hadoop-common:2.7.2') {force = true} // required for org.apache.hadoop.util.StopWatch
+    //compile 'org.tensorflow:tensorflow:1.14.0'
+    //compile 'org.tensorflow:libtensorflow:1.14.0'
+    //compile 'org.tensorflow:libtensorflow_jni_gpu:1.14.0'
+    //compile 'org.deeplearning4j:deeplearning4j-nlp:0.7.2'
+    //compile 'org.deeplearning4j:deeplearning4j-nn:0.7.2'
+    //compile 'org.deeplearning4j:rl4j-core:0.7.2'
+    //compile 'org.deeplearning4j:rl4j-gym:0.7.2'
+    //compile 'org.datavec:datavec-data-codec:0.7.2'
+    //compile 'org.datavec:datavec-spark_2.12:1.0.0-beta7'
+    //compile 'org.datavec:datavec-data-image:0.7.2'
+    //compile 'org.bytedeco:javacpp:1.5.4'
+    //implementation name: 'javacpp-1.5.4-SNAPSHOT'
+    //implementation 'io.kubernetes:client-java:5.0.0'
+    //implementation 'io.kubernetes:client-java-api:7.0.0'
+    //implementation 'org.kamranzafar:jtar:2.3'
+    //compile 'com.fasterxml.jackson.core:jackson-core:2.11.0'
+    //compile 'com.fasterxml.jackson.core:jackson-annotations:2.11.0'
+    //compile 'com.fasterxml.jackson.core:jackson-databind:2.11.0'
+    //implementation 'org.nd4j:nd4j-x86:0.4-rc3.8'
+    //implementation 'org.nd4j:jcuda:6.5'
+    //implementation 'org.deeplearning4j:rl4j-core:0.7.2'
+    //implementation 'org.deeplearning4j:rl4j-gym:0.7.2'
+    //implementation 'org.nd4j:nd4j-native-platform:0.7.2'
+}
+
+test {
+    useJUnitPlatform()
+    filter {
+        //include specific method in any of the tests
+        includeTestsMatching "*Tests"
+    }
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-parameters'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+quarkusBuild {
+    nativeArgs {
+        containerBuild = true 
+        buildImage = "quay.io/quarkus/ubi-quarkus-native-image:20.1.0-java11" 
+    }
+}
