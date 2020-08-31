@@ -1,0 +1,77 @@
+{
+  "_type": "SearchResponse",
+  "queryContext": {
+    "originalQuery": "{microsoft}"
+  },
+  "entities": {
+    "value": [
+      {
+        "id": "https://www.bingapis.com/api/v7/#Entities.0",
+        "contractualRules": [
+          {
+            "_type": "ContractualRules/LicenseAttribution",
+            "targetPropertyName": "description",
+            "mustBeCloseToContent": true,
+            "license": {
+              "name": "CC-BY-SA",
+              "url": "http://creativecommons.org/licenses/by-sa/3.0/"
+            },
+            "licenseNotice": "Text under CC-BY-SA license"
+          },
+          {
+            "_type": "ContractualRules/LinkAttribution",
+            "targetPropertyName": "description",
+            "mustBeCloseToContent": true,
+            "text": "Wikipedia",
+            "url": "http://en.wikipedia.org/wiki/Microsoft"
+          },
+          {
+            "_type": "ContractualRules/MediaAttribution",
+            "targetPropertyName": "image",
+            "mustBeCloseToContent": true,
+            "url": "http://www.microsoft.com/"
+          }
+        ],
+        "webSearchUrl": "https://www.bing.com/entityexplore?q=Microsoft&filters=sid:%22a093e9b9-90f5-a3d5-c4b8-5855e1b01f85%22&elv=AXXfrEiqqD9r3GuelwApulryLQD!VXsnXWKfAttq!99WrLsBNoxSv0wamsNaa94v*lvlE*QaE13I6gxLDFIy2h*gS*ImsfDpFzkFkIqrNtnH",
+        "name": "Microsoft",
+        "url": "https://www.microsoft.com/en-us/default.aspx",
+        "image": {
+          "name": "Be What's Next",
+          "thumbnailUrl": "https://www.bing.com/th?id=AMMS_c6939a08cba290c186ef1b935254e91d&w=110&h=110&c=7&rs=1&qlt=95&cdv=1&pid=16.1",
+          "provider": [
+            {
+              "_type": "Organization",
+              "url": "http://www.microsoft.com/"
+            }
+          ],
+          "hostPageUrl": "http://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Microsoft_logo_%282012%29.svg/500px-Microsoft_logo_%282012%29.svg.png",
+          "width": 110,
+          "height": 110,
+          "sourceWidth": 474,
+          "sourceHeight": 101
+        },
+        "description": "Microsoft Corporation is an American multinational corporation headquartered in Redmond, Washington, that develops, manufactures, licenses, supports and sells computer software, consumer electronics and personal computers and services. Its best known software products are the Microsoft Windows line of operating systems, Microsoft Office office suite, and Internet Explorer web browser. Its flagship hardware products are Xbox game console and the Microsoft Surface series of tablets. It is the world's largest software maker measured by revenues. It is also one of the world's most valuable companies.",
+        "entityPresentationInfo": {
+          "entityScenario": "DominantEntity",
+          "entityTypeHints": [
+            "Organization"
+          ]
+        },
+        "bingId": "a093e9b9-90f5-a3d5-c4b8-5855e1b01f85"
+      }
+    ]
+  },
+  "rankingResponse": {
+    "sidebar": {
+      "items": [
+        {
+          "answerType": "Entities",
+          "resultIndex": 0,
+          "value": {
+            "id": "https://www.bingapis.com/api/v7/#Entities.0"
+          }
+        }
+      ]
+    }
+  }
+}
