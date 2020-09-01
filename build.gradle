@@ -110,6 +110,10 @@ dependencies {
 
     implementation(name: 'machineLearningStorage')
 
+    compile group: 'org.apache.tinkerpop', name: 'gremlin-core', version: '3.4.8'
+    compile group: 'org.apache.tinkerpop', name: 'tinkergraph-gremlin', version: '3.4.8'
+
+
     implementation 'junitperf:junitperf:1.8'
     implementation 'junit:junit:3.7'
     implementation enforcedPlatform('io.quarkus:quarkus-bom:1.7.0.Final')
