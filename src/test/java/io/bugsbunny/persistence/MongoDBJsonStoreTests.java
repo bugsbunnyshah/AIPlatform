@@ -68,13 +68,13 @@ public class MongoDBJsonStoreTests {
         jsonObject.addProperty("data", animalsCsvData);
 
         logger.info("*******");
-        logger.info(jsonObject.toString());
+        //logger.info(jsonObject.toString());
         logger.info("*******");
 
         this.mongoDBJsonStore.storeIngestionImage(jsonObject);
         List<JsonObject> result = this.mongoDBJsonStore.getIngestionImages();
         logger.info("*******");
-        logger.info(result.toString());
+        //logger.info(result.toString());
         logger.info("*******");
     }
 }
