@@ -15,6 +15,7 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.Dataset;
 
+import io.delta.tables.DeltaTable;
 import org.bson.Document;
 
 import org.junit.jupiter.api.Test;
@@ -56,17 +57,17 @@ public class DeltaLakeStartedTests implements Serializable
 
         //Initialize the Data
         System.out.println("INIT_DATA");
-        //Dataset<Long> data = spark.range(0, 5);
-        //data.write().format("delta").save(location);
-        //Dataset<Row> df = spark.read().format("delta").load(location);
+        Dataset<Long> data = spark.range(0, 5);
+        data.write().format("delta").save(location);
+        Dataset<Row> df = spark.read().format("delta").load(location);
         //Dataset[] dataset = new Dataset[2];
         //dataset[0] = "";
-        Dataset<Row> df = spark.read().text(Thread.currentThread().
-                getContextClassLoader().
-                getResource("dataLake/email.json").getFile());
+        //Dataset<Row> df = spark.read().text(Thread.currentThread().
+        //        getContextClassLoader().
+        //        getResource("dataLake/email.json").getFile());
         df.show();
 
-        /*System.out.println("OVERWRITE_DATA");
+        System.out.println("OVERWRITE_DATA");
         data = spark.range(5, 10);
         //location = "/tmp/delta-table-"+ UUID.randomUUID().toString();
         data.write().format("delta").mode("overwrite").save(location);
@@ -85,40 +86,42 @@ public class DeltaLakeStartedTests implements Serializable
         );
         deltaTable.toDF().show();
 
-        //Read in the old overwritten data set
-        System.out.println("TIMETRAVEL_DATA_ORIGINAL");
-        df = spark.read().format("delta").option("versionAsOf", 0).load(location);
-        df.show();
-
-        //Read in the updated data set
-        System.out.println("TIMETRAVEL_DATA_UPDATED");
-        df = spark.read().format("delta").option("versionAsOf", 1).load(location);
-        df.show();
-
-        //Read in the latest/live data set
-        System.out.println("TIMETRAVEL_DATA_LATEST_LIVE");
-        df = spark.read().format("delta").option("versionAsOf", 2).load(location);
-        df.show();*/
-
         // Create a custom WriteConfig
         Map<String, String> writeOverrides = new HashMap<String, String>();
         writeOverrides.put("collection", "spark");
         writeOverrides.put("writeConcern.w", "majority");
         WriteConfig writeConfig = WriteConfig.create(jsc).withOptions(writeOverrides);
 
-        /*Start Example: Save data from RDD to MongoDB*****************/
+
+        //Read in the old overwritten data set
+        System.out.println("TIMETRAVEL_DATA_ORIGINAL");
+        df = spark.read().format("delta").option("versionAsOf", 0).load(location);
+        df.show();
         MongoSpark.save(df, writeConfig);
-        /*End Example**************************************************/
+
+        //Read in the updated data set
+        System.out.println("TIMETRAVEL_DATA_UPDATED");
+        df = spark.read().format("delta").option("versionAsOf", 1).load(location);
+        df.show();
+        MongoSpark.save(df, writeConfig);
+
+        //Read in the latest/live data set
+        System.out.println("TIMETRAVEL_DATA_LATEST_LIVE");
+        df = spark.read().format("delta").option("versionAsOf", 2).load(location);
+        df.show();
+        MongoSpark.save(df, writeConfig);
+
+        System.out.println("TIMETRAVEL_DATA_UPDATED");
+        df = spark.read().format("delta").option("versionAsOf", 1).load(location);
+        df.show();
+
+        df = spark.read().format("delta").option("versionAsOf", 2).load(location);
+        df.show();
+
+        df = spark.read().format("delta").option("versionAsOf", 0).load(location);
+        df.show();
 
         spark.close();
-
-        //String logFile = "README.md"; // Should be some file on your system
-        //SparkSession spark = SparkSession
-        //        .builder()
-        //        .appName("Java Spark SQL basic example")
-        //        .config("spark.master", "local")
-        //        .getOrCreate();
-        //Dataset<String> logData = spark.read().textFile(logFile).cache();
     }
 
     @Test

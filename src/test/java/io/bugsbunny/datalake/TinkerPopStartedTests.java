@@ -12,6 +12,9 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.*;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import java.io.IOException;
+import java.util.Map;
+
+import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -49,5 +52,18 @@ public class TinkerPopStartedTests {
         logger.info("******************************");
         logger.info(traversal.toString());
         logger.info("******************************");
+
+        TinkerGraph graph = TinkerFactory.createModern();
+        SparqlTraversalSource blah =
+                (SparqlTraversalSource)
+                        tg.traversal(SparqlTraversalSource.class);
+        //blah.sparql("""SELECT ?name ?age
+        //     WHERE { ?person v:name ?name . ?person v:age ?age }
+        //    ORDER BY ASC(?age)""");
+        GraphTraversal gt = blah.sparql("SELECT ?airport WHERE { ?airportValue v:aus }");
+        GraphTraversal map = gt.group();
+        logger.info(map.toString());
+        //logger.info(blah.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age } ORDER BY ASC(?age)").getClass().getName());
+        //logger.info(blah.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age } ORDER BY ASC(?age)").toString());
     }
 }
