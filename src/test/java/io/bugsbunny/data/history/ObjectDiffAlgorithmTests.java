@@ -13,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ObjectDiffAlgorithmTests {
     private static Logger logger = LoggerFactory.getLogger(ObjectDiffAlgorithmTests.class);
@@ -49,5 +51,20 @@ public class ObjectDiffAlgorithmTests {
 
         logger.info("Map: "+email0.toString());
         logger.info("Map: "+email1.toString());
+
+        Map<String, Object> diff = new HashMap<>();
+        Set<Map.Entry<String, Object>> entrySet = email0Map.entrySet();
+        for(Map.Entry<String, Object> entry: entrySet)
+        {
+            String key = entry.getKey();
+            int valueHash = entry.getValue().hashCode();
+            int compareHash = email1Map.get(key).hashCode();
+            if(valueHash != compareHash)
+            {
+                diff.put(key, email1Map.get(key));
+            }
+        }
+
+        logger.info("Diff: "+diff.toString());
     }
 }
