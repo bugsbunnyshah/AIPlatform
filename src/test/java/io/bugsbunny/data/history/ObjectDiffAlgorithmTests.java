@@ -32,4 +32,22 @@ public class ObjectDiffAlgorithmTests {
         JsonObject jsonObject = JsonParser.parseString(JsonUnflattener.unflatten(flattenJson.toString())).getAsJsonObject();
         logger.info("JSON: "+jsonObject.toString());
     }
+
+    @Test
+    public void testObjectDiff() throws Exception
+    {
+        String email0 = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/email0.json"),
+                StandardCharsets.UTF_8);
+
+        String email1 = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/email1.json"),
+                StandardCharsets.UTF_8);
+
+        Map<String, Object> email0Map = JsonFlattener.flattenAsMap(email0);
+        Map<String, Object> email1Map = JsonFlattener.flattenAsMap(email1);
+
+        logger.info("Map: "+email0.toString());
+        logger.info("Map: "+email1.toString());
+    }
 }
