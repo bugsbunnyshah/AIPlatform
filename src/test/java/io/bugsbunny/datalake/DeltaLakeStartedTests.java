@@ -35,7 +35,7 @@ public class DeltaLakeStartedTests implements Serializable
 {
     private static Logger logger = LoggerFactory.getLogger(DeltaLakeStartedTests.class);
 
-    @Test
+    //@Test
     public void testQueries() throws Exception
     {
         String location = "/tmp/delta-table-"+ UUID.randomUUID().toString();
@@ -48,53 +48,51 @@ public class DeltaLakeStartedTests implements Serializable
                 .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/test.myCollection")
                 .getOrCreate();
         JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
-
-        //Dataset<String> data = spark.read().parquet(location).as(Encoders.bean(String.class));
-
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("email","c.s@data.world");
-        String json = jsonObject.toString();
-
-        //Initialize the Data
-        System.out.println("INIT_DATA");
-        Dataset<Long> data = spark.range(0, 5);
-        data.write().format("delta").save(location);
-        Dataset<Row> df = spark.read().format("delta").load(location);
-        //Dataset[] dataset = new Dataset[2];
-        //dataset[0] = "";
-        //Dataset<Row> df = spark.read().text(Thread.currentThread().
-        //        getContextClassLoader().
-        //        getResource("dataLake/email.json").getFile());
-        df.show();
-
-        System.out.println("OVERWRITE_DATA");
-        data = spark.range(5, 10);
-        //location = "/tmp/delta-table-"+ UUID.randomUUID().toString();
-        data.write().format("delta").mode("overwrite").save(location);
-        df = spark.read().format("delta").load(location);
-        df.show();
-
-        DeltaTable deltaTable = DeltaTable.forPath(location);
-
-        // Update every even value by adding 100 to it
-        System.out.println("UPDATE_DATA");
-        deltaTable.update(
-                functions.expr("id % 2 == 0"),
-                new HashMap<String, Column>() {{
-                    put("id", functions.expr("id + 100"));
-                }}
-        );
-        deltaTable.toDF().show();
-
+        //DeltaTable deltaTable = DeltaTable.forPath(location);
         // Create a custom WriteConfig
         Map<String, String> writeOverrides = new HashMap<String, String>();
         writeOverrides.put("collection", "spark");
         writeOverrides.put("writeConcern.w", "majority");
         WriteConfig writeConfig = WriteConfig.create(jsc).withOptions(writeOverrides);
 
+        //Dataset<String> data = spark.read().parquet(location).as(Encoders.bean(String.class));
+
+        //JsonObject jsonObject = new JsonObject();
+        //jsonObject.addProperty("email","c.s@data.world");
+        //String json = jsonObject.toString();
+
+        //Initialize the Data
+        System.out.println("INIT_DATA");
+
+        //Dataset<Long> data = spark.range(0, 5);
+        //data.write().format("delta").save(location);
+        //Dataset<Row> df = spark.read().format("delta").load(location);
+
+        Dataset<Row> df = spark.read().text(Thread.currentThread().
+                getContextClassLoader().
+                getResource("dataLake/email.json").getFile());
+        df.show();
+        MongoSpark.save(df, writeConfig);
+
+        //System.out.println("OVERWRITE_DATA");
+        //data = spark.range(5, 10);
+        //data.write().format("delta").mode("overwrite").save(location);
+        //df = spark.read().format("delta").load(location);
+        //df.show();
+
+        // Update every even value by adding 100 to it
+        //System.out.println("UPDATE_DATA");
+        //deltaTable.update(
+        //        functions.expr("id % 2 == 0"),
+        //        new HashMap<String, Column>() {{
+        //            put("id", functions.expr("id + 100"));
+        //        }}
+        //);
+        //deltaTable.toDF().show();
+
 
         //Read in the old overwritten data set
-        System.out.println("TIMETRAVEL_DATA_ORIGINAL");
+        /*System.out.println("TIMETRAVEL_DATA_ORIGINAL");
         df = spark.read().format("delta").option("versionAsOf", 0).load(location);
         df.show();
         MongoSpark.save(df, writeConfig);
@@ -109,9 +107,9 @@ public class DeltaLakeStartedTests implements Serializable
         System.out.println("TIMETRAVEL_DATA_LATEST_LIVE");
         df = spark.read().format("delta").option("versionAsOf", 2).load(location);
         df.show();
-        MongoSpark.save(df, writeConfig);
+        MongoSpark.save(df, writeConfig);*/
 
-        System.out.println("TIMETRAVEL_DATA_UPDATED");
+        /*System.out.println("TIMETRAVEL_DATA_UPDATED");
         df = spark.read().format("delta").option("versionAsOf", 1).load(location);
         df.show();
 
@@ -119,12 +117,14 @@ public class DeltaLakeStartedTests implements Serializable
         df.show();
 
         df = spark.read().format("delta").option("versionAsOf", 0).load(location);
-        df.show();
+        df.show();*/
 
         spark.close();
+
+        //TODO: Verify versions are not in-memory only
     }
 
-    @Test
+    //@Test
     public void testMongoDBConnector() throws Exception
     {
         SparkSession spark = SparkSession.builder()
@@ -157,7 +157,7 @@ public class DeltaLakeStartedTests implements Serializable
         jsc.close();
     }
 
-    @Test
+    //@Test
     public void testHDFS() throws Exception
     {
         FSDataOutputStream fsDataOutputStream = new FSDataOutputStream(new ByteArrayOutputStream(),null);

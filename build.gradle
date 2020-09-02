@@ -36,6 +36,9 @@ dependencies {
     implementation 'org.mongodb:mongodb-driver-sync:4.1.0'
     //implementation 'org.mongodb:mongodb-driver:3.0.4'
 
+    implementation 'org.apache.kafka:kafka-clients:2.4.0'
+    implementation 'org.springframework.kafka:spring-kafka:2.4.1.RELEASE'
+
 
     implementation 'org.springframework:spring-web:5.2.1.RELEASE'
 
