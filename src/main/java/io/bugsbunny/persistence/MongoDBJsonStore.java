@@ -35,7 +35,7 @@ public class MongoDBJsonStore {
 
     public void storeIngestion(List<JsonObject> jsonObjects)
     {
-        MongoDatabase database = mongoClient.getDatabase("machineLearningPipeline");
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
 
         MongoCollection<Document> collection = database.getCollection("ingestion");
 
@@ -50,7 +50,7 @@ public class MongoDBJsonStore {
     {
         JsonObject ingestion = new JsonObject();
 
-        MongoDatabase database = mongoClient.getDatabase("machineLearningPipeline");
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
 
         MongoCollection<Document> collection = database.getCollection("ingestion");
 
@@ -72,7 +72,7 @@ public class MongoDBJsonStore {
     {
         JsonArray ingestedDataSet = new JsonArray();
 
-        MongoDatabase database = mongoClient.getDatabase("machineLearningPipeline");
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
 
         MongoCollection<Document> collection = database.getCollection("ingestion");
 
@@ -93,7 +93,7 @@ public class MongoDBJsonStore {
 
     public void storeIngestionImage(JsonObject jsonObject)
     {
-        MongoDatabase database = mongoClient.getDatabase("machineLearningPipeline");
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
 
         MongoCollection<Document> collection = database.getCollection("ingestionImage");
 
@@ -105,7 +105,7 @@ public class MongoDBJsonStore {
     {
         List<JsonObject> ingestion = new ArrayList<>();
 
-        MongoDatabase database = mongoClient.getDatabase("machineLearningPipeline");
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
 
         MongoCollection<Document> collection = database.getCollection("ingestionImage");
 
@@ -122,7 +122,7 @@ public class MongoDBJsonStore {
 
     public void storeDevModels(JsonObject jsonObject)
     {
-        MongoDatabase database = mongoClient.getDatabase("machineLearningPipeline");
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
 
         MongoCollection<Document> collection = database.getCollection("devModels");
 
@@ -134,7 +134,7 @@ public class MongoDBJsonStore {
     {
         JsonObject devModel = new JsonObject();
 
-        MongoDatabase database = mongoClient.getDatabase("machineLearningPipeline");
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
 
         MongoCollection<Document> collection = database.getCollection("devModels");
 

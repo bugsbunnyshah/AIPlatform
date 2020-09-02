@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.UUID;
 
 @ApplicationScoped
 public class IngestionService {
@@ -18,6 +19,10 @@ public class IngestionService {
     public void ingestData(String data)
     {
         JsonObject jsonObject = new JsonObject();
+        String oid = UUID.randomUUID().toString();
+        int offset = 10;
+        jsonObject.addProperty("oid", oid);
+        jsonObject.addProperty("offset", offset);
         jsonObject.addProperty("data", data);
         this.mongoDBJsonStore.storeIngestionImage(jsonObject);
     }
@@ -25,6 +30,11 @@ public class IngestionService {
     public void ingestDevModelData(String data)
     {
         JsonObject jsonObject = new JsonObject();
+
+        String oid = UUID.randomUUID().toString();
+        int offset = 10;
+        jsonObject.addProperty("oid", oid);
+        jsonObject.addProperty("offset", offset);
         jsonObject.addProperty("data", data);
         this.mongoDBJsonStore.storeDevModels(jsonObject);
     }
