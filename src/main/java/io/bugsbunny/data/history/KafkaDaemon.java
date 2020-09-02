@@ -73,7 +73,7 @@ public class KafkaDaemon {
     @PostConstruct
     public void start()
     {
-        /*this.topics = this.mongoDBJsonStore.findKafakaDaemonBootstrapData();
+        this.topics = this.mongoDBJsonStore.findKafakaDaemonBootstrapData();
         if(this.kafkaConsumer == null) {
             try {
                 Properties config = new Properties();
@@ -124,7 +124,7 @@ public class KafkaDaemon {
                 findNotifications();
             }
         });
-        t.start();*/
+        t.start();
     }
 
     @PreDestroy
@@ -157,20 +157,20 @@ public class KafkaDaemon {
         logger.info("**********");
     }
 
-    /*public void produceData(String topic, JsonObject jsonObject)
+    public void produceData(String topic, JsonObject jsonObject)
     {
-        io.appgal.cloud.messaging.ProducerTask producerTask = new io.appgal.cloud.messaging.ProducerTask(this.kafkaProducer,topic, jsonObject);
+        ProducerTask producerTask = new ProducerTask(this.kafkaProducer,topic, jsonObject);
         this.commonPool.execute(producerTask);
-    }*/
+    }
 
-    /*public JsonArray readNotifications(String topic, MessageWindow messageWindow)
+    public JsonArray readNotifications(String topic, MessageWindow messageWindow)
     {
         NotificationContext notificationContext = new NotificationContext(topic, messageWindow);
         readNotificationsQueue.add(notificationContext);
-        io.appgal.cloud.messaging.NotificationFinderTask notificationFinderTask = new io.appgal.cloud.messaging.NotificationFinderTask(notificationContext, this.lookupTable);
+        NotificationFinderTask notificationFinderTask = new NotificationFinderTask(notificationContext, this.lookupTable);
         this.commonPool.execute(notificationFinderTask);
         return notificationFinderTask.join();
-    }*/
+    }
 
     /*public void produceActiveFoodRunnerData(String topic, List<ActiveFoodRunnerData> activeFoodRunnerData)
     {
@@ -236,7 +236,7 @@ public class KafkaDaemon {
         return jsonArray;
     }*/
 
-    /*private void findNotifications()
+    private void findNotifications()
     {
         try {
             do {
@@ -258,7 +258,7 @@ public class KafkaDaemon {
             logger.error(ie.getMessage(), ie);
             throw new RuntimeException(ie);
         }
-    }*/
+    }
 
     private void processNotifications(ConsumerRecords<String, String> records)
     {
@@ -343,7 +343,7 @@ public class KafkaDaemon {
         this.dataSetFromQueue.add(dataSetFromBegginningOffset);
     }
 
-    private synchronized void printNotificationsQueue()
+    synchronized void printNotificationsQueue()
     {
         logger.info("******************");
         logger.info("Queue Size: "+readNotificationsQueue.size());

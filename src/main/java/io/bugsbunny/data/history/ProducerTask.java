@@ -37,10 +37,10 @@ public class ProducerTask extends RecursiveAction {
                 }
                 else
                 {
-                    logger.debug("******************************************");
-                    logger.debug("PRODUCE_DATA");
-                    logger.debug("RECORD_META_DATA: "+metadata.toString());
-                    logger.debug("******************************************");
+                    logger.info("******************************************");
+                    logger.info("PRODUCE_DATA");
+                    logger.info("RECORD_META_DATA: "+metadata.toString());
+                    logger.info("******************************************");
                 }
             }
         });

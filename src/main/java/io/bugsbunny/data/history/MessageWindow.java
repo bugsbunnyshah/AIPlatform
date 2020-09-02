@@ -52,13 +52,18 @@ public class MessageWindow {
         return lookupTableIndex;
     }
 
-    @Override
-    public String toString() {
+    public JsonObject toJson()
+    {
         JsonObject json = new JsonObject();
 
         json.addProperty("start", this.start.toEpochSecond());
         json.addProperty("end", this.end.toEpochSecond());
 
-        return json.toString();
+        return json;
+    }
+
+    @Override
+    public String toString() {
+        return this.toJson().toString();
     }
 }

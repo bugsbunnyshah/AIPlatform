@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mongodb.client.*;
+import io.bugsbunny.model.IngestionNotification;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -150,5 +151,22 @@ public class MongoDBJsonStore {
             return devModel;
         }
         return devModel;
+    }
+
+    public List<String> findKafakaDaemonBootstrapData()
+    {
+        List<String> topics = new ArrayList<>();
+        topics.add(IngestionNotification.TOPIC);
+
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+
+        MongoCollection<Document> collection = database.getCollection("kafkaDaemonBootstrapData");
+
+        Document document = new Document();
+        document.put("topics", topics);
+
+        collection.insertOne(document);
+
+        return topics;
     }
 }
