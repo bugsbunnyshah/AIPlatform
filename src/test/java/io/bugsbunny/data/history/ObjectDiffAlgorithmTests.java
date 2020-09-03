@@ -78,4 +78,41 @@ public class ObjectDiffAlgorithmTests {
         //assert
         logger.info("****************");
     }
+
+    @Test
+    public void testDiffChain() throws Exception
+    {
+        logger.info("****************");
+        ObjectDiffAlgorithm objectDiffAlgorithm = new ObjectDiffAlgorithm();
+
+        String email0 = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/diffChain/email0.json"),
+                StandardCharsets.UTF_8);
+
+        String email1 = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/diffChain/email1.json"),
+                StandardCharsets.UTF_8);
+
+        String email2 = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/diffChain/email2.json"),
+                StandardCharsets.UTF_8);
+
+        //First Payload
+        JsonObject top = JsonParser.parseString(email0).getAsJsonObject();
+        JsonObject next = JsonParser.parseString(email1).getAsJsonObject();
+        logger.info("TOP: "+top.toString());
+        logger.info("NEXT: "+next.toString());
+        JsonObject diff = objectDiffAlgorithm.diff(top, next);
+        logger.info("DIFF: "+diff.toString());
+
+        logger.info("****************");
+
+        //Next Payload
+        top =  next;
+        next = JsonParser.parseString(email2).getAsJsonObject();
+        logger.info("TOP: "+top.toString());
+        logger.info("NEXT: "+next.toString());
+        diff = objectDiffAlgorithm.diff(top, next);
+        logger.info("DIFF: "+diff.toString());
+    }
 }

@@ -25,15 +25,53 @@ public class ObjectDiffAlgorithm
         Map<String, Object> rightMap = JsonFlattener.flattenAsMap(right.toString());
 
         Map<String, Object> diffMap = new JsonifyLinkedHashMap();
-        Set<Map.Entry<String, Object>> entrySet = leftMap.entrySet();
-        for(Map.Entry<String, Object> entry: entrySet)
+        if(leftMap.size() > rightMap.size() || leftMap.size() == rightMap.size())
         {
-            String key = entry.getKey();
-            int valueHash = entry.getValue().hashCode();
-            int compareHash = rightMap.get(key).hashCode();
-            if(valueHash != compareHash)
+            Set<Map.Entry<String, Object>> entrySet = leftMap.entrySet();
+            for (Map.Entry<String, Object> entry : entrySet)
             {
-                diffMap.put(key, rightMap.get(key));
+                String key = entry.getKey();
+                boolean doesRightMapHaveTheKey = rightMap.containsKey(key);
+
+                //Check for a FIELD Update
+                if (doesRightMapHaveTheKey)
+                {
+                    int valueHash = entry.getValue().hashCode();
+                    int compareHash = rightMap.get(key).hashCode();
+                    if (valueHash != compareHash)
+                    {
+                        diffMap.put(key, rightMap.get(key));
+                    }
+                }
+                else
+                    {
+                    //This means a FIELD was DELETED, then DO_NOTHING
+                }
+            }
+        }
+        else
+        {
+            Set<Map.Entry<String, Object>> entrySet = rightMap.entrySet();
+            for (Map.Entry<String, Object> entry : entrySet)
+            {
+                String key = entry.getKey();
+                boolean doesRightMapHaveTheKey = leftMap.containsKey(key);
+
+                //Check for a FIELD Update
+                if (doesRightMapHaveTheKey)
+                {
+                    int valueHash = entry.getValue().hashCode();
+                    int compareHash = leftMap.get(key).hashCode();
+                    if (valueHash != compareHash)
+                    {
+                        diffMap.put(key, leftMap.get(key));
+                    }
+                }
+                else
+                {
+                    //This means a FIELD was ADDED
+                    diffMap.put(key, rightMap.get(key));
+                }
             }
         }
 
