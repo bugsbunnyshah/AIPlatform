@@ -146,7 +146,9 @@ public class ObjectDiffAlgorithmTests {
         incomingData.add(middle);
         incomingData.add(next);
         logger.info("****************");
-        logger.info(incomingData.toString());
+        logger.info(top.toString());
+        logger.info(middle.toString());
+        logger.info(next.toString());
         logger.info("****************");
 
         //Calculate Diffs
@@ -164,6 +166,15 @@ public class ObjectDiffAlgorithmTests {
         chain.add(diff1);
         logger.info("****************");
         logger.info(chain.toString());
+        logger.info("****************");
+
+        //Re-construct the penultimate payload received
+        JsonObject last = incomingData.getLast();
+        JsonObject latestDiff = chain.getLast();
+        JsonObject first = incomingData.getFirst();
+        JsonObject penultimatePayload = objectDiffAlgorithm.merge(first, latestDiff);
+        logger.info("****************");
+        logger.info(penultimatePayload.toString());
         logger.info("****************");
     }
 }

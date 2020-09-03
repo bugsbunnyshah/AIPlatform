@@ -79,4 +79,28 @@ public class ObjectDiffAlgorithm
 
         return diff;
     }
+
+    public JsonObject merge(JsonObject left, JsonObject right)
+    {
+        JsonObject jsonObject;
+
+        Map<String, Object> leftMap = JsonFlattener.flattenAsMap(left.toString());
+        Map<String, Object> rightMap = JsonFlattener.flattenAsMap(right.toString());
+        Map<String, Object> mergeMap = new JsonifyLinkedHashMap();
+
+        Set<Map.Entry<String, Object>> entrySet = rightMap.entrySet();
+        for (Map.Entry<String, Object> entry : entrySet)
+        {
+            mergeMap.put(entry.getKey(), entry.getValue());
+        }
+        entrySet = leftMap.entrySet();
+        for (Map.Entry<String, Object> entry : entrySet)
+        {
+            mergeMap.put(entry.getKey(), entry.getValue());
+        }
+
+        jsonObject = JsonParser.parseString(JsonUnflattener.unflatten(mergeMap.toString())).getAsJsonObject();
+
+        return jsonObject;
+    }
 }

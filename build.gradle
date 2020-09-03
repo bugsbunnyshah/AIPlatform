@@ -120,6 +120,12 @@ dependencies {
     compile group: 'org.apache.tinkerpop', name: 'sparql-gremlin', version: '3.4.8'
 
 
+    compile group: 'com.typesafe.akka', name: 'akka-stream_2.13', version: '2.6.8'
+    implementation ('org.scala-lang:scala-library:2.13.0')
+    //compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.12'
+    //compile group: 'org.scala-lang', name: 'scala-library', version: '2.13.3'
+
+
     implementation 'junitperf:junitperf:1.8'
     implementation 'junit:junit:3.7'
     implementation enforcedPlatform('io.quarkus:quarkus-bom:1.7.0.Final')
