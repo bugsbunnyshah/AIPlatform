@@ -22,32 +22,38 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+//@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ObjectDiffAlgorithmTests {
     private static Logger logger = LoggerFactory.getLogger(ObjectDiffAlgorithmTests.class);
 
     private static Map<String, Object> diff = new HashMap<>();
 
     @Test
-    @Order(1)
     public void testFlattening() throws Exception
     {
         String json = IOUtils.toString(
                 Thread.currentThread().getContextClassLoader().getResourceAsStream("dataLake/email.json"),
                 StandardCharsets.UTF_8);
         Map<String, Object> flattenJson = JsonFlattener.flattenAsMap(json);
+        String flat = flattenJson.toString();
 
-        logger.info("String: "+flattenJson.toString());
-        logger.info("Map: "+flattenJson.toString());
+        logger.info("String: "+json);
+        logger.info("Map: "+flat);
 
-        JsonObject jsonObject = JsonParser.parseString(JsonUnflattener.unflatten(flattenJson.toString())).getAsJsonObject();
+        JsonObject jsonObject = JsonParser.parseString(JsonUnflattener.unflatten(flat)).getAsJsonObject();
         logger.info("JSON: "+jsonObject.toString());
+        //assertEquals(json, jsonObject.toString());
     }
 
     @Test
-    @Order(2)
-    public void testObjectDiff() throws Exception
+    public void testDiff() throws Exception
     {
+        logger.info("****************");
+
+        ObjectDiffAlgorithm objectDiffAlgorithm = new ObjectDiffAlgorithm();
+
         String email0 = IOUtils.toString(
                 Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/email0.json"),
                 StandardCharsets.UTF_8);
@@ -56,42 +62,20 @@ public class ObjectDiffAlgorithmTests {
                 Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/email1.json"),
                 StandardCharsets.UTF_8);
 
-        Map<String, Object> email0Map = JsonFlattener.flattenAsMap(email0);
-        Map<String, Object> email1Map = JsonFlattener.flattenAsMap(email1);
+        //JsonObject left = new JsonObject();
+        JsonObject left = JsonParser.parseString(email0).getAsJsonObject();
+        //left.add("object",JsonParser.parseString(email0).getAsJsonObject());
+        logger.info("LEFT: "+left.toString());
 
-        logger.info("Map: "+email0.toString());
-        logger.info("Map: "+email1.toString());
+        //JsonObject right = new JsonObject();
+        JsonObject right = JsonParser.parseString(email1).getAsJsonObject();
+        //right.add("object",JsonParser.parseString(email1).getAsJsonObject());
+        logger.info("RIGHT: "+right.toString());
 
-        Set<Map.Entry<String, Object>> entrySet = email0Map.entrySet();
-        for(Map.Entry<String, Object> entry: entrySet)
-        {
-            String key = entry.getKey();
-            int valueHash = entry.getValue().hashCode();
-            int compareHash = email1Map.get(key).hashCode();
-            if(valueHash != compareHash)
-            {
-                diff.put(key, email1Map.get(key));
-            }
-        }
-    }
+        JsonObject diff = objectDiffAlgorithm.diff(left, right);
+        logger.info("DIFF: "+diff.toString());
 
-    @Test
-    @Order(3)
-    public void testObjectDiffResult() throws Exception
-    {
-        String mapString = diff.toString();
+        //assert
         logger.info("****************");
-        logger.info(mapString);
-        logger.info("****************");
-
-        JsonElement json = JsonParser.parseString(mapString);
-        if(json.isJsonObject()) {
-            JsonObject jsonObject = json.getAsJsonObject();
-            logger.info("profile.mobile: " + jsonObject.get("profile.mobile"));
-        }
-        else
-        {
-
-        }
     }
 }
