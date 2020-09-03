@@ -2,13 +2,18 @@ package io.bugsbunny.data.history;
 
 import com.github.wnameless.json.flattener.JsonFlattener;
 import com.github.wnameless.json.unflattener.JsonUnflattener;
+
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,10 +22,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ObjectDiffAlgorithmTests {
     private static Logger logger = LoggerFactory.getLogger(ObjectDiffAlgorithmTests.class);
 
+    private static Map<String, Object> diff = new HashMap<>();
+
     @Test
+    @Order(1)
     public void testFlattening() throws Exception
     {
         String json = IOUtils.toString(
@@ -36,6 +45,7 @@ public class ObjectDiffAlgorithmTests {
     }
 
     @Test
+    @Order(2)
     public void testObjectDiff() throws Exception
     {
         String email0 = IOUtils.toString(
@@ -52,7 +62,6 @@ public class ObjectDiffAlgorithmTests {
         logger.info("Map: "+email0.toString());
         logger.info("Map: "+email1.toString());
 
-        Map<String, Object> diff = new HashMap<>();
         Set<Map.Entry<String, Object>> entrySet = email0Map.entrySet();
         for(Map.Entry<String, Object> entry: entrySet)
         {
@@ -64,7 +73,25 @@ public class ObjectDiffAlgorithmTests {
                 diff.put(key, email1Map.get(key));
             }
         }
+    }
 
-        logger.info("Diff: "+diff.toString());
+    @Test
+    @Order(3)
+    public void testObjectDiffResult() throws Exception
+    {
+        String mapString = diff.toString();
+        logger.info("****************");
+        logger.info(mapString);
+        logger.info("****************");
+
+        JsonElement json = JsonParser.parseString(mapString);
+        if(json.isJsonObject()) {
+            JsonObject jsonObject = json.getAsJsonObject();
+            logger.info("profile.mobile: " + jsonObject.get("profile.mobile"));
+        }
+        else
+        {
+
+        }
     }
 }
