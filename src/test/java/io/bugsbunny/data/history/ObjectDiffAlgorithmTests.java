@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -114,5 +115,55 @@ public class ObjectDiffAlgorithmTests {
         logger.info("NEXT: "+next.toString());
         diff = objectDiffAlgorithm.diff(top, next);
         logger.info("DIFF: "+diff.toString());
+    }
+
+    @Test
+    public void testDiffReplay() throws Exception
+    {
+        ObjectDiffAlgorithm objectDiffAlgorithm = new ObjectDiffAlgorithm();
+        LinkedList<JsonObject> chain = new LinkedList<>();
+        LinkedList<JsonObject> incomingData = new LinkedList<>();
+
+        String email0 = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/diffChain/email0.json"),
+                StandardCharsets.UTF_8);
+
+        String email1 = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/diffChain/email1.json"),
+                StandardCharsets.UTF_8);
+
+        String email2 = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/diffChain/email2.json"),
+                StandardCharsets.UTF_8);
+
+        //Payloads
+        JsonObject top = JsonParser.parseString(email0).getAsJsonObject();
+        JsonObject middle = JsonParser.parseString(email1).getAsJsonObject();
+        JsonObject next = JsonParser.parseString(email2).getAsJsonObject();
+
+        //Populate the chain
+        incomingData.add(top);
+        incomingData.add(middle);
+        incomingData.add(next);
+        logger.info("****************");
+        logger.info(incomingData.toString());
+        logger.info("****************");
+
+        //Calculate Diffs
+        JsonObject diff0 = objectDiffAlgorithm.diff(top, middle);
+        logger.info("DIFF0: "+diff0.toString());
+
+        logger.info("****************");
+
+        //Next Payload
+        JsonObject diff1 = objectDiffAlgorithm.diff(middle, next);
+        logger.info("DIFF1: "+diff1.toString());
+
+        //Populate the chain
+        chain.add(diff0);
+        chain.add(diff1);
+        logger.info("****************");
+        logger.info(chain.toString());
+        logger.info("****************");
     }
 }
