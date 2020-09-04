@@ -88,15 +88,34 @@ public class ObjectDiffAlgorithm
         Map<String, Object> rightMap = JsonFlattener.flattenAsMap(right.toString());
         Map<String, Object> mergeMap = new JsonifyLinkedHashMap();
 
-        Set<Map.Entry<String, Object>> entrySet = rightMap.entrySet();
+        Set<Map.Entry<String, Object>> entrySet = leftMap.entrySet();
         for (Map.Entry<String, Object> entry : entrySet)
         {
             mergeMap.put(entry.getKey(), entry.getValue());
         }
-        entrySet = leftMap.entrySet();
+
+        //Process the diff
+        entrySet = rightMap.entrySet();
         for (Map.Entry<String, Object> entry : entrySet)
         {
-            mergeMap.put(entry.getKey(), entry.getValue());
+            String key = entry.getKey();
+            boolean doesRightMapHaveTheKey = leftMap.containsKey(key);
+
+            //Check for a FIELD Update
+            if (doesRightMapHaveTheKey)
+            {
+                int valueHash = entry.getValue().hashCode();
+                int compareHash = leftMap.get(key).hashCode();
+                if (valueHash != compareHash)
+                {
+                    mergeMap.put(key, entry.getValue());
+                }
+            }
+            else
+            {
+                //This means a FIELD was ADDED
+                mergeMap.put(key, rightMap.get(key));
+            }
         }
 
         jsonObject = JsonParser.parseString(JsonUnflattener.unflatten(mergeMap.toString())).getAsJsonObject();

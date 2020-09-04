@@ -145,7 +145,7 @@ public class ObjectDiffAlgorithmTests {
         incomingData.add(top);
         incomingData.add(middle);
         incomingData.add(next);
-        logger.info("****************");
+        logger.info("*******PAYLOADS*********");
         logger.info(top.toString());
         logger.info(middle.toString());
         logger.info(next.toString());
@@ -153,28 +153,35 @@ public class ObjectDiffAlgorithmTests {
 
         //Calculate Diffs
         JsonObject diff0 = objectDiffAlgorithm.diff(top, middle);
-        logger.info("DIFF0: "+diff0.toString());
-
-        logger.info("****************");
 
         //Next Payload
         JsonObject diff1 = objectDiffAlgorithm.diff(middle, next);
-        logger.info("DIFF1: "+diff1.toString());
 
         //Populate the chain
         chain.add(diff0);
         chain.add(diff1);
-        logger.info("****************");
+        logger.info("******DIIF_CHAIN**********");
         logger.info(chain.toString());
         logger.info("****************");
 
-        //Re-construct the penultimate payload received
-        JsonObject last = incomingData.getLast();
-        JsonObject latestDiff = chain.getLast();
-        JsonObject first = incomingData.getFirst();
-        JsonObject penultimatePayload = objectDiffAlgorithm.merge(first, latestDiff);
+        //Re-construct the first payload
+        JsonObject currentPayload = incomingData.getFirst();
+        logger.info("******FIRST_PAYLOAD**********");
+        logger.info(currentPayload.toString());
         logger.info("****************");
-        logger.info(penultimatePayload.toString());
+
+        //Re-construct the second payload
+        JsonObject nextDiff = chain.getFirst();
+        currentPayload = objectDiffAlgorithm.merge(currentPayload, nextDiff);
+        logger.info("******SECOND_PAYLOAD**********");
+        logger.info(currentPayload.toString());
+        logger.info("****************");
+
+        //Re-construct the third payload
+        nextDiff = chain.get(1);
+        currentPayload = objectDiffAlgorithm.merge(currentPayload, nextDiff);
+        logger.info("******THIRD_PAYLOAD**********");
+        logger.info(currentPayload.toString());
         logger.info("****************");
     }
 }
