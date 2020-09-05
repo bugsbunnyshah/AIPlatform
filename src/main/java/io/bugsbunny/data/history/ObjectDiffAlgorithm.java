@@ -12,9 +12,11 @@ import com.google.gson.JsonParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.Map;
 import java.util.Set;
 
+@ApplicationScoped
 public class ObjectDiffAlgorithm
 {
     private static Logger logger = LoggerFactory.getLogger(ObjectDiffAlgorithm.class);

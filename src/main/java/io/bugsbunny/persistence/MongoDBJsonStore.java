@@ -13,7 +13,9 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 @ApplicationScoped
 public class MongoDBJsonStore {
@@ -150,5 +152,117 @@ public class MongoDBJsonStore {
             return devModel;
         }
         return devModel;
+    }
+
+    public String startDiffChain(JsonObject payload)
+    {
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+
+        MongoCollection<Document> collection = database.getCollection("diffChain");
+
+        String chainId = UUID.randomUUID().toString();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("chainId", chainId);
+        jsonObject.add("payload", payload);
+
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
+
+        return chainId;
+    }
+
+    public void addToDiffChain(String chainId, JsonObject payload)
+    {
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        MongoCollection<Document> collection = database.getCollection("diffChain");
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("chainId", chainId);
+        jsonObject.add("payload", payload);
+
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
+    }
+
+    public JsonObject getLastPayload(String chainId)
+    {
+        JsonObject lastPayload = new JsonObject();
+
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        MongoCollection<Document> collection = database.getCollection("diffChain");
+
+        String queryJson = "{\"chainId\":\""+chainId+"\"}";
+        Bson bson = Document.parse(queryJson);
+        FindIterable<Document> iterable = collection.find(bson);
+        MongoCursor<Document> cursor = iterable.cursor();
+        while(cursor.hasNext())
+        {
+            Document document = cursor.next();
+            if(!cursor.hasNext())
+            {
+                String documentJson = document.toJson();
+                lastPayload = JsonParser.parseString(documentJson).getAsJsonObject();
+            }
+        }
+
+        lastPayload = lastPayload.getAsJsonObject("payload");
+        return lastPayload;
+    }
+
+    public void addToDiff(String chainId, JsonObject objectDiff)
+    {
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        MongoCollection<Document> collection = database.getCollection("objectDiff");
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("chainId", chainId);
+        jsonObject.add("objectDiff", objectDiff);
+
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
+    }
+
+    public List<JsonObject> readDiffs(String chainId)
+    {
+        List<JsonObject> diffs = new LinkedList<>();
+
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+
+        MongoCollection<Document> collection = database.getCollection("objectDiff");
+
+        String queryJson = "{\"chainId\":\""+chainId+"\"}";
+        Bson bson = Document.parse(queryJson);
+        FindIterable<Document> iterable = collection.find(bson);
+        MongoCursor<Document> cursor = iterable.cursor();
+        while(cursor.hasNext()) {
+            Document document = cursor.next();
+            String documentJson = document.toJson();
+            JsonObject objectDiff = JsonParser.parseString(documentJson).getAsJsonObject();
+            diffs.add(objectDiff);
+        }
+
+        return diffs;
+    }
+
+    public List<JsonObject> readDiffChain(String chainId)
+    {
+        List<JsonObject> chain = new LinkedList<>();
+
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+
+        MongoCollection<Document> collection = database.getCollection("diffChain");
+
+        String queryJson = "{\"chainId\":\""+chainId+"\"}";
+        Bson bson = Document.parse(queryJson);
+        FindIterable<Document> iterable = collection.find(bson);
+        MongoCursor<Document> cursor = iterable.cursor();
+        while(cursor.hasNext()) {
+            Document document = cursor.next();
+            String documentJson = document.toJson();
+            JsonObject objectDiff = JsonParser.parseString(documentJson).getAsJsonObject();
+            chain.add(objectDiff);
+        }
+
+        return chain;
     }
 }
