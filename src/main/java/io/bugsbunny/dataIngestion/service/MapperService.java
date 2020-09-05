@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.data.history.service.PayloadReplayService;
 import io.bugsbunny.persistence.MongoDBJsonStore;
 import org.mitre.harmony.matchers.ElementPair;
 import org.mitre.harmony.matchers.MatcherManager;
@@ -33,12 +34,16 @@ public class MapperService {
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
+    @Inject
+    private PayloadReplayService payloadReplayService;
+
     public JsonArray map(String sourceSchema, String destinationSchema, JsonArray sourceData)
     {
         JsonArray result = new JsonArray();
         try
         {
             int size = sourceData.size();
+            String chainId = null;
             for(int i=0; i<size; i++)
             {
                 JsonObject root = sourceData.get(i).getAsJsonObject();
@@ -57,6 +62,13 @@ public class MapperService {
                 logger.info(scores.toString());
                 JsonObject local = this.performMapping(scores, root.toString());
                 result.add(local);
+
+                if(i == 0) {
+                    chainId = this.payloadReplayService.generateDiffChain(root);
+                }
+                else {
+                    this.payloadReplayService.addToDiffChain(chainId, root);
+                }
             }
 
             return result;
