@@ -1,5 +1,6 @@
 package io.bugsbunny.data.history.service;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.bugsbunny.data.history.ObjectDiffAlgorithm;
 import io.bugsbunny.persistence.MongoDBJsonStore;
@@ -20,6 +21,23 @@ public class PayloadReplayService {
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
+
+    public String generateDiffChain(JsonArray payload)
+    {
+        //Validation
+        if(payload == null || payload.size() == 0)
+        {
+            return null;
+        }
+
+        String chainId = this.generateDiffChain(payload.get(0).getAsJsonObject());
+        int length = payload.size();
+        for(int i=1; i<length; i++)
+        {
+            this.addToDiffChain(chainId, payload.get(i).getAsJsonObject());
+        }
+        return chainId;
+    }
 
     public String generateDiffChain(JsonObject payload)
     {

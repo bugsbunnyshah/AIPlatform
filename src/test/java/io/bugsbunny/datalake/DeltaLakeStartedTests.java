@@ -49,6 +49,7 @@ public class DeltaLakeStartedTests implements Serializable
                 .getOrCreate();
         JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
         //DeltaTable deltaTable = DeltaTable.forPath(location);
+
         // Create a custom WriteConfig
         Map<String, String> writeOverrides = new HashMap<String, String>();
         writeOverrides.put("collection", "spark");
