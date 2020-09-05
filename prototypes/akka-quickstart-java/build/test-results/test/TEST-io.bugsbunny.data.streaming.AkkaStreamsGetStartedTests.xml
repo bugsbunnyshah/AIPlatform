@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.bugsbunny.data.streaming.AkkaStreamsGetStartedTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-09-05T21:41:03" hostname="Babys-MacBook-Pro.local" time="0.768">
+  <properties/>
+  <testcase name="testStart" classname="io.bugsbunny.data.streaming.AkkaStreamsGetStartedTests" time="0.768"/>
+  <system-out><![CDATA[[2020-09-05 16:41:03,806] [INFO] [akka.event.slf4j.Slf4jLogger] [helloakka-akka.actor.default-dispatcher-3] [] - Slf4jLogger started
+>>> Press ENTER to exit <<<
+[2020-09-05 16:41:03,843] [INFO] [io.bugsbunny.data.streaming.Greeter] [helloakka-akka.actor.default-dispatcher-6] [akka://helloakka/user/greeter] - Hello Charles!
+[2020-09-05 16:41:03,844] [INFO] [io.bugsbunny.data.streaming.GreeterBot] [helloakka-akka.actor.default-dispatcher-3] [akka://helloakka/user/Charles] - Greeting 1 for Charles
+[2020-09-05 16:41:03,845] [INFO] [io.bugsbunny.data.streaming.Greeter] [helloakka-akka.actor.default-dispatcher-6] [akka://helloakka/user/greeter] - Hello Charles!
+[2020-09-05 16:41:03,845] [INFO] [io.bugsbunny.data.streaming.GreeterBot] [helloakka-akka.actor.default-dispatcher-3] [akka://helloakka/user/Charles] - Greeting 2 for Charles
+[2020-09-05 16:41:03,845] [INFO] [io.bugsbunny.data.streaming.Greeter] [helloakka-akka.actor.default-dispatcher-6] [akka://helloakka/user/greeter] - Hello Charles!
+[2020-09-05 16:41:03,845] [INFO] [io.bugsbunny.data.streaming.GreeterBot] [helloakka-akka.actor.default-dispatcher-6] [akka://helloakka/user/Charles] - Greeting 3 for Charles
+]]></system-out>
+  <system-err><![CDATA[SLF4J: A number (1) of logging calls during the initialization phase have been intercepted and are
+SLF4J: now being replayed. These are subject to the filtering rules of the underlying logging system.
+SLF4J: See also http://www.slf4j.org/codes.html#replay
+]]></system-err>
+</testsuite>
