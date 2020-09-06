@@ -129,16 +129,4 @@ public class DataMapper {
             return Response.status(500).entity(jsonObject.toString()).build();
         }
     }
-
-    @Path("map")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response map()
-    {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("jalwa","armaan");
-        String response = jsonObject.toString();
-        System.out.println(response);
-        return Response.ok(response).build();
-    }
 }

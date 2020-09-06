@@ -74,19 +74,6 @@ public class MapperService {
         }
     }
 
-    public void storeMappedOutput(JsonObject jsonObject)
-    {
-        try
-        {
-            this.mongoDBJsonStore.storeIngestion(Arrays.asList(new JsonObject[]{jsonObject}));
-        }
-        catch(Exception e)
-        {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-    }
-
     private HierarchicalSchemaInfo createHierachialSchemaInfo(String schemaName)
     {
         Schema schema = new Schema();

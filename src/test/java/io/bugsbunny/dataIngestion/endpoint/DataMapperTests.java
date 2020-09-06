@@ -77,25 +77,10 @@ public class DataMapperTests {
         assertEquals("1234567", jsonObject.get("Rcvr").getAsString());
         assertEquals(Boolean.TRUE, jsonObject.get("HasSig").getAsBoolean());
 
-        //Make sure the source data was ingested
-        Response sourceResponse = given().get("/dataMapper/map")
-                .andReturn();
-
-        String sourceDataSaved = sourceResponse.getBody().asString();
-        logger.info("**************");
-        logger.info(sourceResponse.getStatusLine());
-        logger.info(sourceDataSaved);
-        logger.info("***************");
-
-        //assert the body
-        JsonElement sourceDataElement = JsonParser.parseString(sourceDataSaved);
-        statusCode = sourceResponse.getStatusCode();
-        assertEquals(200, statusCode);
-
-        //assertEquals(sourceData, sourceDataSaved);
-        //assertEquals("123456789", jsonObject.get("Id").getAsString());
-        //assertEquals("1234567", jsonObject.get("Rcvr").getAsString());
-        //assertEquals(Boolean.TRUE, jsonObject.get("HasSig").getAsBoolean());
+        jsonObject = array.get(1).getAsJsonObject();
+        assertEquals("7777777", jsonObject.get("Id").getAsString());
+        assertEquals("77777", jsonObject.get("Rcvr").getAsString());
+        assertEquals(Boolean.FALSE, jsonObject.get("HasSig").getAsBoolean());
     }
 
     @Test
