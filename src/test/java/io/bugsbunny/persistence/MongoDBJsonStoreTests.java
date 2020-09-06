@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.common.hash.HashCode;
+
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -16,6 +18,8 @@ import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 public class MongoDBJsonStoreTests {
@@ -41,7 +45,7 @@ public class MongoDBJsonStoreTests {
     }
 
     @Test
-    public void testIngestionPipeline() throws Exception
+    public void testIngestionData() throws Exception
     {
         String json = IOUtils.toString(Thread.currentThread().getContextClassLoader().
                         getResourceAsStream("people.json"),
@@ -67,14 +71,29 @@ public class MongoDBJsonStoreTests {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("data", animalsCsvData);
 
-        logger.info("*******");
-        //logger.info(jsonObject.toString());
-        logger.info("*******");
-
         this.mongoDBJsonStore.storeIngestionImage(jsonObject);
         List<JsonObject> result = this.mongoDBJsonStore.getIngestionImages();
-        logger.info("*******");
-        //logger.info(result.toString());
-        logger.info("*******");
+        JsonObject storedJson = result.get(0);
+        int sourceHashCode = HashCode.fromBytes(jsonObject.toString().getBytes(StandardCharsets.UTF_8)).hashCode();
+        int storedHashCode = HashCode.fromBytes(storedJson.toString().getBytes(StandardCharsets.UTF_8)).hashCode();
+
+        logger.info("***************************");
+        logger.info("SourceHashCode: "+sourceHashCode+", StoredHashCode: "+storedHashCode);
+        logger.info("SourceJson: "+jsonObject.toString());
+        logger.info("StoredJson: "+storedJson.toString());
+        logger.info("***************************");
+        assertEquals(sourceHashCode, storedHashCode);
+    }
+
+    @Test
+    public void testDevModelData() throws Exception
+    {
+
+    }
+
+    @Test
+    public void testDataHistoryStorage() throws Exception
+    {
+
     }
 }

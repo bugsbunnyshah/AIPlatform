@@ -35,6 +35,7 @@ public class MongoDBJsonStore {
         this.mongoClient.close();
     }
 
+    //Data Ingestion related operations-----------------------------------------------------
     public void storeIngestion(List<JsonObject> jsonObjects)
     {
         MongoDatabase database = mongoClient.getDatabase("aiplatform");
@@ -93,6 +94,7 @@ public class MongoDBJsonStore {
         return ingestedDataSet;
     }
 
+    //Image Data Ingestion related operations-----------------------------------------------------
     public void storeIngestionImage(JsonObject jsonObject)
     {
         MongoDatabase database = mongoClient.getDatabase("aiplatform");
@@ -117,11 +119,14 @@ public class MongoDBJsonStore {
         {
             Document document = cursor.next();
             String documentJson = document.toJson();
-            ingestion.add(JsonParser.parseString(documentJson).getAsJsonObject());
+            JsonObject jsonObject = JsonParser.parseString(documentJson).getAsJsonObject();
+            jsonObject.remove("_id");
+            ingestion.add(jsonObject);
         }
         return ingestion;
     }
 
+    //AIModel related operations-----------------------------------------------------
     public void storeDevModels(JsonObject jsonObject)
     {
         MongoDatabase database = mongoClient.getDatabase("aiplatform");
@@ -154,6 +159,7 @@ public class MongoDBJsonStore {
         return devModel;
     }
 
+    //Data History related operations-----------------------------------------------------
     public String startDiffChain(JsonObject payload)
     {
         MongoDatabase database = mongoClient.getDatabase("aiplatform");
