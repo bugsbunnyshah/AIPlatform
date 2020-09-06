@@ -37,3 +37,4 @@ release.properties
 appgal_foodrunner_app/google_maps_integration/build/app
 /.gradle/
 /build/
+/mlruns/
