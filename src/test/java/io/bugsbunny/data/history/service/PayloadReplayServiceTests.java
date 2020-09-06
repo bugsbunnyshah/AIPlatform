@@ -3,20 +3,20 @@ package io.bugsbunny.data.history.service;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.data.history.ObjectDiffAlgorithm;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+
 import org.apache.commons.io.IOUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 @QuarkusTest
 public class PayloadReplayServiceTests {
@@ -26,7 +26,7 @@ public class PayloadReplayServiceTests {
     private PayloadReplayService payloadReplayService;
 
     @Test
-    public void testGenerateDiffChain() throws Exception
+    public void testDiffChainProcess() throws Exception
     {
         String email0 = IOUtils.toString(
                 Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/email0.json"),
@@ -59,6 +59,11 @@ public class PayloadReplayServiceTests {
         logger.info("************************");
         logger.info(diffChain.toString());
         logger.info("************************");
+
+        //Assert the stored data
+        assertEquals(diffChain.get(0).hashCode(), top.hashCode());
+        assertEquals(diffChain.get(1).hashCode(), middle.hashCode());
+        assertEquals(diffChain.get(2).hashCode(), next.hashCode());
     }
 
     @Test
