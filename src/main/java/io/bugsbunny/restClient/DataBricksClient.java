@@ -162,7 +162,7 @@ public class DataBricksClient
         }
     }
 
-    public String getRun(String runId)
+    /*public String getRun(String runId)
     {
         //Setup RestTemplate
         HttpClient httpClient = HttpClient.newBuilder().build();
@@ -185,5 +185,5 @@ public class DataBricksClient
         {
             throw new RuntimeException(e);
         }
-    }
+    }*/
 }
