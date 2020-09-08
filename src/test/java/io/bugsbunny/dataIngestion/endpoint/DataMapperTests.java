@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.bugsbunny.persistence.MongoDBJsonStore;
-import io.bugsbunny.restclient.MLFlowRunClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
@@ -36,9 +35,6 @@ public class DataMapperTests {
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
-
-    @Inject
-    private MLFlowRunClient mlFlowRunClient;
 
     @Test
     public void testMapWithOneToOneFields() throws Exception{

@@ -113,7 +113,7 @@ dependencies {
 
     implementation name: 'jep'
 
-    implementation(name: 'machineLearningStorage')
+    //implementation(name: 'machineLearningStorage')
 
     compile group: 'org.apache.tinkerpop', name: 'gremlin-core', version: '3.4.8'
     compile group: 'org.apache.tinkerpop', name: 'tinkergraph-gremlin', version: '3.4.8'
