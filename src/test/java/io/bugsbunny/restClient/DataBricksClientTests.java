@@ -3,6 +3,7 @@ package io.bugsbunny.restClient;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.persistence.MongoDBJsonStore;
 import io.quarkus.test.junit.QuarkusTest;
 import net.minidev.json.JSONValue;
 import org.apache.commons.io.IOUtils;
@@ -12,7 +13,12 @@ import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.inject.Inject;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -23,6 +29,9 @@ public class DataBricksClientTests {
 
     @Inject
     private DataBricksClient dataBricksClient;
+
+    @Inject
+    private MongoDBJsonStore mongoDBJsonStore;
 
     @Test
     public void testCreateDevExperiment() throws Exception
@@ -54,7 +63,66 @@ public class DataBricksClientTests {
 
         String experiment = "appgal-"+UUID.randomUUID().toString();
         String experimentId = this.dataBricksClient.createDevExperiment(experiment);
-        String runId = this.dataBricksClient.createRun(experimentId);;
-        this.dataBricksClient.logModel(runId, json);
+        String runId = this.dataBricksClient.createRun(experimentId);
+        String model = this.getModel();
+        this.dataBricksClient.logModel(runId, json, model);
+        logger.info(this.mongoDBJsonStore.getLiveModel(runId).toString());
+    }
+
+    @Test
+    public void testStoreModel() throws Exception
+    {
+        JsonObject storedModel = this.dataBricksClient.storeModel();
+        logger.info("****************");
+        logger.info(storedModel.toString());
+        logger.info("****************");
+    }
+
+    private String getModel()
+    {
+        ByteArrayOutputStream modelStream = null;
+        ObjectOutputStream out = null;
+        try
+        {
+            String model = IOUtils.toString(new FileInputStream("devModel/1/model.ser"),
+                    StandardCharsets.UTF_8);
+
+            //Register the Trained Model with the DataBricks Repository
+            modelStream = new ByteArrayOutputStream();
+            out = new ObjectOutputStream(modelStream);
+            out.writeObject(model);
+
+            return Base64.getEncoder().encodeToString(modelStream.toByteArray());
+        }
+        catch(Exception e)
+        {
+            logger.info(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+        finally
+        {
+            if(out != null)
+            {
+                try
+                {
+                    out.close();
+                }
+                catch(IOException ioe)
+                {
+                    //Tried to cleanup..no biggie no biggie if still problemo time (lol)
+                }
+            }
+            if(modelStream != null)
+            {
+                try
+                {
+                    modelStream.close();
+                }
+                catch(IOException ioe)
+                {
+                    //Tried to cleanup..no biggie no biggie if still problemo time (lol)
+                }
+            }
+        }
     }
 }

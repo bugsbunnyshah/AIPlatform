@@ -4,10 +4,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.model.DataBricksProcessException;
+import io.bugsbunny.persistence.MongoDBJsonStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -18,6 +20,9 @@ import java.time.Instant;
 public class DataBricksClient
 {
     private static Logger logger = LoggerFactory.getLogger(DataBricksClient.class);
+
+    @Inject
+    private MongoDBJsonStore mongoDBJsonStore;
 
     public String createDevExperiment(String experiment) throws DataBricksProcessException
     {
@@ -98,12 +103,13 @@ public class DataBricksClient
         }
     }
 
-    public void logModel(String runId, String modelJson) throws DataBricksProcessException
+    public void logModel(String runId, String modelJson, String model) throws DataBricksProcessException
     {
-        HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://127.0.0.1:5000/api/2.0/mlflow/runs/log-model";
         try
         {
+            HttpClient httpClient = HttpClient.newBuilder().build();
+            String restUrl = "http://127.0.0.1:5000/api/2.0/mlflow/runs/log-model";
+
             JsonObject json = new JsonObject();
             json.addProperty("run_id", runId);
             json.addProperty("model_json", modelJson);
@@ -114,12 +120,14 @@ public class DataBricksClient
 
 
             HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            String responseJson = httpResponse.body();
             int status = httpResponse.statusCode();
             if(status != 200)
             {
                 throw new DataBricksProcessException("LOG_MODEL_FAIL: "+httpResponse.toString());
             }
+
+            json.addProperty("model", model);
+            this.mongoDBJsonStore.storeLiveModel(json);
         }
         catch(Exception e)
         {
@@ -160,6 +168,12 @@ public class DataBricksClient
         {
             throw new DataBricksProcessException(e);
         }
+    }
+
+    public JsonObject storeModel() throws DataBricksProcessException
+    {
+        JsonObject storedModel = new JsonObject();
+        return storedModel;
     }
 
     /*public String getRun(String runId)

@@ -159,6 +159,37 @@ public class MongoDBJsonStore {
         return devModel;
     }
 
+    public void storeLiveModel(JsonObject jsonObject)
+    {
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+
+        MongoCollection<Document> collection = database.getCollection("liveModels");
+
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
+    }
+
+    public JsonObject getLiveModel(String runId)
+    {
+        JsonObject liveModel = new JsonObject();
+
+        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+
+        MongoCollection<Document> collection = database.getCollection("liveModels");
+
+        String queryJson = "{\"run_id\":\""+runId+"\"}";
+        Bson bson = Document.parse(queryJson);
+        FindIterable<Document> iterable = collection.find(bson);
+        MongoCursor<Document> cursor = iterable.cursor();
+        while(cursor.hasNext())
+        {
+            Document document = cursor.next();
+            String documentJson = document.toJson();
+            liveModel = JsonParser.parseString(documentJson).getAsJsonObject();
+            return liveModel;
+        }
+        return liveModel;
+    }
     //Data History related operations-----------------------------------------------------
     public String startDiffChain(JsonObject payload)
     {
