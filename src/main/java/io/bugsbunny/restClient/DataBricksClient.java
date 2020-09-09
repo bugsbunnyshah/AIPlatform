@@ -169,35 +169,4 @@ public class DataBricksClient
             throw new DataBricksProcessException(e);
         }
     }
-
-    public JsonObject storeModel() throws DataBricksProcessException
-    {
-        JsonObject storedModel = new JsonObject();
-        return storedModel;
-    }
-
-    /*public String getRun(String runId)
-    {
-        //Setup RestTemplate
-        HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://127.0.0.1:5000/api/2.0/mlflow/runs/get?run_id="+runId;
-
-        //Setup POST request
-        try {
-            HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
-            HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
-                    //.header("Content-Type", "application/json")
-                    //.header("api-key",primaryKey)
-                    .GET()
-                    .build();
-
-
-            HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            return httpResponse.body();
-        }
-        catch(Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }*/
 }

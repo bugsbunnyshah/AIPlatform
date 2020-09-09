@@ -68,23 +68,15 @@ public class DataBricksClientTests {
         this.dataBricksClient.logModel(runId, json, model);
         logger.info(this.mongoDBJsonStore.getLiveModel(runId).toString());
     }
-
-    @Test
-    public void testStoreModel() throws Exception
-    {
-        JsonObject storedModel = this.dataBricksClient.storeModel();
-        logger.info("****************");
-        logger.info(storedModel.toString());
-        logger.info("****************");
-    }
-
+    //-------------------------------------------------------------------------------------------------------
     private String getModel()
     {
         ByteArrayOutputStream modelStream = null;
         ObjectOutputStream out = null;
         try
         {
-            String model = IOUtils.toString(new FileInputStream("devModel/1/model.ser"),
+            String model = IOUtils.toString(Thread.currentThread().
+                            getContextClassLoader().getResourceAsStream("databricks/model.pkl"),
                     StandardCharsets.UTF_8);
 
             //Register the Trained Model with the DataBricks Repository
