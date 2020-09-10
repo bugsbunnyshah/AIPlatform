@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class LiveModelTests {
     private Logger logger = LoggerFactory.getLogger(LiveModelTests.class);
 
-    @Test
+    //@Test
     public void testLiveModel() throws Exception
     {
         JsonObject jsonObject = new JsonObject();
