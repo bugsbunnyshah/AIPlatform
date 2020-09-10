@@ -9,13 +9,7 @@ import io.bugsbunny.persistence.MongoDBJsonStore;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
-import org.datavec.api.records.reader.RecordReader;
-import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
-import org.datavec.api.split.FileSplit;
-import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.junit.jupiter.api.Test;
-import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -187,16 +181,6 @@ public class DataMapperTests {
     }
 
     //-----------------------------------------------------------------------------
-    private DataSet readCSVDataset(int batchSize, int labelIndex, int numClasses)
-            throws IOException, InterruptedException{
-        File file = new File("tmp/data");
-
-        RecordReader rr = new CSVRecordReader();
-        rr.initialize(new FileSplit(file));
-        DataSetIterator iterator = new RecordReaderDataSetIterator(rr, batchSize, labelIndex, numClasses);
-        return iterator.next();
-    }
-
     private Map<Integer,String> readEnumCSV() throws Exception{
         File file = new File("tmp/data");
         FileInputStream fis = new FileInputStream(file);

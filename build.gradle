@@ -6,6 +6,17 @@ plugins {
     id 'java'
 }
 
+mainClassName = "AIModel"
+
+shadowJar {
+    zip64 true
+    mergeServiceFiles()
+    exclude "META-INF/*.SF"
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude "LICENSE*"
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -102,11 +113,26 @@ dependencies {
     implementation name: 'org.eclipse.equinox.registry_3.5.101.R37x_v20110810-1611'
     implementation name: 'GoogleTranslate'
 
-    implementation 'org.datavec:datavec-api:0.7.2'
-    implementation 'org.deeplearning4j:deeplearning4j-core:0.7.2'
-    implementation 'org.deeplearning4j:deeplearning4j-nlp:0.7.2'
-    implementation 'org.deeplearning4j:deeplearning4j-nn:0.7.2'
-    implementation 'org.nd4j:nd4j-native:0.7.2'
+    //implementation 'org.datavec:datavec-api:0.7.2'
+    //implementation 'org.deeplearning4j:deeplearning4j-core:0.7.2'
+    //implementation 'org.deeplearning4j:deeplearning4j-nlp:0.7.2'
+    //implementation 'org.deeplearning4j:deeplearning4j-nn:0.7.2'
+    //implementation 'org.nd4j:nd4j-native:0.7.2'
+    implementation 'org.nd4j:nd4j-native-platform:1.0.0-beta7'
+    implementation 'org.nd4j:nd4j-native:1.0.0-beta7'
+    implementation 'org.datavec:datavec-api:1.0.0-beta7'
+    implementation 'org.datavec:datavec-data-image:1.0.0-beta7'
+    implementation 'org.deeplearning4j:deeplearning4j-core:1.0.0-beta7'
+    implementation 'org.datavec:datavec-local:1.0.0-beta7'
+    implementation 'org.deeplearning4j:deeplearning4j-datasets:1.0.0-beta7'
+    implementation 'org.deeplearning4j:deeplearning4j-ui:1.0.0-beta7'
+    implementation 'org.deeplearning4j:deeplearning4j-zoo:1.0.0-beta7'
+    implementation 'org.deeplearning4j:deeplearning4j-parallel-wrapper:1.0.0-beta7'
+    implementation 'org.datavec:datavec-data-codec:1.0.0-beta7'
+    implementation 'org.bytedeco:javacv-platform:1.5.2'
+    compile 'org.deeplearning4j:arbiter-deeplearning4j:1.0.0-beta7'
+    compile 'org.deeplearning4j:arbiter-ui:1.0.0-beta7'
+    //compile group: 'org.bytedeco', name: 'javacpp', version: '1.2.4'
 
     implementation 'org.apache.lucene:lucene-analyzers-common:8.5.1'
     implementation 'org.apache.lucene:lucene-queryparser:8.5.1'
