@@ -16,7 +16,7 @@ import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 public class PayloadReplayServiceTests {
