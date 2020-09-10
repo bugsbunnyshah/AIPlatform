@@ -19,7 +19,6 @@ public class AIModelServiceTests {
     @Test
     public void testStartEval() throws Exception
     {
-        this.aiModelService = new AIModelService();
         logger.info(this.aiModelService.eval());
     }
 }

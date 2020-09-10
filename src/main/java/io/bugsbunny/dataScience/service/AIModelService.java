@@ -10,6 +10,7 @@ import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -18,14 +19,22 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Base64;
 
 @ApplicationScoped
 public class AIModelService
 {
     private static Logger logger = LoggerFactory.getLogger(AIModelService.class);
 
-    public String eval()
+    private MultiLayerNetwork network;
+    private String modelSer;
+
+    @PostConstruct
+    public void start()
     {
         try
         {
@@ -40,8 +49,6 @@ public class AIModelService
 
             //Alpha can be thought of as the learning rate for the centers for each class
             double alpha = 0.1;
-
-            DataSetIterator mnistTest = new MnistDataSetIterator(10000, false, 12345);
 
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(seed)
@@ -73,7 +80,30 @@ public class AIModelService
             MultiLayerNetwork orig = new MultiLayerNetwork(conf);
             orig.init();
 
-            Evaluation evaluation = orig.evaluate(mnistTest);
+            ByteArrayOutputStream modelStream = new ByteArrayOutputStream();
+            ModelSerializer.writeModel(orig, modelStream, true);
+            this.modelSer = Base64.getEncoder().encodeToString(modelStream.toByteArray());
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String eval()
+    {
+        try
+        {
+            if(this.network == null)
+            {
+                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(this.modelSer));
+                this.network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
+            }
+
+            DataSetIterator mnistTest = new MnistDataSetIterator(10000, false, 12345);
+            Evaluation evaluation = this.network.evaluate(mnistTest);
+
             return evaluation.toJson();
         }
         catch(Exception e)
