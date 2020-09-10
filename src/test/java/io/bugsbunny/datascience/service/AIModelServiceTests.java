@@ -9,7 +9,7 @@ import io.bugsbunny.dataScience.service.AIModelService;
 
 import javax.inject.Inject;
 
-//@QuarkusTest
+@QuarkusTest
 public class AIModelServiceTests {
     private static Logger logger = LoggerFactory.getLogger(AIModelServiceTests.class);
 

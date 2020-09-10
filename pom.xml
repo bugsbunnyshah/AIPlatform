@@ -3,9 +3,9 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.bugsbunny</groupId>
-  <artifactId>mlpipeline</artifactId>
+  <artifactId>aiplatform</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>mlpipeline</name>
+  <name>aiplatform</name>
   <url>http://maven.apache.org</url>
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
