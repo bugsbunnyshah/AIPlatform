@@ -126,7 +126,7 @@ public class MongoDBJsonStore {
         return ingestion;
     }
 
-    //AIModel related operations-----------------------------------------------------
+    //AIModelService related operations-----------------------------------------------------
     public void storeDevModels(JsonObject jsonObject)
     {
         MongoDatabase database = mongoClient.getDatabase("aiplatform");

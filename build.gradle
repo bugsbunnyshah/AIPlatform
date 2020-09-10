@@ -2,20 +2,20 @@ plugins {
     id 'application'
     id 'io.quarkus' version '1.7.0.Final'
     id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    //id 'com.github.johnrengelman.shadow' version '5.2.0'
     id 'java'
 }
 
-mainClassName = "AIModel"
+//mainClassName = "io.quarkus.runner.GeneratedMain"
 
-shadowJar {
+/*shadowJar {
     zip64 true
     mergeServiceFiles()
     exclude "META-INF/*.SF"
     exclude 'META-INF/*.DSA'
     exclude 'META-INF/*.RSA'
     exclude "LICENSE*"
-}
+}*/
 
 repositories {
     mavenLocal()
@@ -104,6 +104,7 @@ dependencies {
     implementation 'org.deeplearning4j:deeplearning4j-parallel-wrapper:1.0.0-beta7'
     implementation 'org.datavec:datavec-data-codec:1.0.0-beta7'
     implementation 'org.bytedeco:javacv-platform:1.5.2'
+    implementation 'org.bytedeco:javacpp:1.5.2'
     compile 'org.deeplearning4j:arbiter-deeplearning4j:1.0.0-beta7'
     compile 'org.deeplearning4j:arbiter-ui:1.0.0-beta7'
 
@@ -154,4 +155,8 @@ quarkusBuild {
         containerBuild = true 
         buildImage = "quay.io/quarkus/ubi-quarkus-native-image:20.1.0-java11" 
     }
+}
+
+task buildUberJar(type: io.quarkus.gradle.tasks.QuarkusBuild, dependsOn: build) {
+    uberJar = true
 }
