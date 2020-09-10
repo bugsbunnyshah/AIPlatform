@@ -193,6 +193,7 @@ test {
         //include specific method in any of the tests
         includeTestsMatching "*Tests"
     }
+    maxHeapSize = "2000m"
 }
 
 compileJava {

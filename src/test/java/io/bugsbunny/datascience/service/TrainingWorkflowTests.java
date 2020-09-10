@@ -34,7 +34,7 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 public class TrainingWorkflowTests {
     private static Logger log = LoggerFactory.getLogger(TrainingWorkflowTests.class);
 
-    //@Test
+    @Test
     public void testStartTraining() throws Exception
     {
         int outputNum = 10; // The number of possible outcomes
@@ -119,6 +119,6 @@ public class TrainingWorkflowTests {
         //restored.init();
 
         evaluation = restored.evaluate(mnistTest);
-        log.info(evaluation.stats());
+        log.info(evaluation.toJson());
     }
 }
