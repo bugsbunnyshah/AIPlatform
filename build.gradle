@@ -2,20 +2,20 @@ plugins {
     id 'application'
     id 'io.quarkus' version '1.7.0.Final'
     id 'maven-publish'
-    //id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
     id 'java'
 }
 
-//mainClassName = "AIModel"
+mainClassName = "AIModel"
 
-//shadowJar {
-//    zip64 true
-//    mergeServiceFiles()
-//    exclude "META-INF/*.SF"
-//    exclude 'META-INF/*.DSA'
-//    exclude 'META-INF/*.RSA'
-//    exclude "LICENSE*"
-//}
+shadowJar {
+    zip64 true
+    mergeServiceFiles()
+    exclude "META-INF/*.SF"
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude "LICENSE*"
+}
 
 repositories {
     mavenLocal()
@@ -45,7 +45,6 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
 
     implementation 'org.mongodb:mongodb-driver-sync:4.1.0'
-    //implementation 'org.mongodb:mongodb-driver:3.0.4'
 
     implementation 'org.apache.kafka:kafka-clients:2.4.0'
     implementation 'org.springframework.kafka:spring-kafka:2.4.1.RELEASE'
@@ -63,25 +62,6 @@ dependencies {
     compile 'org.mongodb.spark:mongo-spark-connector_2.12:3.0.0'
 
     compile 'com.github.wnameless.json:json-flattener:0.9.0'
-    //compile group: 'org.scala-lang', name: 'scala-library', version: '2.13.3' {force = true}
-    //implementation ('org.scala-lang:scala-library:2.12.12') {force=true}
-    //implementation 'org.apache.parquet:parquet-hadoop:1.11.0'
-    //implementation 'org.apache.parquet:parquet-avro:1.11.0'
-    //implementation 'org.apache.parquet:parquet-common:1.11.0'
-    //implementation 'org.apache.parquet:parquet-column:1.11.0'
-    //implementation 'com.univocity:univocity-parsers:2.8.4'
-
-
-    //implementation 'org.apache.spark:spark-core_2.12:2.4.5'
-    //implementation 'org.apache.spark:spark-mllib_2.12:3.0.0'
-    //implementation 'io.delta:delta-core_2.12:0.7.0'
-    //compile group: 'org.apache.hadoop', name: 'hadoop-core', version: '1.2.1'
-    //compile group: 'org.apache.hadoop', name: 'hadoop-auth', version: '3.3.0'
-
-    //implementation ('com.fasterxml.jackson.core:jackson-databind:2.9.10') {force = true}
-    //implementation ('com.fasterxml.jackson.module:jackson-module-scala_2.13:2.11.2')
-    //compile group: 'org.scala-lang', name: 'scala-library', version: '2.13.3'
-    //compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.11.2'
 
     implementation 'org.apache.xbean:xbean-asm6-shaded:4.10'
     implementation 'com.github.opendevl:json2flat:1.0.3'
@@ -99,7 +79,6 @@ dependencies {
     implementation name: 'SchemaStoreClient'
     implementation name: 'porters'
     implementation name: 'SchemaStoreWarehouse'
-    //implementation name: 'gephi-toolkit'
     implementation name: 'affinity-fatjar'
     implementation name: 'LinkCommunityFinder'
     implementation name: 'collections-generic-4.01'
@@ -113,11 +92,6 @@ dependencies {
     implementation name: 'org.eclipse.equinox.registry_3.5.101.R37x_v20110810-1611'
     implementation name: 'GoogleTranslate'
 
-    //implementation 'org.datavec:datavec-api:0.7.2'
-    //implementation 'org.deeplearning4j:deeplearning4j-core:0.7.2'
-    //implementation 'org.deeplearning4j:deeplearning4j-nlp:0.7.2'
-    //implementation 'org.deeplearning4j:deeplearning4j-nn:0.7.2'
-    //implementation 'org.nd4j:nd4j-native:0.7.2'
     implementation 'org.nd4j:nd4j-native-platform:1.0.0-beta7'
     implementation 'org.nd4j:nd4j-native:1.0.0-beta7'
     implementation 'org.datavec:datavec-api:1.0.0-beta7'
@@ -132,59 +106,24 @@ dependencies {
     implementation 'org.bytedeco:javacv-platform:1.5.2'
     compile 'org.deeplearning4j:arbiter-deeplearning4j:1.0.0-beta7'
     compile 'org.deeplearning4j:arbiter-ui:1.0.0-beta7'
-    //compile group: 'org.bytedeco', name: 'javacpp', version: '1.2.4'
 
     implementation 'org.apache.lucene:lucene-analyzers-common:8.5.1'
     implementation 'org.apache.lucene:lucene-queryparser:8.5.1'
 
     implementation name: 'jep'
 
-    //implementation(name: 'machineLearningStorage')
-
     compile group: 'org.apache.tinkerpop', name: 'gremlin-core', version: '3.4.8'
     compile group: 'org.apache.tinkerpop', name: 'tinkergraph-gremlin', version: '3.4.8'
     compile group: 'org.apache.tinkerpop', name: 'sparql-gremlin', version: '3.4.8'
 
-
     compile group: 'com.typesafe.akka', name: 'akka-stream_2.13', version: '2.6.8'
     implementation ('org.scala-lang:scala-library:2.13.0')
-    //compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.12'
-    //compile group: 'org.scala-lang', name: 'scala-library', version: '2.13.3'
-
 
     implementation 'junitperf:junitperf:1.8'
     implementation 'junit:junit:3.7'
     implementation enforcedPlatform('io.quarkus:quarkus-bom:1.7.0.Final')
     implementation 'io.quarkus:quarkus-junit5:1.7.0.Final'
     implementation 'io.rest-assured:rest-assured:4.3.0'
-
-    //implementation 'org.apache.kafka:kafka-clients:2.4.0'
-    //implementation 'org.springframework.kafka:spring-kafka:2.4.1.RELEASE'
-    //implementation('org.apache.hadoop:hadoop-mapreduce-client-core:2.7.2') {force = true}
-    //implementation('org.apache.hadoop:hadoop-common:2.7.2') {force = true} // required for org.apache.hadoop.util.StopWatch
-    //compile 'org.tensorflow:tensorflow:1.14.0'
-    //compile 'org.tensorflow:libtensorflow:1.14.0'
-    //compile 'org.tensorflow:libtensorflow_jni_gpu:1.14.0'
-    //compile 'org.deeplearning4j:deeplearning4j-nlp:0.7.2'
-    //compile 'org.deeplearning4j:deeplearning4j-nn:0.7.2'
-    //compile 'org.deeplearning4j:rl4j-core:0.7.2'
-    //compile 'org.deeplearning4j:rl4j-gym:0.7.2'
-    //compile 'org.datavec:datavec-data-codec:0.7.2'
-    //compile 'org.datavec:datavec-spark_2.12:1.0.0-beta7'
-    //compile 'org.datavec:datavec-data-image:0.7.2'
-    //compile 'org.bytedeco:javacpp:1.5.4'
-    //implementation name: 'javacpp-1.5.4-SNAPSHOT'
-    //implementation 'io.kubernetes:client-java:5.0.0'
-    //implementation 'io.kubernetes:client-java-api:7.0.0'
-    //implementation 'org.kamranzafar:jtar:2.3'
-    //compile 'com.fasterxml.jackson.core:jackson-core:2.11.0'
-    //compile 'com.fasterxml.jackson.core:jackson-annotations:2.11.0'
-    //compile 'com.fasterxml.jackson.core:jackson-databind:2.11.0'
-    //implementation 'org.nd4j:nd4j-x86:0.4-rc3.8'
-    //implementation 'org.nd4j:jcuda:6.5'
-    //implementation 'org.deeplearning4j:rl4j-core:0.7.2'
-    //implementation 'org.deeplearning4j:rl4j-gym:0.7.2'
-    //implementation 'org.nd4j:nd4j-native-platform:0.7.2'
 }
 
 test {
