@@ -49,9 +49,9 @@ dependencies {
 
     implementation 'org.apache.kafka:kafka-clients:2.4.0'
     implementation 'org.springframework.kafka:spring-kafka:2.4.1.RELEASE'
-
-
     implementation 'org.springframework:spring-web:5.2.1.RELEASE'
+
+    compile 'com.google.jimfs:jimfs:1.1'
 
     implementation 'org.apache.spark:spark-core_2.12:3.0.0'
     implementation 'org.apache.spark:spark-sql_2.12:3.0.0'
