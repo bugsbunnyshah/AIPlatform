@@ -1,10 +1,14 @@
 package io.bugsbunny.endpoint;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import io.bugsbunny.data.history.service.PayloadReplayService;
 import org.apache.commons.io.IOUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -20,13 +24,29 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
 {
     private static Logger logger = LoggerFactory.getLogger(AITrafficAgent.class);
 
+    @Inject
+    private PayloadReplayService payloadReplayService;
+
+    private String chainId;
+    private String responseChainId;
+
     @Override
     public void filter(ContainerRequestContext context) throws IOException
     {
         String payload = IOUtils.toString(context.getEntityStream(), StandardCharsets.UTF_8);
+        JsonObject input = JsonParser.parseString(payload).getAsJsonObject();
         logger.info("***********AITrafficAgent_Incoming**************");
         logger.info(payload);
         logger.info("************************************************");
+
+        if(this.chainId == null)
+        {
+            this.chainId = this.payloadReplayService.generateDiffChain(input);
+        }
+        else
+        {
+            this.payloadReplayService.addToDiffChain(this.chainId, input);
+        }
 
         context.setEntityStream(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));
     }
@@ -39,5 +59,16 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         logger.info("***********AITrafficAgent_Outgoing**************");
         logger.info(entity.toString());
         logger.info("************************************************");
+
+        JsonObject output = JsonParser.parseString(entity.toString()).getAsJsonObject();
+        if(this.responseChainId == null)
+        {
+            this.responseChainId = this.payloadReplayService.generateDiffChain(output);
+        }
+        else
+        {
+            output.addProperty("isResponse", Boolean.TRUE);
+            this.payloadReplayService.addToDiffChain(this.responseChainId, output);
+        }
     }
 }

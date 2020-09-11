@@ -18,7 +18,7 @@ public class LiveModelTests {
     @Test
     public void testEval() throws Exception
     {
-        Response response = given().body("{}").when().post("/liveModel/eval").andReturn();
+        Response response = given().body("pappuPager").when().post("/liveModel/eval").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
         logger.info("************************");

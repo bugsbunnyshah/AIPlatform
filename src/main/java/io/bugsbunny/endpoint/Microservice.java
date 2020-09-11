@@ -1,21 +1,26 @@
 package io.bugsbunny.endpoint;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.UUID;
 
 @Path("/microservice")
-public class Microservice {
+public class Microservice
+{
+    private static Logger logger = LoggerFactory.getLogger(Microservice.class);
 
-    @GET
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public String hello()
+    public String microservice(@RequestBody String json)
     {
-        JsonObject jsonObject = new JsonObject();
+        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+        logger.info(jsonObject.toString());
 
         jsonObject.addProperty("oid", UUID.randomUUID().toString());
         jsonObject.addProperty("message", "HELLO_TO_HUMANITY");
