@@ -15,8 +15,6 @@ public class Microservice {
     @Produces(MediaType.APPLICATION_JSON)
     public String hello()
     {
-        System.out.println("BLAH");
-
         JsonObject jsonObject = new JsonObject();
 
         jsonObject.addProperty("oid", UUID.randomUUID().toString());
