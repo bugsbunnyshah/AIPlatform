@@ -10,14 +10,11 @@ import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 
 @Provider
-public class AITrafficInterceptor implements ContainerRequestFilter
+public class AITrafficAgent implements ContainerRequestFilter
 {
     @Override
     public void filter(ContainerRequestContext context) throws IOException
     {
-        if ("/microservice".equals(context.getUriInfo().getPath()))
-        {
-            context.abortWith(Response.accepted("forbidden!").build());
-        }
+        context.abortWith(Response.accepted("forbidden!").build());
     }
 }
