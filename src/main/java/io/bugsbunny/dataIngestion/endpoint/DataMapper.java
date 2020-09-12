@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataIngestion.service.IngestionService;
 import io.bugsbunny.dataIngestion.service.MapperService;
+import io.bugsbunny.endpoint.OAuthAgent;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.json.XML;
@@ -31,12 +32,21 @@ public class DataMapper {
     @Inject
     private IngestionService ingestionService;
 
+    //TODO: cleanup
+    @Inject
+    private OAuthAgent oAuthAgent;
+
     @Path("map")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response map(@RequestBody String input)
     {
         try {
+            logger.info("*****TOKEN***********");
+            logger.info(this.oAuthAgent.getTokenContainer().get());
+            logger.info("*********************");
+
+
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
 
             String sourceSchema = jsonObject.get("sourceSchema").getAsString();
@@ -64,6 +74,10 @@ public class DataMapper {
     public Response mapXmlSourceData(@RequestBody String input)
     {
         try {
+            logger.info("*****TOKEN***********");
+            logger.info(this.oAuthAgent.getTokenContainer().get());
+            logger.info("*********************");
+
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
 
             String sourceData = jsonObject.get("sourceData").getAsString();
@@ -95,6 +109,10 @@ public class DataMapper {
     public Response mapCsvSourceData(@RequestBody String input)
     {
         try {
+            logger.info("*****TOKEN***********");
+            logger.info(this.oAuthAgent.getTokenContainer().get());
+            logger.info("*********************");
+
             String spaceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
                     "dataMapper/data.csv"),
                     StandardCharsets.UTF_8);
