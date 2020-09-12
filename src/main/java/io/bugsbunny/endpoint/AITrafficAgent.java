@@ -33,7 +33,7 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     @Override
     public void filter(ContainerRequestContext context) throws IOException
     {
-        String payload = IOUtils.toString(context.getEntityStream(), StandardCharsets.UTF_8);
+        /*String payload = IOUtils.toString(context.getEntityStream(), StandardCharsets.UTF_8);
         JsonObject input = JsonParser.parseString(payload).getAsJsonObject();
         logger.info("***********AITrafficAgent_Incoming**************");
         logger.info(payload);
@@ -48,14 +48,14 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
             this.payloadReplayService.addToDiffChain(this.chainId, input);
         }
 
-        context.setEntityStream(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));
+        context.setEntityStream(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));*/
     }
 
     @Override
     public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws IOException
     {
         //Process the response
-        Object entity = containerResponseContext.getEntity();
+        /*Object entity = containerResponseContext.getEntity();
         logger.info("***********AITrafficAgent_Outgoing**************");
         logger.info(entity.toString());
         logger.info("************************************************");
@@ -69,6 +69,6 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         {
             output.addProperty("isResponse", Boolean.TRUE);
             this.payloadReplayService.addToDiffChain(this.responseChainId, output);
-        }
+        }*/
     }
 }
