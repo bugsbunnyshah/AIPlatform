@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.dataIngestion.service.IngestionService;
 import io.bugsbunny.dataIngestion.service.MapperService;
 import io.bugsbunny.endpoint.OAuthAgent;
+import io.bugsbunny.endpoint.SecurityTokenContainer;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.json.XML;
@@ -34,7 +35,7 @@ public class DataMapper {
 
     //TODO: cleanup
     @Inject
-    private OAuthAgent oAuthAgent;
+    private SecurityTokenContainer securityTokenContainer;
 
     @Path("map")
     @POST
@@ -43,7 +44,7 @@ public class DataMapper {
     {
         try {
             logger.info("*****TOKEN***********");
-            logger.info(this.oAuthAgent.getTokenContainer().get());
+            logger.info(this.securityTokenContainer.getTokenContainer().get());
             logger.info("*********************");
 
 
@@ -75,7 +76,7 @@ public class DataMapper {
     {
         try {
             logger.info("*****TOKEN***********");
-            logger.info(this.oAuthAgent.getTokenContainer().get());
+            logger.info(this.securityTokenContainer.getTokenContainer().get());
             logger.info("*********************");
 
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
@@ -110,7 +111,7 @@ public class DataMapper {
     {
         try {
             logger.info("*****TOKEN***********");
-            logger.info(this.oAuthAgent.getTokenContainer().get());
+            logger.info(this.securityTokenContainer.getTokenContainer().get());
             logger.info("*********************");
 
             String spaceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(

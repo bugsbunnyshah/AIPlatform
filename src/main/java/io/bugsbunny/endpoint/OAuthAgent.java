@@ -19,12 +19,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Provider
-@ApplicationScoped
 public class OAuthAgent implements ContainerRequestFilter
 {
     private static Logger logger = LoggerFactory.getLogger(OAuthAgent.class);
 
-    private ThreadLocal<String> tokenContainer = new ThreadLocal<>();
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
 
     @Override
     public void filter(ContainerRequestContext context) throws IOException
@@ -34,12 +34,8 @@ public class OAuthAgent implements ContainerRequestFilter
         logger.info(payload);
         logger.info("************************************************");
 
-        this.tokenContainer.set("bhenchod_lauda_rishi_chopra");
+        this.securityTokenContainer.getTokenContainer().set("bhenchod_lauda_rishi_chopra");
 
         context.setEntityStream(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));
-    }
-
-    public ThreadLocal<String> getTokenContainer() {
-        return tokenContainer;
     }
 }
