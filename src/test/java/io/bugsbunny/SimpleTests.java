@@ -13,6 +13,6 @@ public class SimpleTests
     @Test
     public void testSimpleOp() throws Exception
     {
-        System.out.println("rishi-chopra-patel_is_dead_with_his_dick_deep_inside_yash_chopra's-handa's_ass_they_both_die_and_never_come_back_motherfuckers_never");
+        logger.info("rishi-chopra-patel_is_dead_with_his_dick_deep_inside_yash_chopra's-handa's_ass_they_both_die_and_never_come_back_motherfuckers_never");
     }
 }
