@@ -21,7 +21,9 @@ import javax.ws.rs.ext.Provider;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 @Priority(2)
 @Provider
@@ -32,37 +34,42 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     @Inject
     private PayloadReplayService payloadReplayService;
 
-    //TODO: cleanup
-    private String chainId;
-    private String responseChainId;
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
+    private Map<String, String> tokenToRequestChainId = new HashMap<>();
+
+    private Map<String, String> tokenToResponseChainId = new HashMap<>();
 
     @Override
     public void filter(ContainerRequestContext context) throws IOException
     {
         String payload = IOUtils.toString(context.getEntityStream(), StandardCharsets.UTF_8);
         JsonElement input = JsonParser.parseString(payload);
-        logger.info("***********AITrafficAgent_Incoming**************");
-        logger.info(payload);
-        logger.info("************************************************");
+        //logger.info("***********AITrafficAgent_Incoming**************");
+        //logger.info(payload);
+        //logger.info("************************************************");
 
-        if(this.chainId == null)
+        String requestChainId = this.getRequestChainId();
+        if(requestChainId == null)
         {
             if(input.isJsonObject()) {
-                this.chainId = this.payloadReplayService.generateDiffChain(input.getAsJsonObject());
+                requestChainId = this.payloadReplayService.generateDiffChain(input.getAsJsonObject());
             }
             else
             {
-                this.chainId = this.payloadReplayService.generateDiffChain(input.getAsJsonArray());
+                requestChainId = this.payloadReplayService.generateDiffChain(input.getAsJsonArray());
             }
+            this.setRequestChainId(requestChainId);
         }
         else
         {
             if(input.isJsonObject()) {
-                this.payloadReplayService.addToDiffChain(this.chainId, input.getAsJsonObject());
+                this.payloadReplayService.addToDiffChain(requestChainId, input.getAsJsonObject());
             }
             else
             {
-                this.payloadReplayService.addToDiffChain(this.chainId, input.getAsJsonArray());
+                this.payloadReplayService.addToDiffChain(requestChainId, input.getAsJsonArray());
             }
         }
 
@@ -74,27 +81,29 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     {
         //Process the response
         Object entity = containerResponseContext.getEntity();
-        logger.info("***********AITrafficAgent_Outgoing**************");
-        logger.info(entity.toString());
-        logger.info("************************************************");
+        //logger.info("***********AITrafficAgent_Outgoing**************");
+        //logger.info(entity.toString());
+        //logger.info("************************************************");
 
         JsonElement output = JsonParser.parseString(entity.toString());
-        if(this.responseChainId == null)
+        String responseChainId = this.getResponseChainId();
+        if(responseChainId == null)
         {
             if(output.isJsonObject()) {
-                this.responseChainId = this.payloadReplayService.generateDiffChain(output.getAsJsonObject());
+                responseChainId = this.payloadReplayService.generateDiffChain(output.getAsJsonObject());
             }
             else
             {
-                this.responseChainId = this.payloadReplayService.generateDiffChain(output.getAsJsonArray());
+                responseChainId = this.payloadReplayService.generateDiffChain(output.getAsJsonArray());
             }
+            this.setResponseChainId(responseChainId);
         }
         else
         {
             if(output.isJsonObject()) {
                 JsonObject outputJson = output.getAsJsonObject();
                 outputJson.addProperty("isResponse", Boolean.TRUE);
-                this.payloadReplayService.addToDiffChain(this.responseChainId, outputJson);
+                this.payloadReplayService.addToDiffChain(responseChainId, outputJson);
             }
             else
             {
@@ -111,8 +120,46 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
                         //TODO: Take care of nesting
                     }
                 }
-                this.payloadReplayService.addToDiffChain(this.responseChainId, outputArray);
+                this.payloadReplayService.addToDiffChain(responseChainId, outputArray);
             }
         }
+    }
+
+    private String getRequestChainId()
+    {
+        String token = this.securityTokenContainer.getTokenContainer().get().getToken();
+        String requestChainId = this.tokenToRequestChainId.get(token);
+        return requestChainId;
+    }
+
+    private void setRequestChainId(String requestChainId)
+    {
+        String token = this.securityTokenContainer.getTokenContainer().get().getToken();
+        this.tokenToRequestChainId.put(token, requestChainId);
+    }
+
+    private String getResponseChainId()
+    {
+        String token = this.securityTokenContainer.getTokenContainer().get().getToken();
+        String responseChainId = this.tokenToResponseChainId.get(token);
+        return responseChainId;
+    }
+
+    private void setResponseChainId(String responseChainId)
+    {
+        String token = this.securityTokenContainer.getTokenContainer().get().getToken();
+        this.tokenToResponseChainId.put(token, responseChainId);
+    }
+
+    String findRequestChainId(String token)
+    {
+        String requestChainId = this.tokenToRequestChainId.get(token);
+        return requestChainId;
+    }
+
+    String findResponseChainId(String token)
+    {
+        String responseChainId = this.tokenToResponseChainId.get(token);
+        return responseChainId;
     }
 }

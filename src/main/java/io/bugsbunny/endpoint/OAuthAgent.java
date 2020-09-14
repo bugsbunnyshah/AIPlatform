@@ -14,6 +14,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -31,17 +32,18 @@ public class OAuthAgent implements ContainerRequestFilter
     @Override
     public void filter(ContainerRequestContext context) throws IOException
     {
-        String payload = IOUtils.toString(context.getEntityStream(), StandardCharsets.UTF_8);
-        logger.info("***********OAuthAgent_Incoming**************");
-        logger.info(payload);
-        logger.info("************************************************");
+        //String payload = IOUtils.toString(context.getEntityStream(), StandardCharsets.UTF_8);
+        //logger.info("***********OAuthAgent_Incoming**************");
+        //logger.info(payload);
+        //logger.info("************************************************");
+
+        final MultivaluedMap<String, String> headers = context.getHeaders();
+        logger.info(headers.toString());
 
         String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
                 getResourceAsStream("oauthAgent/token.json"),
                 StandardCharsets.UTF_8);
         SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
         this.securityTokenContainer.getTokenContainer().set(securityToken);
-
-        context.setEntityStream(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));
     }
 }

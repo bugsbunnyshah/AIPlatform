@@ -38,11 +38,19 @@ public class ObjectDiffAlgorithm
                 //Check for a FIELD Update
                 if (doesRightMapHaveTheKey)
                 {
-                    int valueHash = entry.getValue().hashCode();
-                    int compareHash = rightMap.get(key).hashCode();
-                    if (valueHash != compareHash)
+                    Object leftValue = entry.getValue();
+                    Object rightValue = rightMap.get(key);
+                    if(rightValue != null)
                     {
-                        diffMap.put(key, rightMap.get(key));
+                        if(leftValue == null)
+                        {
+
+                        }
+                        if (leftValue == null ||
+                                (leftValue.hashCode() != rightValue.hashCode()))
+                        {
+                            diffMap.put(key, leftMap.get(key));
+                        }
                     }
                 }
                 else
@@ -57,16 +65,24 @@ public class ObjectDiffAlgorithm
             for (Map.Entry<String, Object> entry : entrySet)
             {
                 String key = entry.getKey();
-                boolean doesRightMapHaveTheKey = leftMap.containsKey(key);
+                boolean doesLeftMapHaveTheKey = leftMap.containsKey(key);
 
                 //Check for a FIELD Update
-                if (doesRightMapHaveTheKey)
+                if (doesLeftMapHaveTheKey)
                 {
-                    int valueHash = entry.getValue().hashCode();
-                    int compareHash = leftMap.get(key).hashCode();
-                    if (valueHash != compareHash)
+                    Object rightValue = entry.getValue();
+                    Object leftValue = leftMap.get(key);
+                    if(leftValue != null)
                     {
-                        diffMap.put(key, leftMap.get(key));
+                        if(rightValue == null)
+                        {
+
+                        }
+                        if (rightValue == null ||
+                                (rightValue.hashCode() != leftValue.hashCode()))
+                        {
+                            diffMap.put(key, leftMap.get(key));
+                        }
                     }
                 }
                 else

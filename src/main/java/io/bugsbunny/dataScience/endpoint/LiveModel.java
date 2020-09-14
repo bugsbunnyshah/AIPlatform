@@ -27,8 +27,8 @@ public class LiveModel
     @Produces(MediaType.APPLICATION_JSON)
     public Response eval(@RequestBody String input)
     {
-        JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
-        logger.info(jsonInput.toString());
+        //JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
+        //logger.info(jsonInput.toString());
         String eval = this.aiModelService.eval();
         Response response = Response.ok(eval).build();
         return response;

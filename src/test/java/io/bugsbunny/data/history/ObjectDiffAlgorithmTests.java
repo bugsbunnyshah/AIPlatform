@@ -9,12 +9,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.endpoint.SecurityToken;
+import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +35,19 @@ public class ObjectDiffAlgorithmTests {
 
     @Inject
     private PayloadReplayService payloadReplayService;
+
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
+    @BeforeEach
+    public void setUp() throws Exception
+    {
+        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
+                        getResourceAsStream("oauthAgent/token.json"),
+                StandardCharsets.UTF_8);
+        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
+        this.securityTokenContainer.getTokenContainer().set(securityToken);
+    }
 
     @Test
     public void testFlattening() throws Exception
