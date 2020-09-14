@@ -34,11 +34,11 @@ public class OAuthAgent implements ContainerRequestFilter
         logger.info(payload);
         logger.info("************************************************");
 
-        JsonObject securityToken = JsonParser.parseString(
-                IOUtils.toString(Thread.currentThread().getContextClassLoader().
+        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
                 getResourceAsStream("oauthAgent/token.json"),
-                StandardCharsets.UTF_8)).getAsJsonObject();
-        this.securityTokenContainer.getTokenContainer().set(securityToken.get("access_token").getAsString());
+                StandardCharsets.UTF_8);
+        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
+        this.securityTokenContainer.getTokenContainer().set(securityToken);
 
         context.setEntityStream(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));
     }

@@ -44,7 +44,7 @@ public class DataMapper {
     {
         try {
             logger.info("*****TOKEN***********");
-            logger.info(this.securityTokenContainer.getTokenContainer().get());
+            logger.info(this.securityTokenContainer.getTokenContainer().get().getToken());
             logger.info("*********************");
 
 
@@ -76,7 +76,7 @@ public class DataMapper {
     {
         try {
             logger.info("*****TOKEN***********");
-            logger.info(this.securityTokenContainer.getTokenContainer().get());
+            logger.info(this.securityTokenContainer.getTokenContainer().get().getToken());
             logger.info("*********************");
 
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
@@ -111,7 +111,7 @@ public class DataMapper {
     {
         try {
             logger.info("*****TOKEN***********");
-            logger.info(this.securityTokenContainer.getTokenContainer().get());
+            logger.info(this.securityTokenContainer.getTokenContainer().get().getToken());
             logger.info("*********************");
 
             String spaceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
