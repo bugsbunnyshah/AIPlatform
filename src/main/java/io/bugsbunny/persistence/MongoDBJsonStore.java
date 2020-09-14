@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mongodb.client.*;
+import io.bugsbunny.endpoint.SecurityTokenContainer;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +23,10 @@ import java.util.UUID;
 public class MongoDBJsonStore {
     private static Logger logger = LoggerFactory.getLogger(MongoDBJsonStore.class);
 
-    private MongoClient mongoClient = MongoClients.create();;
+    private MongoClient mongoClient = MongoClients.create();
+
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
 
     @PostConstruct
     public void start()
@@ -38,7 +43,10 @@ public class MongoDBJsonStore {
     //Data Ingestion related operations-----------------------------------------------------
     public void storeIngestion(List<JsonObject> jsonObjects)
     {
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("ingestion");
 
@@ -53,7 +61,10 @@ public class MongoDBJsonStore {
     {
         JsonObject ingestion = new JsonObject();
 
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("ingestion");
 
@@ -75,7 +86,10 @@ public class MongoDBJsonStore {
     {
         JsonArray ingestedDataSet = new JsonArray();
 
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("ingestion");
 
@@ -97,7 +111,10 @@ public class MongoDBJsonStore {
     //Image Data Ingestion related operations-----------------------------------------------------
     public void storeIngestionImage(JsonObject jsonObject)
     {
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("ingestionImage");
 
@@ -109,7 +126,10 @@ public class MongoDBJsonStore {
     {
         List<JsonObject> ingestion = new ArrayList<>();
 
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("ingestionImage");
 
@@ -129,7 +149,10 @@ public class MongoDBJsonStore {
     //AIModelService related operations-----------------------------------------------------
     public void storeDevModels(JsonObject jsonObject)
     {
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("devModels");
 
@@ -141,7 +164,10 @@ public class MongoDBJsonStore {
     {
         JsonObject devModel = new JsonObject();
 
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("devModels");
 
@@ -161,7 +187,10 @@ public class MongoDBJsonStore {
 
     public void storeLiveModel(JsonObject jsonObject)
     {
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("liveModels");
 
@@ -173,8 +202,10 @@ public class MongoDBJsonStore {
     {
         JsonObject liveModel = new JsonObject();
 
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
-
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
         MongoCollection<Document> collection = database.getCollection("liveModels");
 
         String queryJson = "{\"run_id\":\""+runId+"\"}";
@@ -193,7 +224,10 @@ public class MongoDBJsonStore {
     //Data History related operations-----------------------------------------------------
     public String startDiffChain(JsonObject payload)
     {
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("diffChain");
 
@@ -210,7 +244,11 @@ public class MongoDBJsonStore {
 
     public void addToDiffChain(String chainId, JsonObject payload)
     {
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
         MongoCollection<Document> collection = database.getCollection("diffChain");
 
         JsonObject jsonObject = new JsonObject();
@@ -225,7 +263,10 @@ public class MongoDBJsonStore {
     {
         JsonObject lastPayload = new JsonObject();
 
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
         MongoCollection<Document> collection = database.getCollection("diffChain");
 
         String queryJson = "{\"chainId\":\""+chainId+"\"}";
@@ -248,7 +289,10 @@ public class MongoDBJsonStore {
 
     public void addToDiff(String chainId, JsonObject objectDiff)
     {
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
         MongoCollection<Document> collection = database.getCollection("objectDiff");
 
         JsonObject jsonObject = new JsonObject();
@@ -263,7 +307,10 @@ public class MongoDBJsonStore {
     {
         List<JsonObject> diffs = new LinkedList<>();
 
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("objectDiff");
 
@@ -285,7 +332,10 @@ public class MongoDBJsonStore {
     {
         List<JsonObject> chain = new LinkedList<>();
 
-        MongoDatabase database = mongoClient.getDatabase("aiplatform");
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("diffChain");
 

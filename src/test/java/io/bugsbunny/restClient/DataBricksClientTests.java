@@ -3,6 +3,8 @@ package io.bugsbunny.restClient;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.endpoint.SecurityToken;
+import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.persistence.MongoDBJsonStore;
 import io.quarkus.test.junit.QuarkusTest;
 import net.minidev.json.JSONValue;
@@ -18,6 +20,7 @@ import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.util.ModelSerializer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.activations.Activation;
@@ -45,6 +48,19 @@ public class DataBricksClientTests {
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
+
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
+    @BeforeEach
+    public void setUp() throws Exception
+    {
+        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
+                        getResourceAsStream("oauthAgent/token.json"),
+                StandardCharsets.UTF_8);
+        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
+        this.securityTokenContainer.getTokenContainer().set(securityToken);
+    }
 
     @Test
     public void testCreateDevExperiment() throws Exception

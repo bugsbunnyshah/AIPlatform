@@ -7,6 +7,7 @@ import java.io.Serializable;
 
 public class SecurityToken implements Serializable {
 
+    private String region;
     private String principal;
     private String token;
 
@@ -31,12 +32,21 @@ public class SecurityToken implements Serializable {
         this.token = token;
     }
 
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
     public static SecurityToken fromJson(String jsonString)
     {
         SecurityToken securityToken = new SecurityToken();
         JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
         securityToken.principal = jsonObject.get("principal").getAsString();
         securityToken.token = jsonObject.get("access_token").getAsString();
+        securityToken.region = jsonObject.get("region").getAsString();
         return securityToken;
     }
 }

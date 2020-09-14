@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.common.hash.HashCode;
 
+import io.bugsbunny.endpoint.SecurityToken;
+import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -25,17 +27,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class MongoDBJsonStoreTests {
     private static Logger logger = LoggerFactory.getLogger(MongoDBJsonStoreTests.class);
 
-    @Inject
-    private MongoDBJsonStore mongoDBJsonStore;
-
     private Gson gson = new GsonBuilder()
             .setPrettyPrinting()
             .create();
 
-    @BeforeEach
-    public void setUp()
-    {
+    @Inject
+    private MongoDBJsonStore mongoDBJsonStore;
 
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
+    @BeforeEach
+    public void setUp() throws Exception
+    {
+        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
+                        getResourceAsStream("oauthAgent/token.json"),
+                StandardCharsets.UTF_8);
+        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
+        this.securityTokenContainer.getTokenContainer().set(securityToken);
     }
 
     @AfterEach
