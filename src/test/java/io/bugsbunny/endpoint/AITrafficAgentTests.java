@@ -26,10 +26,10 @@ public class AITrafficAgentTests {
     private PayloadReplayService payloadReplayService;
 
     @Inject
-    private SecurityTokenContainer securityTokenContainer;
+    private AITrafficAgent aiTrafficAgent;
 
     @Inject
-    private AITrafficAgent aiTrafficAgent;
+    private SecurityTokenContainer securityTokenContainer;
 
     @BeforeEach
     public void setUp() throws Exception

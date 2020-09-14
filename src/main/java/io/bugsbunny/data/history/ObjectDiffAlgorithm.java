@@ -49,7 +49,7 @@ public class ObjectDiffAlgorithm
                         if (leftValue == null ||
                                 (leftValue.hashCode() != rightValue.hashCode()))
                         {
-                            diffMap.put(key, leftMap.get(key));
+                            diffMap.put(key, rightValue);
                         }
                     }
                 }
@@ -81,7 +81,7 @@ public class ObjectDiffAlgorithm
                         if (rightValue == null ||
                                 (rightValue.hashCode() != leftValue.hashCode()))
                         {
-                            diffMap.put(key, leftMap.get(key));
+                            diffMap.put(key, leftValue);
                         }
                     }
                 }
