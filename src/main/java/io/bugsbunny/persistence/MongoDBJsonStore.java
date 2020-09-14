@@ -303,6 +303,31 @@ public class MongoDBJsonStore {
         collection.insertOne(doc);
     }
 
+    public List<JsonObject> readDiffChain(String chainId)
+    {
+        List<JsonObject> chain = new LinkedList<>();
+
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("diffChain");
+
+        String queryJson = "{\"chainId\":\""+chainId+"\"}";
+        Bson bson = Document.parse(queryJson);
+        FindIterable<Document> iterable = collection.find(bson);
+        MongoCursor<Document> cursor = iterable.cursor();
+        while(cursor.hasNext()) {
+            Document document = cursor.next();
+            String documentJson = document.toJson();
+            JsonObject objectDiff = JsonParser.parseString(documentJson).getAsJsonObject();
+            chain.add(objectDiff);
+        }
+
+        return chain;
+    }
+
     public List<JsonObject> readDiffs(String chainId)
     {
         List<JsonObject> diffs = new LinkedList<>();
@@ -328,20 +353,16 @@ public class MongoDBJsonStore {
         return diffs;
     }
 
-    public List<JsonObject> readDiffChain(String chainId)
+    public List<JsonObject> readDiffChain(String region, String principal)
     {
         List<JsonObject> chain = new LinkedList<>();
 
-        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
-        String region = securityTokenContainer.getTokenContainer().get().getRegion();
         String databaseName = region + "_" + principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("diffChain");
 
-        String queryJson = "{\"chainId\":\""+chainId+"\"}";
-        Bson bson = Document.parse(queryJson);
-        FindIterable<Document> iterable = collection.find(bson);
+        FindIterable<Document> iterable = collection.find();
         MongoCursor<Document> cursor = iterable.cursor();
         while(cursor.hasNext()) {
             Document document = cursor.next();
@@ -351,5 +372,26 @@ public class MongoDBJsonStore {
         }
 
         return chain;
+    }
+
+    public List<JsonObject> readDiffs(String region, String principal)
+    {
+        List<JsonObject> diffs = new LinkedList<>();
+
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("objectDiff");
+
+        FindIterable<Document> iterable = collection.find();
+        MongoCursor<Document> cursor = iterable.cursor();
+        while(cursor.hasNext()) {
+            Document document = cursor.next();
+            String documentJson = document.toJson();
+            JsonObject objectDiff = JsonParser.parseString(documentJson).getAsJsonObject();
+            diffs.add(objectDiff);
+        }
+
+        return diffs;
     }
 }

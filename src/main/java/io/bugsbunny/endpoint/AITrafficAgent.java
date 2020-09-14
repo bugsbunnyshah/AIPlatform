@@ -44,6 +44,11 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     @Override
     public void filter(ContainerRequestContext context) throws IOException
     {
+        if(!context.getUriInfo().getRequestUri().getPath().contains("liveModel/eval"))
+        {
+            return;
+        }
+
         String payload = IOUtils.toString(context.getEntityStream(), StandardCharsets.UTF_8);
         JsonElement input = JsonParser.parseString(payload);
         //logger.info("***********AITrafficAgent_Incoming**************");
@@ -79,6 +84,11 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     @Override
     public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws IOException
     {
+        if(!containerRequestContext.getUriInfo().getRequestUri().getPath().contains("liveModel/eval"))
+        {
+            return;
+        }
+
         //Process the response
         Object entity = containerResponseContext.getEntity();
         //logger.info("***********AITrafficAgent_Outgoing**************");

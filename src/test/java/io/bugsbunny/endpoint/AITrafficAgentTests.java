@@ -63,6 +63,7 @@ public class AITrafficAgentTests {
 
         String responseChainId = this.aiTrafficAgent.findResponseChainId(token);
         assertNotNull(responseChainId);
+        logger.info("ResponseChainId: "+responseChainId);
         //traffic = this.payloadReplayService.replayDiffChain(responseChainId);
         //logger.info(traffic.toString());
     }
