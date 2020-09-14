@@ -45,6 +45,22 @@ public class PayloadReplayService {
         return chainId;
     }
 
+    public void addToDiffChain(String chainId, JsonArray payload)
+    {
+        //Validation
+        if(payload == null || payload.size() == 0)
+        {
+            return;
+        }
+
+        this.addToDiffChain(chainId, payload.get(0).getAsJsonObject());
+        int length = payload.size();
+        for(int i=1; i<length; i++)
+        {
+            this.addToDiffChain(chainId, payload.get(i).getAsJsonObject());
+        }
+    }
+
     public void addToDiffChain(String chainId, JsonObject payload)
     {
         JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(chainId);
