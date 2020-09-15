@@ -25,16 +25,12 @@ public class OAuthAgentTests
         logger.info("************************");
         logger.info(response.statusLine());
         logger.info("************************");
-        logger.info(response.body().asString());
-        logger.info("************************");
 
         JsonObject jsonObject = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         String oid = jsonObject.get("oid").getAsString();
         response = given().get("/replay/chain/?oid="+oid).andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
-        logger.info("************************");
-        logger.info(response.body().asString());
         logger.info("************************");
     }
 }

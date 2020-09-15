@@ -58,7 +58,7 @@ public class MapperService {
                 FilteredSchemaInfo f2 = new FilteredSchemaInfo(destinationSchemaInfo);
                 f2.addElements(destinationSchemaInfo.getElements(Entity.class));
                 Map<SchemaElement, Double> scores = this.findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
-                logger.info(scores.toString());
+                //logger.info(scores.toString());
                 JsonObject local = this.performMapping(scores, root.toString());
                 result.add(local);
             }

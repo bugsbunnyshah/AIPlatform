@@ -38,7 +38,7 @@ public class OAuthAgent implements ContainerRequestFilter
         //logger.info("************************************************");
 
         final MultivaluedMap<String, String> headers = context.getHeaders();
-        logger.info(headers.toString());
+        //logger.info(headers.toString());
 
         String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
                 getResourceAsStream("oauthAgent/token.json"),

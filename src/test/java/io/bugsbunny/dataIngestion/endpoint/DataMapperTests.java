@@ -37,8 +37,7 @@ public class DataMapperTests {
     private SecurityTokenContainer securityTokenContainer;
 
     @BeforeEach
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
                         getResourceAsStream("oauthAgent/token.json"),
                 StandardCharsets.UTF_8);
@@ -47,18 +46,13 @@ public class DataMapperTests {
     }
 
     @Test
-    public void testMapWithOneToOneFields() throws Exception{
+    public void testMapWithOneToOneFields() throws Exception {
         String sourceSchema = IOUtils.toString(Thread.currentThread().getContextClassLoader().
                         getResourceAsStream("dataMapper/sourceSchema.json"),
                 StandardCharsets.UTF_8);
         String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().
                         getResourceAsStream("dataMapper/sourceData.json"),
                 StandardCharsets.UTF_8);
-        logger.info("****************");
-        logger.info(sourceSchema);
-        logger.info(sourceData);
-        logger.info("****************");
-
         JsonObject input = new JsonObject();
         input.addProperty("sourceSchema", sourceSchema);
         input.addProperty("destinationSchema", sourceSchema);
@@ -71,7 +65,6 @@ public class DataMapperTests {
         String jsonResponse = response.getBody().prettyPrint();
         logger.info("**************");
         logger.info(response.getStatusLine());
-        logger.info(jsonResponse);
         logger.info("***************");
 
         //assert the body
@@ -90,17 +83,13 @@ public class DataMapperTests {
     }
 
     @Test
-    public void testMapWithScatteredFields() throws Exception{
+    public void testMapWithScatteredFields() throws Exception {
         String sourceSchema = IOUtils.toString(Thread.currentThread().getContextClassLoader().
                         getResourceAsStream("dataMapper/sourceSchema.json"),
                 StandardCharsets.UTF_8);
         String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().
                         getResourceAsStream("dataMapper/sourceDataWithScatteredFields.json"),
                 StandardCharsets.UTF_8);
-        logger.info("****************");
-        logger.info(sourceSchema);
-        logger.info(sourceData);
-        logger.info("****************");
 
         JsonObject input = new JsonObject();
         input.addProperty("sourceSchema", sourceSchema);
@@ -114,7 +103,6 @@ public class DataMapperTests {
         String jsonResponse = response.getBody().prettyPrint();
         logger.info("***************");
         logger.info(response.getStatusLine());
-        logger.info(jsonResponse);
         logger.info("***************");
 
         //assert the body
@@ -128,8 +116,7 @@ public class DataMapperTests {
     }
 
     @Test
-    public void testMapXmlSourceData() throws Exception
-    {
+    public void testMapXmlSourceData() throws Exception {
         String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream("people.xml"),
                 StandardCharsets.UTF_8);
 
@@ -145,70 +132,33 @@ public class DataMapperTests {
         String jsonResponse = response.getBody().prettyPrint();
         logger.info("****");
         logger.info(response.getStatusLine());
-        logger.info(jsonResponse);
         logger.info("****");
+        assertEquals(200, response.getStatusCode());
 
         JsonObject storedJson = this.mongoDBJsonStore.getIngestion("1");
         logger.info("*******");
         logger.info(storedJson.toString());
         logger.info("*******");
+
+        //TODO:JSon compare
     }
 
     @Test
     public void testMapCsvSourceData() throws Exception
     {
-        //Map<Integer,String> dataMap = this.readEnumCSV();
-        //logger.info(dataMap.toString());
-
-        //Second: the RecordReaderDataSetIterator handles conversion to DataSet objects, ready for use in neural network
-        //int labelIndex = 4;     //5 values in each row of the iris.txt CSV: 4 input features followed by an integer label (class) index. Labels are the 5th value (index 4) in each row
-        //int numClasses = 3;     //3 classes (types of iris flowers) in the iris data set. Classes have integer values 0, 1 or 2
-        //int batchSizeTraining = 30;
-        //DataSet dataSet = this.readCSVDataset(batchSizeTraining, labelIndex, numClasses);
-        //logger.info(dataSet.toString());
-
-        /*File file = new File("tmp/data");
-        FileInputStream fis = new FileInputStream(file);
-        String data = IOUtils.toString(fis, StandardCharsets.UTF_8);
+        String spaceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "dataMapper/data.csv"),
+                StandardCharsets.UTF_8);
         JsonObject input = new JsonObject();
-        input.addProperty("sourceSchema", data);
-        input.addProperty("destinationSchema", data);
-        input.addProperty("sourceData", data);*/
-
-        Response response = given().body("").when().post("/dataMapper/mapCsv")
+        input.addProperty("sourceSchema", "");
+        input.addProperty("destinationSchema", "");
+        input.addProperty("sourceData", spaceData);
+        Response response = given().body(input.toString()).when().post("/dataMapper/mapCsv")
                 .andReturn();
 
-        //String jsonResponse = response.getBody().prettyPrint();
-        //logger.info("****");
-        //logger.info(response.getStatusLine());
-        //logger.info(jsonResponse);
-        //logger.info("****");
-
-        //Kickoff the Training
-        //String runId = this.trainingWorkflow.startTraining();
-
-        //logger.info("*******");
-        //logger.info("RunId: "+runId);
-        //logger.info("*******");
-        //assertNotNull(runId);
-
-        //String runJson = this.mlFlowRunClient.getRun(runId);
-        //logger.info(runJson);
-    }
-
-    //-----------------------------------------------------------------------------
-    private Map<Integer,String> readEnumCSV() throws Exception{
-        File file = new File("tmp/data");
-        FileInputStream fis = new FileInputStream(file);
-        String data = IOUtils.toString(fis, StandardCharsets.UTF_8);
-
-        InputStream is = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
-        List<String> lines = IOUtils.readLines(is);
-        Map<Integer,String> enums = new HashMap<>();
-        for(String line:lines){
-            String[] parts = line.split(",");
-            enums.put(Integer.parseInt(parts[0]),parts[1]);
-        }
-        return enums;
+        logger.info("****");
+        logger.info(response.getStatusLine());
+        logger.info("****");
+        assertEquals(200, response.getStatusCode());
     }
 }

@@ -31,6 +31,5 @@ public class ModelTrafficServiceTests
 
         Map<String, List<JsonObject>> modelTraffic = this.modelTrafficService.getModelTraffic("us", "bugsbunny");
         assertNotNull(modelTraffic);
-        logger.info(modelTraffic.toString());
     }
 }

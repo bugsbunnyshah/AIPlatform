@@ -1,6 +1,7 @@
 package io.bugsbunny.dataIngestion.service;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
@@ -13,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 public class MapperServiceTests {
@@ -46,24 +49,14 @@ public class MapperServiceTests {
         logger.info(array.toString());
         logger.info("*******");
 
-        /*assertEquals("123456789", jsonObject.get("Id").getAsString());
+        JsonObject jsonObject = array.get(0).getAsJsonObject();
+        assertEquals("123456789", jsonObject.get("Id").getAsString());
         assertEquals("1234567", jsonObject.get("Rcvr").getAsString());
-        assertEquals(Boolean.TRUE, jsonObject.get("HasSig").getAsBoolean());*/
+        assertEquals(Boolean.TRUE, jsonObject.get("HasSig").getAsBoolean());
+
+        jsonObject = array.get(1).getAsJsonObject();
+        assertEquals("7777777", jsonObject.get("Id").getAsString());
+        assertEquals("77777", jsonObject.get("Rcvr").getAsString());
+        assertEquals(Boolean.FALSE, jsonObject.get("HasSig").getAsBoolean());
     }
-
-    /*@Test
-    public void testMapPeopleData() throws Exception
-    {
-        String json = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                "people.json"),
-                StandardCharsets.UTF_8);
-        JsonObject jsonObject = this.mapperService.map(json, json, json);
-        logger.info("*******");
-        logger.info(jsonObject.toString());
-        logger.info("*******");
-
-        assertEquals("James", jsonObject.get("firstname").getAsString());
-        //assertEquals("1234567", jsonObject.get("Rcvr").getAsString());
-        //assertEquals(Boolean.TRUE, jsonObject.get("HasSig").getAsBoolean());
-    }*/
 }

@@ -36,8 +36,6 @@ public class DataReplayTests {
         logger.info("************************");
         logger.info(response.statusLine());
         logger.info("************************");
-        logger.info(response.body().asString());
-        logger.info("************************");
         JsonObject jsonObject = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         assertEquals(200, response.getStatusCode());
         assertTrue(jsonObject.has("oid"));
@@ -47,8 +45,6 @@ public class DataReplayTests {
         response = given().get("/replay/chain/?oid="+oid).andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
-        logger.info("************************");
-        logger.info(response.body().asString());
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
     }

@@ -1,6 +1,7 @@
 package io.bugsbunny.dataIngestion.endpoint;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataIngestion.service.IngestionService;
@@ -33,21 +34,13 @@ public class DataMapper {
     @Inject
     private IngestionService ingestionService;
 
-    //TODO: cleanup
-    @Inject
-    private SecurityTokenContainer securityTokenContainer;
-
     @Path("map")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response map(@RequestBody String input)
     {
-        try {
-            logger.info("*****TOKEN***********");
-            logger.info(this.securityTokenContainer.getTokenContainer().get().getToken());
-            logger.info("*********************");
-
-
+        try
+        {
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
 
             String sourceSchema = jsonObject.get("sourceSchema").getAsString();
@@ -74,24 +67,29 @@ public class DataMapper {
     @Produces(MediaType.APPLICATION_JSON)
     public Response mapXmlSourceData(@RequestBody String input)
     {
-        try {
-            logger.info("*****TOKEN***********");
-            logger.info(this.securityTokenContainer.getTokenContainer().get().getToken());
-            logger.info("*********************");
-
+        try
+        {
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
 
+            String sourceSchema = jsonObject.get("sourceSchema").getAsString();
+            String destinationSchema = jsonObject.get("destinationSchema").getAsString();
             String sourceData = jsonObject.get("sourceData").getAsString();
             JSONObject sourceJson = XML.toJSONObject(sourceData);
             String json = sourceJson.toString(4);
-            logger.info(json);
-            JsonArray array = JsonParser.parseString(json).getAsJsonArray();
+            JsonElement jsonElement = JsonParser.parseString(json);
+            JsonArray array;
+            if(jsonElement.isJsonObject())
+            {
+                array = new JsonArray();
+                array.add(jsonElement);
+            }
+            else
+            {
+                array = jsonElement.getAsJsonArray();
+            }
 
-            JsonArray result = this.mapperService.map(json, json, array);
+            JsonArray result = this.mapperService.map(sourceSchema, destinationSchema, array);
             this.ingestionService.ingestDevModelData(result.toString());
-
-            //TODO: GET_BACK_TO_ME_BOY
-            //this.mapperService.storeMappedOutput(result);
 
             Response response = Response.ok(result.toString()).build();
             return response;
@@ -109,16 +107,14 @@ public class DataMapper {
     @Produces(MediaType.APPLICATION_JSON)
     public Response mapCsvSourceData(@RequestBody String input)
     {
-        try {
-            logger.info("*****TOKEN***********");
-            logger.info(this.securityTokenContainer.getTokenContainer().get().getToken());
-            logger.info("*********************");
+        try
+        {
+            JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
+            String sourceSchema = jsonObject.get("sourceSchema").getAsString();
+            String destinationSchema = jsonObject.get("destinationSchema").getAsString();
+            String sourceData = jsonObject.get("sourceData").getAsString();
 
-            String spaceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                    "dataMapper/data.csv"),
-                    StandardCharsets.UTF_8);
-
-            String[] lines = spaceData.split("\n");
+            String[] lines = sourceData.split("\n");
             String header = lines[0];
             String[] columns = header.split(",");
             JsonArray array = new JsonArray();
@@ -127,17 +123,16 @@ public class DataMapper {
             {
                 String line = lines[i];
                 String[] data = line.split(",");
-                JsonObject jsonObject = new JsonObject();
+                JsonObject row = new JsonObject();
                 for(int j=0; j<data.length; j++)
                 {
-                    jsonObject.addProperty(columns[j],data[j]);
+                    row.addProperty(columns[j],data[j]);
                 }
-                array.add(jsonObject);
+                array.add(row);
             }
-            JsonArray mappedData = this.mapperService.map("","",array);
-            this.ingestionService.ingestDevModelData(mappedData.toString());
+            JsonArray result = this.mapperService.map(sourceSchema,destinationSchema,array);
+            this.ingestionService.ingestDevModelData(result.toString());
 
-            JsonObject result = new JsonObject();
             Response response = Response.ok(result.toString()).build();
             return response;
         }

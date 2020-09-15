@@ -54,8 +54,6 @@ public class LiveModelTests {
         logger.info("************************");
         logger.info(response.statusLine());
         logger.info("************************");
-        logger.info(response.body().asString());
-        logger.info("************************");
         assertEquals(200, response.getStatusCode());
     }
 }
