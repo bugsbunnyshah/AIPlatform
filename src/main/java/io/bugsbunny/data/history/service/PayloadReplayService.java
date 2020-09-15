@@ -72,6 +72,31 @@ public class PayloadReplayService {
         this.mongoDBJsonStore.addToDiff(chainId, objectDiff);
     }
 
+    public void addToDiffChain(String requestChainId, String chainId, JsonArray payload)
+    {
+        //Validation
+        if(payload == null || payload.size() == 0)
+        {
+            return;
+        }
+
+        this.addToDiffChain(requestChainId, chainId, payload.get(0).getAsJsonObject());
+        int length = payload.size();
+        for(int i=1; i<length; i++)
+        {
+            this.addToDiffChain(requestChainId, chainId, payload.get(i).getAsJsonObject());
+        }
+    }
+
+    public void addToDiffChain(String requestChainId, String chainId, JsonObject payload)
+    {
+        JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(chainId);
+        JsonObject objectDiff = this.objectDiffAlgorithm.diff(lastPayload,payload);
+
+        this.mongoDBJsonStore.addToDiffChain(requestChainId, chainId, payload);
+        this.mongoDBJsonStore.addToDiff(requestChainId, chainId, objectDiff);
+    }
+
     public List<JsonObject> replayDiffChain(String chainId)
     {
         java.util.List<JsonObject> replayChain = new ArrayList<>();

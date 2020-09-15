@@ -110,27 +110,15 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         }
         else
         {
+            String requestChainId = this.getRequestChainId();
             if(output.isJsonObject()) {
                 JsonObject outputJson = output.getAsJsonObject();
-                outputJson.addProperty("isResponse", Boolean.TRUE);
-                this.payloadReplayService.addToDiffChain(responseChainId, outputJson);
+                this.payloadReplayService.addToDiffChain(requestChainId, responseChainId, outputJson);
             }
             else
             {
                 JsonArray outputArray = output.getAsJsonArray();
-                Iterator<JsonElement> iterator = outputArray.iterator();
-                while(iterator.hasNext())
-                {
-                    JsonElement element = iterator.next();
-                    if(element.isJsonObject()) {
-                        element.getAsJsonObject().addProperty("isResponse", Boolean.TRUE);
-                    }
-                    else
-                    {
-                        //TODO: Take care of nesting
-                    }
-                }
-                this.payloadReplayService.addToDiffChain(responseChainId, outputArray);
+                this.payloadReplayService.addToDiffChain(requestChainId, responseChainId, outputArray);
             }
         }
     }

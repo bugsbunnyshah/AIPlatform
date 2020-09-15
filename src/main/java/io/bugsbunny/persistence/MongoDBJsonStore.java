@@ -259,6 +259,24 @@ public class MongoDBJsonStore {
         collection.insertOne(doc);
     }
 
+    public void addToDiffChain(String requestChainId, String chainId, JsonObject payload)
+    {
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("diffChain");
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("chainId", chainId);
+        jsonObject.addProperty("requestChainId", requestChainId);
+        jsonObject.add("payload", payload);
+
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
+    }
+
     public JsonObject getLastPayload(String chainId)
     {
         JsonObject lastPayload = new JsonObject();
@@ -297,6 +315,23 @@ public class MongoDBJsonStore {
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("chainId", chainId);
+        jsonObject.add("objectDiff", objectDiff);
+
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
+    }
+
+    public void addToDiff(String requestChainId, String chainId, JsonObject objectDiff)
+    {
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+        MongoCollection<Document> collection = database.getCollection("objectDiff");
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("chainId", chainId);
+        jsonObject.addProperty("requestChainId", requestChainId);
         jsonObject.add("objectDiff", objectDiff);
 
         Document doc = Document.parse(jsonObject.toString());
