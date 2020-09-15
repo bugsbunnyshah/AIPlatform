@@ -38,3 +38,4 @@ appgal_foodrunner_app/google_maps_integration/build/app
 /.gradle/
 /build/
 /mlruns/
+src/main/resources/META-INF/resources/
