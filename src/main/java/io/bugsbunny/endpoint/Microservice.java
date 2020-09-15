@@ -27,4 +27,15 @@ public class Microservice
 
         return jsonObject.toString();
     }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public String microserviceGet()
+    {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("oid", UUID.randomUUID().toString());
+        jsonObject.addProperty("message", "HELLO_TO_HUMANITY");
+
+        return jsonObject.toString();
+    }
 }
