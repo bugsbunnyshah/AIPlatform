@@ -9,6 +9,8 @@ import io.bugsbunny.dataScience.service.AIModelService;
 
 import javax.inject.Inject;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 @QuarkusTest
 public class AIModelServiceTests {
     private static Logger logger = LoggerFactory.getLogger(AIModelServiceTests.class);
@@ -19,6 +21,8 @@ public class AIModelServiceTests {
     @Test
     public void testStartEval() throws Exception
     {
-        logger.info(this.aiModelService.eval());
+        String result = this.aiModelService.eval();
+        assertNotNull(result);
+        logger.info(result);
     }
 }

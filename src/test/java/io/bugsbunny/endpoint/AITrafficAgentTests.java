@@ -47,9 +47,9 @@ public class AITrafficAgentTests {
         for(int i=0; i<3; i++)
         {
             Response response = given().body("{\"oid\":\"" + UUID.randomUUID() + "\"}").when().post("/liveModel/eval").andReturn();
-            logger.info("************************");
-            logger.info(response.statusLine());
-            logger.info("************************");
+            //logger.info("************************");
+            //logger.info(response.statusLine());
+            //logger.info("************************");
             //logger.info(response.body().asString());
             //logger.info("************************");
         }

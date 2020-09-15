@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 public class LiveModelTests {
@@ -49,11 +50,12 @@ public class LiveModelTests {
     @Test
     public void testEval() throws Exception
     {
-        Response response = given().body("pappuPager").when().post("/liveModel/eval").andReturn();
+        Response response = given().body("{}").when().post("/liveModel/eval").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
         logger.info("************************");
         logger.info(response.body().asString());
         logger.info("************************");
+        assertEquals(200, response.getStatusCode());
     }
 }

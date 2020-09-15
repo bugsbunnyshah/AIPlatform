@@ -22,6 +22,7 @@ import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 public class DataReplayTests {
@@ -37,8 +38,11 @@ public class DataReplayTests {
         logger.info("************************");
         logger.info(response.body().asString());
         logger.info("************************");
-
         JsonObject jsonObject = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+        assertEquals(200, response.getStatusCode());
+        assertTrue(jsonObject.has("oid"));
+
+        jsonObject = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         String oid = jsonObject.get("oid").getAsString();
         response = given().get("/replay/chain/?oid="+oid).andReturn();
         logger.info("************************");
@@ -46,5 +50,6 @@ public class DataReplayTests {
         logger.info("************************");
         logger.info(response.body().asString());
         logger.info("************************");
+        assertEquals(200, response.getStatusCode());
     }
 }

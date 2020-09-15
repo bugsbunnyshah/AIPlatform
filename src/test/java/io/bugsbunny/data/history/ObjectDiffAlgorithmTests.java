@@ -3,6 +3,7 @@ package io.bugsbunny.data.history;
 import com.github.wnameless.json.flattener.JsonFlattener;
 import com.github.wnameless.json.unflattener.JsonUnflattener;
 
+import com.google.common.hash.HashCode;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -63,7 +64,6 @@ public class ObjectDiffAlgorithmTests {
 
         JsonObject jsonObject = JsonParser.parseString(JsonUnflattener.unflatten(flat)).getAsJsonObject();
         logger.info("JSON: "+jsonObject.toString());
-        //assertEquals(json, jsonObject.toString());
     }
 
     @Test
@@ -93,7 +93,7 @@ public class ObjectDiffAlgorithmTests {
         logger.info("DIFF: "+diff.toString());
 
         //assert
-        logger.info("****************");
+        assertEquals("5129151162", diff.getAsJsonObject("profile").get("mobile").getAsString());
     }
 
     @Test

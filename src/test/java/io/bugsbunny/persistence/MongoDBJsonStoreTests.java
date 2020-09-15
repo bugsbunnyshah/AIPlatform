@@ -69,6 +69,7 @@ public class MongoDBJsonStoreTests {
         logger.info("*******");
         logger.info(storedJson.toString());
         logger.info("*******");
+        assertEquals("James", storedJson.get("firstname").getAsString());
     }
 
     @Test

@@ -19,7 +19,7 @@ import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 public class PayloadReplayServiceTests {
@@ -112,6 +112,7 @@ public class PayloadReplayServiceTests {
 
         //Assert
         List<JsonObject> diffChain = this.payloadReplayService.replayDiffChain(chainId);
+        assertNotNull(diffChain);
         logger.info("************************");
         logger.info(diffChain.toString());
         logger.info("************************");
