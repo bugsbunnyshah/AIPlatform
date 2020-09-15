@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 //import Dashboard from './Dashboard';
-import MyComponent from './MyComponent';
+import App from './App';
 
 
 
@@ -22,6 +22,6 @@ import MyComponent from './MyComponent';
 }*/
 
 ReactDOM.render(
-  <MyComponent />,
+  <App />,
   document.querySelector('#root'),
 );

@@ -7,7 +7,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "prod": "react-scripts build --dest && mv build/* ../resources/META-INF/resources"
+    "prod": "react-scripts build --dest && rm -rf ../resources/META-INF/resources/static  && mv build/* ../resources/META-INF/resources"
   },
   "dependencies": {
     "@material-ui/core": "latest",
