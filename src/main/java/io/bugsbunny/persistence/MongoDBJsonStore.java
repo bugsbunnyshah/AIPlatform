@@ -429,4 +429,39 @@ public class MongoDBJsonStore {
 
         return diffs;
     }
+    //-----------------------------------------------------------------------------
+    public void storeModel(String model)
+    {
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("liveModels");
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("modelId", "0");
+        jsonObject.addProperty("model", model);
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
+    }
+
+    public String getModel(String modelId)
+    {
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("liveModels");
+
+        String queryJson = "{\"modelId\":\""+modelId+"\"}";
+        Bson bson = Document.parse(queryJson);
+        FindIterable<Document> iterable = collection.find(bson);
+        MongoCursor<Document> cursor = iterable.cursor();
+        Document document = cursor.next();
+        String documentJson = document.toJson();
+        String model = JsonParser.parseString(documentJson).getAsJsonObject().get("model").getAsString();
+        return model;
+    }
 }

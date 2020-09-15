@@ -1,5 +1,6 @@
 package io.bugsbunny.dataScience.service;
 
+import io.bugsbunny.persistence.MongoDBJsonStore;
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
@@ -30,8 +32,10 @@ public class AIModelService
 {
     private static Logger logger = LoggerFactory.getLogger(AIModelService.class);
 
+    @Inject
+    private MongoDBJsonStore mongoDBJsonStore;
+
     private MultiLayerNetwork network;
-    private String modelSer;
 
     @PostConstruct
     public void start()
@@ -82,7 +86,9 @@ public class AIModelService
 
             ByteArrayOutputStream modelStream = new ByteArrayOutputStream();
             ModelSerializer.writeModel(orig, modelStream, true);
-            this.modelSer = Base64.getEncoder().encodeToString(modelStream.toByteArray());
+            String model = Base64.getEncoder().encodeToString(modelStream.toByteArray());
+
+            this.mongoDBJsonStore.storeModel(model);
         }
         catch(Exception e)
         {
@@ -97,7 +103,11 @@ public class AIModelService
         {
             if(this.network == null)
             {
-                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(this.modelSer));
+                logger.info("******************************************");
+                logger.info("DESERIALZING_THE_MODEL");
+                logger.info("******************************************");
+                String modelString = this.mongoDBJsonStore.getModel("0");
+                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
                 this.network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
             }
 
