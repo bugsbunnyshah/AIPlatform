@@ -2,6 +2,7 @@ package io.bugsbunny.endpoint;
 
 import com.google.gson.JsonObject;
 import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.dataScience.service.PackagingService;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
@@ -29,6 +30,9 @@ public class AITrafficAgentTests {
     private AITrafficAgent aiTrafficAgent;
 
     @Inject
+    private PackagingService packagingService;
+
+    @Inject
     private SecurityTokenContainer securityTokenContainer;
 
     @BeforeEach
@@ -46,7 +50,11 @@ public class AITrafficAgentTests {
     {
         for(int i=0; i<3; i++)
         {
-            Response response = given().body("{\"oid\":\"" + UUID.randomUUID() + "\"}").when().post("/liveModel/eval").andReturn();
+            String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                    Thread.currentThread().getContextClassLoader());
+
+            JsonObject input = this.packagingService.performPackaging(modelPackage);
+            Response response = given().body(input.toString()).when().post("/liveModel/eval").andReturn();
             logger.info("************************");
             logger.info(response.statusLine());
             logger.info("************************");

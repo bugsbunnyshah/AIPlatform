@@ -1,6 +1,8 @@
-package io.bugsbunny.datascience.endpoint;
+package io.bugsbunny.dataScience.endpoint;
 
+import com.google.gson.JsonObject;
 import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.endpoint.AITrafficAgent;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
@@ -11,15 +13,11 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 import io.restassured.response.Response;
 
 import javax.inject.Inject;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,6 +35,9 @@ public class LiveModelTests {
     @Inject
     private AITrafficAgent aiTrafficAgent;
 
+    @Inject
+    private PackagingService packagingService;
+
     @BeforeEach
     public void setUp() throws Exception
     {
@@ -50,7 +51,12 @@ public class LiveModelTests {
     @Test
     public void testEval() throws Exception
     {
-        Response response = given().body("{}").when().post("/liveModel/eval").andReturn();
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject input = this.packagingService.performPackaging(modelPackage);
+
+        Response response = given().body(input.toString()).when().post("/liveModel/eval").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
         logger.info("************************");

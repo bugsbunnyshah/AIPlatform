@@ -430,7 +430,7 @@ public class MongoDBJsonStore {
         return diffs;
     }
     //-----------------------------------------------------------------------------
-    public void storeModel(String model)
+    public long storeModel(String model)
     {
         String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
         String region = securityTokenContainer.getTokenContainer().get().getRegion();
@@ -438,15 +438,18 @@ public class MongoDBJsonStore {
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("liveModels");
+        long count = collection.countDocuments();
 
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("modelId", "0");
+        jsonObject.addProperty("modelId", (count+1));
         jsonObject.addProperty("model", model);
         Document doc = Document.parse(jsonObject.toString());
         collection.insertOne(doc);
+
+        return count;
     }
 
-    public String getModel(String modelId)
+    public String getModel(long modelId)
     {
         String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
         String region = securityTokenContainer.getTokenContainer().get().getRegion();
@@ -455,7 +458,7 @@ public class MongoDBJsonStore {
 
         MongoCollection<Document> collection = database.getCollection("liveModels");
 
-        String queryJson = "{\"modelId\":\""+modelId+"\"}";
+        String queryJson = "{\"modelId\":"+modelId+"}";
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
         MongoCursor<Document> cursor = iterable.cursor();

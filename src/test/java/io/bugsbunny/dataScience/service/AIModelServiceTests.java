@@ -1,5 +1,6 @@
-package io.bugsbunny.datascience.service;
+package io.bugsbunny.dataScience.service;
 
+import com.google.gson.JsonObject;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -8,8 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.bugsbunny.dataScience.service.AIModelService;
 
 import javax.inject.Inject;
 
@@ -23,6 +22,9 @@ public class AIModelServiceTests {
 
     @Inject
     private AIModelService aiModelService;
+
+    @Inject
+    private PackagingService packagingService;
 
     @Inject
     private SecurityTokenContainer securityTokenContainer;
@@ -40,8 +42,16 @@ public class AIModelServiceTests {
     @Test
     public void testStartEval() throws Exception
     {
-        String result = this.aiModelService.eval();
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject response = this.packagingService.performPackaging(modelPackage);
+
+        long modelId = response.get("modelId").getAsLong();
+        String result = this.aiModelService.eval(modelId);
+        logger.info("****************");
+        logger.info("ModelId: "+modelId);
+        logger.info("****************");
         assertNotNull(result);
-        logger.info(result);
     }
 }
