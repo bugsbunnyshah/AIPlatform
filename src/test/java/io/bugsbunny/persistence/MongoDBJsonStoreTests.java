@@ -1,9 +1,6 @@
 package io.bugsbunny.persistence;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.common.hash.HashCode;
 
 import io.bugsbunny.endpoint.SecurityToken;
@@ -105,5 +102,32 @@ public class MongoDBJsonStoreTests {
     public void testDataHistoryStorage() throws Exception
     {
 
+    }
+
+    @Test
+    public void testStoreDataSet() throws Exception
+    {
+        String digitsCsv = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("dataLake/digits.csv"),
+                StandardCharsets.UTF_8);
+        logger.info(digitsCsv);
+
+        String sourceData = digitsCsv;
+        String[] lines = sourceData.split("\n");
+        JsonArray array = new JsonArray();
+        int length = lines.length;
+        for(int i=0; i<length; i++)
+        {
+            String line = lines[i];
+            String[] data = line.split(",");
+            JsonObject row = new JsonObject();
+            for(int j=0; j<data.length; j++)
+            {
+                row.addProperty(""+j,data[j]);
+            }
+            array.add(row);
+        }
+        logger.info(array.toString());
+        this.mongoDBJsonStore.storeDataSet(array);
     }
 }

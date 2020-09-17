@@ -1,6 +1,7 @@
 package io.bugsbunny.persistence;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mongodb.client.*;
@@ -14,10 +15,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @ApplicationScoped
 public class MongoDBJsonStore {
@@ -466,5 +464,22 @@ public class MongoDBJsonStore {
         String documentJson = document.toJson();
         String model = JsonParser.parseString(documentJson).getAsJsonObject().get("model").getAsString();
         return model;
+    }
+    //DataLake related operations----------------------------------------------------------------
+    public void storeDataSet(JsonArray array)
+    {
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("dataset");
+
+        Iterator<JsonElement> jsonObjects = array.iterator();
+        while(jsonObjects.hasNext()) {
+            JsonElement jsonElement = jsonObjects.next();
+            Document doc = Document.parse(jsonElement.toString());
+            collection.insertOne(doc);
+        }
     }
 }

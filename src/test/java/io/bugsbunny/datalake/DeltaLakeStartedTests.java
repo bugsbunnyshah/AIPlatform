@@ -1,39 +1,67 @@
 package io.bugsbunny.datalake;
 
-import com.google.gson.JsonObject;
-
 import com.mongodb.spark.MongoSpark;
 import com.mongodb.spark.config.WriteConfig;
 
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
+import io.quarkus.test.junit.QuarkusTest;
+import org.apache.commons.io.IOUtils;
 
-import org.apache.hadoop.fs.FSInputStream;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.Dataset;
-
-import io.delta.tables.DeltaTable;
-import org.bson.Document;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
-import static java.util.Arrays.asList;
-
+@QuarkusTest
 public class DeltaLakeStartedTests implements Serializable
 {
     private static Logger logger = LoggerFactory.getLogger(DeltaLakeStartedTests.class);
+
+    //@Test
+    public static void main(String[] args) throws Exception
+    {
+        String digitsCsv = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("dataLake/digits.csv"),
+                StandardCharsets.UTF_8);
+        logger.info(digitsCsv);
+
+        /*SparkSession spark = SparkSession.builder()
+                .master("local")
+                .appName("AIPlatformDataLake")
+                .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+                .config("spark.mongodb.input.uri", "mongodb://127.0.0.1/test.myCollection")
+                .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/test.myCollection")
+                .getOrCreate();
+
+        JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
+        Map<String, String> writeOverrides = new HashMap<String, String>();
+        writeOverrides.put("collection", "spark");
+        writeOverrides.put("writeConcern.w", "majority");
+        WriteConfig writeConfig = WriteConfig.create(jsc).withOptions(writeOverrides);
+
+        File file = new File(Thread.currentThread().getContextClassLoader().
+                getResource("dataLake/digits.csv").toURI());
+        //Dataset<Row> df = spark.readStream().csv(file.getPath());
+        final Dataset<Row> load = spark.read().csv(file.getPath());
+        load.show();
+        MongoSpark.save(load, writeConfig);
+
+
+        /*Dataset<Row> df = spark.read().
+        df.show();
+        MongoSpark.save(df, writeConfig);*/
+
+        //spark.close();
+    }
+
+    /*private static Logger logger = LoggerFactory.getLogger(DeltaLakeStartedTests.class);
 
     //@Test
     public void testQueries() throws Exception
@@ -118,76 +146,10 @@ public class DeltaLakeStartedTests implements Serializable
         df.show();
 
         df = spark.read().format("delta").option("versionAsOf", 0).load(location);
-        df.show();*/
+        df.show();
 
         spark.close();
 
         //TODO: Verify versions are not in-memory only
-    }
-
-    //@Test
-    public void testMongoDBConnector() throws Exception
-    {
-        SparkSession spark = SparkSession.builder()
-                .master("local")
-                .appName("MongoSparkConnectorIntro")
-                .config("spark.mongodb.input.uri", "mongodb://127.0.0.1/test.myCollection")
-                .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/test.myCollection")
-                .getOrCreate();
-
-        JavaSparkContext jsc = new JavaSparkContext(spark.sparkContext());
-
-        // Create a RDD of 10 documents
-        JavaRDD<Document> sparkDocuments = jsc.parallelize(asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)).map
-                (new Function<Integer, Document>() {
-                    public Document call(final Integer i) throws Exception {
-                        return Document.parse("{test: " + i + "}");
-                    }
-                });
-
-        // Create a custom WriteConfig
-        Map<String, String> writeOverrides = new HashMap<String, String>();
-        writeOverrides.put("collection", "spark");
-        writeOverrides.put("writeConcern.w", "majority");
-        WriteConfig writeConfig = WriteConfig.create(jsc).withOptions(writeOverrides);
-
-        /*Start Example: Save data from RDD to MongoDB*****************/
-        MongoSpark.save(sparkDocuments, writeConfig);
-        /*End Example**************************************************/
-
-        jsc.close();
-    }
-
-    //@Test
-    public void testHDFS() throws Exception
-    {
-        FSDataOutputStream fsDataOutputStream = new FSDataOutputStream(new ByteArrayOutputStream(),null);
-        fsDataOutputStream.write("hello_world".getBytes(StandardCharsets.UTF_8));
-        logger.info("O: "+fsDataOutputStream.toString());
-
-        FSDataInputStream fsDataInputStream = new FSDataInputStream(new FSInputStream() {
-                @Override
-                public int read() throws IOException {
-                    return 7;
-                }
-
-                @Override
-                public void seek(long l) throws IOException {
-
-                }
-
-                @Override
-                public long getPos() throws IOException {
-                    return 0;
-                }
-
-                @Override
-                public boolean seekToNewSource(long l) throws IOException {
-                    return false;
-                }
-            }
-        );
-
-        logger.info("I: "+fsDataInputStream.read());
-    }
+    }*/
 }
