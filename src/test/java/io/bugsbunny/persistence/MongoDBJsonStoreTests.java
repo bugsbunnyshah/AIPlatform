@@ -3,6 +3,7 @@ package io.bugsbunny.persistence;
 import com.google.gson.*;
 import com.google.common.hash.HashCode;
 
+import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -27,6 +28,9 @@ public class MongoDBJsonStoreTests {
     private Gson gson = new GsonBuilder()
             .setPrettyPrinting()
             .create();
+
+    @Inject
+    private CSVDataUtil csvDataUtil;
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
@@ -112,22 +116,10 @@ public class MongoDBJsonStoreTests {
                 StandardCharsets.UTF_8);
         logger.info(digitsCsv);
 
-        String sourceData = digitsCsv;
-        String[] lines = sourceData.split("\n");
-        JsonArray array = new JsonArray();
-        int length = lines.length;
-        for(int i=0; i<length; i++)
-        {
-            String line = lines[i];
-            String[] data = line.split(",");
-            JsonObject row = new JsonObject();
-            for(int j=0; j<data.length; j++)
-            {
-                row.addProperty(""+j,data[j]);
-            }
-            array.add(row);
-        }
+        JsonArray array = this.csvDataUtil.convert(digitsCsv);
         logger.info(array.toString());
         this.mongoDBJsonStore.storeDataSet(array);
+
+        logger.info(this.mongoDBJsonStore.readDataSet().toString());
     }
 }

@@ -482,4 +482,23 @@ public class MongoDBJsonStore {
             collection.insertOne(doc);
         }
     }
+
+    public JsonObject readDataSet()
+    {
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("dataset");
+
+        //String queryJson = "{\"modelId\":"+modelId+"}";
+        //Bson bson = Document.parse();
+        FindIterable<Document> iterable = collection.find();
+        MongoCursor<Document> cursor = iterable.cursor();
+        Document document = cursor.next();
+        String documentJson = document.toJson();
+
+        return JsonParser.parseString(documentJson).getAsJsonObject();
+    }
 }
