@@ -3,7 +3,6 @@ package io.bugsbunny.persistence;
 import com.google.gson.*;
 import com.google.common.hash.HashCode;
 
-import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -28,9 +27,6 @@ public class MongoDBJsonStoreTests {
     private Gson gson = new GsonBuilder()
             .setPrettyPrinting()
             .create();
-
-    @Inject
-    private CSVDataUtil csvDataUtil;
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
@@ -109,17 +105,18 @@ public class MongoDBJsonStoreTests {
     }
 
     @Test
-    public void testStoreDataSet() throws Exception
+    public void testStoreDataSetRealDataForEval() throws Exception
     {
-        String digitsCsv = IOUtils.toString(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream("dataLake/digits.csv"),
+        String csv = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("dataScience/saturn_data_eval.csv"),
                 StandardCharsets.UTF_8);
-        logger.info(digitsCsv);
+        logger.info(csv);
 
-        JsonArray array = this.csvDataUtil.convert(digitsCsv);
-        logger.info(array.toString());
-        this.mongoDBJsonStore.storeDataSet(array);
+        this.mongoDBJsonStore.storeDataSet("csv", csv);
 
-        logger.info(this.mongoDBJsonStore.readDataSet().toString());
+        JsonObject dataSet = this.mongoDBJsonStore.readDataSet();
+        String csvData = dataSet.get("data").getAsString();
+        logger.info(csvData);
+        assertEquals(csv, csvData);
     }
 }

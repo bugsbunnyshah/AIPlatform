@@ -17,9 +17,18 @@
 
 package io.bugsbunny.dataScience;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import io.bugsbunny.dataIngestion.util.CSVDataUtil;
+import io.bugsbunny.endpoint.SecurityToken;
+import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.quarkus.test.junit.QuarkusTest;
+import org.apache.commons.io.IOUtils;
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
 import org.datavec.api.split.FileSplit;
+import org.datavec.api.split.InputStreamInputSplit;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import io.bugsbunny.dataScience.utils.DownloaderUtility;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -29,14 +38,22 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
+import org.datavec.api.split.StringSplit;
 
+import javax.inject.Inject;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -50,12 +67,33 @@ import java.util.concurrent.TimeUnit;
  *
  */
 @SuppressWarnings("DuplicatedCode")
-public class SaturnClassifier {
+@QuarkusTest
+public class SaturnClassifierTests {
 
     public static String dataLocalPath;
     public static boolean visualize = true;
 
-    public static void main(String[] args) throws Exception {
+    @Inject
+    private CSVDataUtil csvDataUtil;
+
+    @Inject
+    private MongoDBJsonStore mongoDBJsonStore;
+
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
+    @BeforeEach
+    public void setUp() throws Exception
+    {
+        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
+                        getResourceAsStream("oauthAgent/token.json"),
+                StandardCharsets.UTF_8);
+        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
+        this.securityTokenContainer.getTokenContainer().set(securityToken);
+    }
+
+    @Test
+    public void testModel() throws Exception {
         int batchSize = 50;
         int seed = 123;
         double learningRate = 0.005;
@@ -72,9 +110,17 @@ public class SaturnClassifier {
         rr.initialize(new FileSplit(new File(dataLocalPath, "saturn_data_train.csv")));
         DataSetIterator trainIter = new RecordReaderDataSetIterator(rr, batchSize, 0, 2);
 
+        //final File file = new File(dataLocalPath, "saturn_data_eval.csv");
+        //String csvFile = IOUtils.toString(new FileInputStream(file), StandardCharsets.UTF_8);
+
         //Load the test/evaluation data:
+        JsonObject dataSet = this.mongoDBJsonStore.readDataSet();
+        String csvData = dataSet.get("data").getAsString();
         RecordReader rrTest = new CSVRecordReader();
-        rrTest.initialize(new FileSplit(new File(dataLocalPath, "saturn_data_eval.csv")));
+        InputStreamInputSplit inputStreamInputSplit = new InputStreamInputSplit(new ByteArrayInputStream(
+                csvData.getBytes(StandardCharsets.UTF_8)));
+        rrTest.initialize(inputStreamInputSplit);
+        //rrTest.initialize(new FileSplit(new File(dataLocalPath, "saturn_data_eval.csv")));
         DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest, batchSize, 0, 2);
 
         //log.info("Build model....");

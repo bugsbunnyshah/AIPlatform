@@ -475,12 +475,27 @@ public class MongoDBJsonStore {
 
         MongoCollection<Document> collection = database.getCollection("dataset");
 
-        Iterator<JsonElement> jsonObjects = array.iterator();
-        while(jsonObjects.hasNext()) {
-            JsonElement jsonElement = jsonObjects.next();
-            Document doc = Document.parse(jsonElement.toString());
-            collection.insertOne(doc);
-        }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("format","csv");
+        jsonObject.add("data", array);
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
+    }
+
+    public void storeDataSet(String dataFormat, String data)
+    {
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("dataset");
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("format",dataFormat);
+        jsonObject.addProperty("data", data);
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
     }
 
     public JsonObject readDataSet()
