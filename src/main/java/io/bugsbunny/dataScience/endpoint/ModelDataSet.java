@@ -30,7 +30,7 @@ public class ModelDataSet
     public Response readForEval()
     {
         //TODO: FINISH_IMPL
-        JsonObject jsonInput = this.mongoDBJsonStore.readDataSet(93);
+        JsonObject jsonInput = this.mongoDBJsonStore.readDataSet(-3077535194297214256l);
         Response response = Response.ok(jsonInput.toString()).build();
         return response;
     }

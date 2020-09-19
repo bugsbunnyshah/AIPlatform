@@ -30,14 +30,13 @@ public class LiveModelTests {
     private PayloadReplayService payloadReplayService;
 
     @Inject
-    private SecurityTokenContainer securityTokenContainer;
-
-    @Inject
     private AITrafficAgent aiTrafficAgent;
 
     @Inject
     private PackagingService packagingService;
 
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
     @BeforeEach
     public void setUp() throws Exception
     {

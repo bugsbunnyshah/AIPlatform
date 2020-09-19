@@ -436,15 +436,15 @@ public class MongoDBJsonStore {
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("liveModels");
-        long count = collection.countDocuments();
+        long modelId = new Random().nextLong();
 
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("modelId", (count+1));
+        jsonObject.addProperty("modelId", modelId);
         jsonObject.addProperty("model", model);
         Document doc = Document.parse(jsonObject.toString());
         collection.insertOne(doc);
 
-        return count;
+        return modelId;
     }
 
     public String getModel(long modelId)

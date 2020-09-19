@@ -45,7 +45,7 @@ public class AIModelService
             if(this.network == null)
             {
                 logger.info("******************************************");
-                logger.info("DESERIALZING_THE_MODEL");
+                logger.info("DESERIALZING_THE_MODEL: "+modelId);
                 logger.info("******************************************");
                 String modelString = this.mongoDBJsonStore.getModel(modelId);
                 ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
