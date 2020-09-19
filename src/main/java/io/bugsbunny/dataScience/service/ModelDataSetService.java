@@ -23,6 +23,11 @@ public class ModelDataSetService {
 
     public long storeEvalDataSet(String dataFormat, String data)
     {
-        return this.mongoDBJsonStore.storeDataSet(dataFormat, "eval", data);
+        return this.mongoDBJsonStore.storeDataSet(dataFormat, "evaluation", data);
+    }
+
+    public JsonObject readDataSet(long dataSetId)
+    {
+        return this.mongoDBJsonStore.readDataSet(dataSetId);
     }
 }

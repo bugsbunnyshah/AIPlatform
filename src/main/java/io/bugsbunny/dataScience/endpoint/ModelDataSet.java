@@ -3,6 +3,7 @@ package io.bugsbunny.dataScience.endpoint;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.AIModelService;
+import io.bugsbunny.dataScience.service.ModelDataSetService;
 import io.bugsbunny.persistence.MongoDBJsonStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +22,22 @@ public class ModelDataSet
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
+    @Inject
+    private ModelDataSetService modelDataSetService;
+
     @Path("storeTrainingDataSet")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response storeTrainingDataSet(@RequestBody String input)
     {
-        //TODO: FINISH_IMPL
-        Response response = Response.ok("{}").build();
+        JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
+        String dataFormat = jsonObject.get("format").getAsString();
+        String data = jsonObject.get("data").getAsString();
+        long dataSetId = this.modelDataSetService.storeTrainingDataSet(dataFormat, data);
+
+        JsonObject returnValue = new JsonObject();
+        returnValue.addProperty("dataSetId", dataSetId);
+        Response response = Response.ok(returnValue.toString()).build();
         return response;
     }
 
@@ -36,18 +46,23 @@ public class ModelDataSet
     @Produces(MediaType.APPLICATION_JSON)
     public Response storeEvalDataSet(@RequestBody String input)
     {
-        //TODO: FINISH_IMPL
-        Response response = Response.ok("{}").build();
+        JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
+        String dataFormat = jsonObject.get("format").getAsString();
+        String data = jsonObject.get("data").getAsString();
+        long dataSetId = this.modelDataSetService.storeEvalDataSet(dataFormat, data);
+
+        JsonObject returnValue = new JsonObject();
+        returnValue.addProperty("dataSetId", dataSetId);
+        Response response = Response.ok(returnValue.toString()).build();
         return response;
     }
 
-    @Path("readForEval")
+    @Path("readDataSet")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response readForEval(@QueryParam("dataSetId") long dataSetId)
+    public Response readDataSet(@QueryParam("dataSetId") long dataSetId)
     {
-        //TODO: FINISH_IMPL
-        JsonObject jsonInput = this.mongoDBJsonStore.readDataSet(dataSetId);
+        JsonObject jsonInput = this.modelDataSetService.readDataSet(dataSetId);
         Response response = Response.ok(jsonInput.toString()).build();
         return response;
     }
