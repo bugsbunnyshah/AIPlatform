@@ -19,8 +19,9 @@ public class AIPlatformDataSetLoader implements Loader
     @Override
     public Object load(Source source) throws IOException
     {
+        //TODO: FINISH_IMPL
         MongoDBJsonStore mongoDBJsonStore = new MongoDBJsonStore();
-        JsonObject dataSet = JsonParser.parseString(mongoDBJsonStore.readDataSet().toString()).getAsJsonObject();
+        JsonObject dataSet = JsonParser.parseString(mongoDBJsonStore.readDataSet(93).toString()).getAsJsonObject();
         String data = dataSet.get("data").getAsString();
 
         logger.info("*************AIPlatformDataSetLoader**********************");

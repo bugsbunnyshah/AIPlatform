@@ -2,6 +2,7 @@ package io.bugsbunny.endpoint;
 
 import javax.enterprise.context.ApplicationScoped;
 
+//TODO: MAYBE_REQUEST_SCOPED
 @ApplicationScoped
 public class SecurityTokenContainer
 {

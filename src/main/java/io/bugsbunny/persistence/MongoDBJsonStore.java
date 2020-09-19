@@ -503,7 +503,7 @@ public class MongoDBJsonStore {
         return oid;
     }
 
-    public JsonObject readDataSet()
+    public JsonObject readDataSet(long dataSetId)
     {
         String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
         String region = securityTokenContainer.getTokenContainer().get().getRegion();
@@ -512,9 +512,9 @@ public class MongoDBJsonStore {
 
         MongoCollection<Document> collection = database.getCollection("dataset");
 
-        //String queryJson = "{\"modelId\":"+modelId+"}";
-        //Bson bson = Document.parse();
-        FindIterable<Document> iterable = collection.find();
+        String queryJson = "{\"dataSetId\":"+dataSetId+"}";
+        Bson bson = Document.parse(queryJson);
+        FindIterable<Document> iterable = collection.find(bson);
         MongoCursor<Document> cursor = iterable.cursor();
         Document document = cursor.next();
         String documentJson = document.toJson();

@@ -114,7 +114,7 @@ public class MongoDBJsonStoreTests {
 
         long oid = this.mongoDBJsonStore.storeDataSet("csv", "training", csv);
 
-        JsonObject dataSet = this.mongoDBJsonStore.readDataSet();
+        JsonObject dataSet = this.mongoDBJsonStore.readDataSet(oid);
         String csvData = dataSet.get("data").getAsString();
         long storedOid = dataSet.get("dataSetId").getAsLong();
         logger.info(""+storedOid);

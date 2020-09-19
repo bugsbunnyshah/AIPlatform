@@ -29,7 +29,8 @@ public class ModelDataSet
     @Produces(MediaType.APPLICATION_JSON)
     public Response readForEval()
     {
-        JsonObject jsonInput = this.mongoDBJsonStore.readDataSet();
+        //TODO: FINISH_IMPL
+        JsonObject jsonInput = this.mongoDBJsonStore.readDataSet(93);
         Response response = Response.ok(jsonInput.toString()).build();
         return response;
     }

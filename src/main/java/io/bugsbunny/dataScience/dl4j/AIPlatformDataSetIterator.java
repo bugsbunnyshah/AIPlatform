@@ -8,11 +8,12 @@ import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApplicationScoped
+@RequestScoped
 public class AIPlatformDataSetIterator implements DataSetIterator
 {
     @Inject
@@ -74,7 +75,8 @@ public class AIPlatformDataSetIterator implements DataSetIterator
     @Override
     public List<String> getLabels()
     {
-        JsonObject dataSet = JsonParser.parseString(this.mongoDBJsonStore.readDataSet().toString()).getAsJsonObject();
+        //TODO: FINISH_IMPL
+        JsonObject dataSet = JsonParser.parseString(this.mongoDBJsonStore.readDataSet(93).toString()).getAsJsonObject();
         String data = dataSet.get("data").getAsString();
         List<String> labels = new ArrayList<>();
         labels.add(data);
