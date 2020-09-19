@@ -59,6 +59,7 @@ import java.util.Base64;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * "Saturn" Data Classification Example
@@ -146,8 +147,9 @@ public class ModelTrainingProcessTests {
         model.fit(trainIter, nEpochs);
 
         Evaluation eval = model.evaluate(testIter);
-        logger.info(eval.toJson());
+        //logger.info(eval.toJson());
 
+        //Deploy the Model
         ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
         ModelSerializer.writeModel(model, modelBytes, false);
         String modelString = Base64.getEncoder().encodeToString(modelBytes.toByteArray());
@@ -160,6 +162,12 @@ public class ModelTrainingProcessTests {
         Response packageResponse = given().body(jsonObject.toString()).when().post("/aimodel/performPackaging/")
                 .andReturn();
         packageResponse.body().prettyPrint();
+
+        //Run the Model in the Cloud
+        response = given().body(packageResponse.body().asString()).when().post("/liveModel/eval").andReturn();
+        response.body().prettyPrint();
+        assertEquals(200, response.getStatusCode());
+
     }
 
     public static void generateVisuals(MultiLayerNetwork model, DataSetIterator trainIter, DataSetIterator testIter) throws Exception {
