@@ -19,11 +19,13 @@ package io.bugsbunny.dataScience;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.persistence.MongoDBJsonStore;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
@@ -56,6 +58,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
+import static io.restassured.RestAssured.given;
+
 /**
  * "Saturn" Data Classification Example
  *
@@ -66,7 +70,6 @@ import java.util.concurrent.TimeUnit;
  * @author Alex Black (added plots)
  *
  */
-@SuppressWarnings("DuplicatedCode")
 @QuarkusTest
 public class SaturnClassifierTests {
 
@@ -114,7 +117,8 @@ public class SaturnClassifierTests {
         //String csvFile = IOUtils.toString(new FileInputStream(file), StandardCharsets.UTF_8);
 
         //Load the test/evaluation data:
-        JsonObject dataSet = this.mongoDBJsonStore.readDataSet();
+        Response response = given().get("/dataset/readForEval").andReturn();
+        JsonObject dataSet = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         String csvData = dataSet.get("data").getAsString();
         RecordReader rrTest = new CSVRecordReader();
         InputStreamInputSplit inputStreamInputSplit = new InputStreamInputSplit(new ByteArrayInputStream(
