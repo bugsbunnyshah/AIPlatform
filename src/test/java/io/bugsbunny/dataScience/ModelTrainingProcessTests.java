@@ -7,6 +7,9 @@ import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 
 import io.quarkus.test.junit.QuarkusTest;
+import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
+import org.deeplearning4j.nn.conf.inputs.InputType;
+import org.deeplearning4j.nn.conf.layers.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,15 +23,18 @@ import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.layers.DenseLayer;
-import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.nd4j.common.primitives.Pair;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.learning.config.Nesterovs;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
 import org.datavec.api.split.FileSplit;
 import org.deeplearning4j.util.ModelSerializer;
@@ -40,7 +46,9 @@ import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
@@ -68,7 +76,7 @@ public class ModelTrainingProcessTests
     }
 
     @Test
-    public void testModel() throws Exception
+    public void testSaturnClassifierModel() throws Exception
     {
         int batchSize = 50;
         int seed = 123;
@@ -166,50 +174,76 @@ public class ModelTrainingProcessTests
         assertEquals(200, response.getStatusCode());
     }
 
-    /*@Test
-    public void testDataSetIteratorGeneric() throws Exception
+    @Test
+    public void testMnistModel() throws Exception
     {
-        //logger.info("*********DATA_SET_DATA********************");
-        //logger.info(this.aiPlatformDataSetIterator.getLabels().toString());
-        //logger.info("*****************************");
-
-        int batchSize = 50;
+        int outputNum = 10; // The number of possible outcomes
+        int batchSize = 64; // Test batch size
+        int nEpochs = 10;   // Number of training epochs
         int seed = 123;
-        double learningRate = 0.005;
-        //Number of epochs (full passes of the data)
-        int nEpochs = 30;
 
-        int numInputs = 2;
-        int numOutputs = 2;
-        int numHiddenNodes = 20;
+        nEpochs = 1;
 
-        dataLocalPath = DownloaderUtility.CLASSIFICATIONDATA.Download();
-        //Load the training data:
-        RecordReader rr = new CSVRecordReader();
-        rr.initialize(new FileSplit(new File(dataLocalPath, "saturn_data_train.csv")));
-        DataSetIterator trainIter = new RecordReaderDataSetIterator(rr, batchSize, 0, 2);
-        //log.info("Build model....");
+        //Lambda defines the relative strength of the center loss component.
+        //lambda = 0.0 is equivalent to training with standard softmax only
+        double lambda = 1.0;
+
+        //Alpha can be thought of as the learning rate for the centers for each class
+        double alpha = 0.1;
+
+        logger.info("Load data....");
+        DataSetIterator mnistTrain = new MnistDataSetIterator(batchSize, true, 12345);
+        DataSetIterator mnistTest = new MnistDataSetIterator(10000, false, 12345);
+
+        logger.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
-                .weightInit(WeightInit.XAVIER)
-                .updater(new Nesterovs(learningRate, 0.9))
+                .l2(0.0005)
+                .activation(Activation.LEAKYRELU)
+                .weightInit(WeightInit.RELU)
+                .updater(new Adam(0.01))
                 .list()
-                .layer(new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
-                        .activation(Activation.RELU)
+                .layer(new ConvolutionLayer.Builder(5, 5).stride(1, 1).nOut(32).activation(Activation.LEAKYRELU).build())
+                .layer(new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2).stride(2, 2).build())
+                .layer(new ConvolutionLayer.Builder(5, 5).stride(1, 1).nOut(64).build())
+                .layer(new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2).stride(2, 2).build())
+                .layer(new DenseLayer.Builder().nOut(256).build())
+                //Layer 5 is our embedding layer: 2 dimensions, just so we can plot it on X/Y grid. Usually use more in practice
+                .layer(new DenseLayer.Builder().activation(Activation.IDENTITY).weightInit(WeightInit.XAVIER).nOut(2)
+                        //Larger L2 value on the embedding layer: can help to stop the embedding layer weights
+                        // (and hence activations) from getting too large. This is especially problematic with small values of
+                        // lambda such as 0.0
+                        .l2(0.1).build())
+                .layer(new CenterLossOutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .nIn(2).nOut(outputNum)
+                        .weightInit(WeightInit.XAVIER).activation(Activation.SOFTMAX)
+                        //Alpha and lambda hyperparameters are specific to center loss model: see comments above and paper
+                        .alpha(alpha).lambda(lambda)
                         .build())
-                .layer(new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD)
-                        .activation(Activation.SOFTMAX)
-                        .nIn(numHiddenNodes).nOut(numOutputs).build())
+                .setInputType(InputType.convolutionalFlat(28, 28, 1))
                 .build();
-
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(new ScoreIterationListener(10));    //Print score every 10 parameter updates
 
-        model.fit(trainIter, nEpochs);
 
-        Evaluation eval = model.evaluate(this.aiPlatformDataSetIterator);
-        logger.info(eval.toJson());
-    }*/
+        logger.info("Train model....");
+        model.setListeners(new ScoreIterationListener(100));
+
+        List<Pair<INDArray, INDArray>> embeddingByEpoch = new ArrayList<>();
+        List<Integer> epochNum = new ArrayList<>();
+
+        DataSet testData = mnistTest.next();
+        for (int i = 0; i < nEpochs; i++) {
+            model.fit(mnistTrain);
+
+            logger.info("*** Completed epoch {} ***", i);
+
+            //Feed forward to the embedding layer (layer 5) to get the 2d embedding to plot later
+            INDArray embedding = model.feedForwardToLayer(5, testData.getFeatures()).get(6);
+
+            embeddingByEpoch.add(new Pair<>(embedding, testData.getLabels()));
+            epochNum.add(i);
+        }
+    }
 }
