@@ -122,7 +122,7 @@ public class ModelTrainingProcessTests {
         this.securityTokenContainer.getTokenContainer().set(securityToken);
     }
 
-    @Test
+    //@Test
     public void testModel() throws Exception {
         int batchSize = 50;
         int seed = 123;
@@ -195,7 +195,7 @@ public class ModelTrainingProcessTests {
 
     }
 
-    @Test
+    //@Test
     public void testDataSetIteratorGeneric() throws Exception
     {
         //logger.info("*********DATA_SET_DATA********************");
