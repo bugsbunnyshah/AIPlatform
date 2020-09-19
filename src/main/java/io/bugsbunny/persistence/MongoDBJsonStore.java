@@ -466,22 +466,6 @@ public class MongoDBJsonStore {
         return model;
     }
     //DataLake related operations----------------------------------------------------------------
-    public void storeDataSet(JsonArray array)
-    {
-        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
-        String region = securityTokenContainer.getTokenContainer().get().getRegion();
-        String databaseName = region + "_" + principal + "_" + "aiplatform";
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-
-        MongoCollection<Document> collection = database.getCollection("dataset");
-
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("format","csv");
-        jsonObject.add("data", array);
-        Document doc = Document.parse(jsonObject.toString());
-        collection.insertOne(doc);
-    }
-
     public long storeDataSet(String dataFormat, String dataSetType, String data)
     {
         String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
