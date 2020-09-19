@@ -112,11 +112,13 @@ public class MongoDBJsonStoreTests {
                 StandardCharsets.UTF_8);
         logger.info(csv);
 
-        this.mongoDBJsonStore.storeDataSet("csv", csv);
+        long oid = this.mongoDBJsonStore.storeDataSet("csv", "training", csv);
 
         JsonObject dataSet = this.mongoDBJsonStore.readDataSet();
         String csvData = dataSet.get("data").getAsString();
-        logger.info(csvData);
+        long storedOid = dataSet.get("dataSetId").getAsLong();
+        logger.info(""+storedOid);
+        assertEquals(oid, storedOid);
         assertEquals(csv, csvData);
     }
 }

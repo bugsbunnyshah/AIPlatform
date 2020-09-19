@@ -176,5 +176,4 @@ public class SaturnClassifierTests {
             PlotUtil.plotTestData(model, testIter, allXYPoints, nPointsPerAxis);*/
         }
     }
-
 }

@@ -482,7 +482,7 @@ public class MongoDBJsonStore {
         collection.insertOne(doc);
     }
 
-    public void storeDataSet(String dataFormat, String data)
+    public long storeDataSet(String dataFormat, String dataSetType, String data)
     {
         String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
         String region = securityTokenContainer.getTokenContainer().get().getRegion();
@@ -491,11 +491,16 @@ public class MongoDBJsonStore {
 
         MongoCollection<Document> collection = database.getCollection("dataset");
 
+        long oid = new Random().nextLong();
         JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("dataSetId", oid);
         jsonObject.addProperty("format",dataFormat);
+        jsonObject.addProperty("dataSetType", dataSetType);
         jsonObject.addProperty("data", data);
         Document doc = Document.parse(jsonObject.toString());
         collection.insertOne(doc);
+
+        return oid;
     }
 
     public JsonObject readDataSet()
