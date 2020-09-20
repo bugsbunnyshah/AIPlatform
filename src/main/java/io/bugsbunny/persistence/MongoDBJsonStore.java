@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mongodb.client.*;
+import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -489,6 +490,8 @@ public class MongoDBJsonStore {
 
     public JsonObject readDataSet(long dataSetId)
     {
+        ThreadLocal<SecurityToken> tokenContainer = this.securityTokenContainer.getTokenContainer();
+        SecurityToken securityToken = tokenContainer.get();
         String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
         String region = securityTokenContainer.getTokenContainer().get().getRegion();
         String databaseName = region + "_" + principal + "_" + "aiplatform";

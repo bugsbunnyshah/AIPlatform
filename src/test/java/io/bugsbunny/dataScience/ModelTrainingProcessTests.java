@@ -7,6 +7,7 @@ import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 
+import io.bugsbunny.persistence.MongoDBJsonStore;
 import io.quarkus.test.junit.QuarkusTest;
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
 import org.deeplearning4j.nn.conf.inputs.InputType;
@@ -63,7 +64,13 @@ public class ModelTrainingProcessTests
     public static boolean visualize = true;
 
     @Inject
+    private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
+
+    @Inject
     private SecurityTokenContainer securityTokenContainer;
+
+    @Inject
+    private MongoDBJsonStore mongoDBJsonStore;
 
     @BeforeEach
     public void setUp() throws Exception
@@ -130,7 +137,7 @@ public class ModelTrainingProcessTests
         //        storedData.getBytes(UTF_8)));
         rrTrain.initialize(new FileSplit(trainFile));
         //DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain, batchSize, 0, 2);
-        DataSetIterator trainIter = AIPlatformDataSetIteratorFactory.getInstance();
+        DataSetIterator trainIter = this.aiPlatformDataSetIteratorFactory.getInstance(8262950843826255554l);
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
@@ -195,7 +202,7 @@ public class ModelTrainingProcessTests
 
         logger.info("Load data....");
         //DataSetIterator mnistTrain = new MnistDataSetIterator(batchSize, true, 12345);
-        DataSetIterator mnistTrain = AIPlatformDataSetIteratorFactory.getInstance();
+        DataSetIterator mnistTrain = this.aiPlatformDataSetIteratorFactory.getInstance(8262950843826255554l);
         DataSetIterator mnistTest = new MnistDataSetIterator(10000, false, 12345);
 
         /*logger.info("**************************");
