@@ -3,6 +3,7 @@ package io.bugsbunny.dataScience;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 
@@ -43,8 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -109,6 +109,7 @@ public class ModelTrainingProcessTests
         //        storedData.getBytes(UTF_8)));
         rrTest.initialize(new FileSplit(testFile));
         DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest, batchSize, 0, 2);
+        //DataSetIterator testIter = AIPlatformDataSetIteratorFactory.getInstance();
 
         data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
@@ -128,7 +129,8 @@ public class ModelTrainingProcessTests
         //InputStreamInputSplit trainSplit = new InputStreamInputSplit(new ByteArrayInputStream(
         //        storedData.getBytes(UTF_8)));
         rrTrain.initialize(new FileSplit(trainFile));
-        DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain, batchSize, 0, 2);
+        //DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain, batchSize, 0, 2);
+        DataSetIterator trainIter = AIPlatformDataSetIteratorFactory.getInstance();
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
@@ -192,8 +194,35 @@ public class ModelTrainingProcessTests
         double alpha = 0.1;
 
         logger.info("Load data....");
-        DataSetIterator mnistTrain = new MnistDataSetIterator(batchSize, true, 12345);
+        //DataSetIterator mnistTrain = new MnistDataSetIterator(batchSize, true, 12345);
+        DataSetIterator mnistTrain = AIPlatformDataSetIteratorFactory.getInstance();
         DataSetIterator mnistTest = new MnistDataSetIterator(10000, false, 12345);
+
+        /*logger.info("**************************");
+        OutputStream os = new FileOutputStream("mnistTrain.bin", true);
+        while(mnistTrain.hasNext())
+        {
+            DataSet dataSet = mnistTrain.next();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            dataSet.save(bos);
+            os.write(bos.toByteArray());
+        }
+        logger.info("**************************");
+        os.flush();
+        os.close();
+
+        logger.info("**************************");
+        os = new FileOutputStream("mnistTest.bin", true);
+        while(mnistTest.hasNext())
+        {
+            DataSet dataSet = mnistTest.next();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            dataSet.save(bos);
+            os.write(bos.toByteArray());
+        }
+        logger.info("**************************");
+        os.flush();
+        os.close();*/
 
         logger.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
@@ -245,5 +274,9 @@ public class ModelTrainingProcessTests
             embeddingByEpoch.add(new Pair<>(embedding, testData.getLabels()));
             epochNum.add(i);
         }
+
+        System.out.println("Evaluate model....");
+        Evaluation eval = model.evaluate(mnistTest);
+        System.out.println(eval.stats());
     }
 }
