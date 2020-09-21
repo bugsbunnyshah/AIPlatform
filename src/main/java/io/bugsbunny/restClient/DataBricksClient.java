@@ -1,6 +1,7 @@
 package io.bugsbunny.restClient;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.model.DataBricksProcessException;
@@ -24,7 +25,7 @@ public class DataBricksClient
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
-    public String createDevExperiment(String experiment) throws DataBricksProcessException
+    /*public String createDevExperiment(String experiment) throws DataBricksProcessException
     {
         String experimentId = null;
         try
@@ -163,6 +164,37 @@ public class DataBricksClient
             runId = jsonObject.get("run").getAsJsonObject().get("info").getAsJsonObject().get("run_id").getAsString();
 
             return runId;
+        }
+        catch(Exception e)
+        {
+            throw new DataBricksProcessException(e);
+        }
+    }*/
+
+    public JsonElement invokeDatabricksModel(JsonObject input) throws DataBricksProcessException
+    {
+        try
+        {
+            //Create the Experiment
+            HttpClient httpClient = HttpClient.newBuilder().build();
+            String restUrl = "http://127.0.0.1:5000/invocations";
+
+            HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
+            HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
+                    .header("Content-Type", "application/json; format=pandas-split")
+                    .POST(HttpRequest.BodyPublishers.ofString(input.toString()))
+                    .build();
+
+
+            HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            String responseJson = httpResponse.body();
+            int status = httpResponse.statusCode();
+            if(status != 200)
+            {
+                throw new DataBricksProcessException("DATABRICKS_MODEL_INVOCATION_FAILED: "+responseJson);
+            }
+
+            return JsonParser.parseString(responseJson);
         }
         catch(Exception e)
         {

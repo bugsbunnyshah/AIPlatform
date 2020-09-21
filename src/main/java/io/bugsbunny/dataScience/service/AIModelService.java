@@ -3,6 +3,7 @@ package io.bugsbunny.dataScience.service;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIterator;
+import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
 import io.bugsbunny.persistence.MongoDBJsonStore;
 
 import org.datavec.api.records.reader.RecordReader;
@@ -22,6 +23,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -34,7 +36,7 @@ public class AIModelService
     private MongoDBJsonStore mongoDBJsonStore;
 
     @Inject
-    private AIPlatformDataSetIterator aiPlatformDataSetIterator;
+    private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
 
     private MultiLayerNetwork network;
 
@@ -52,7 +54,9 @@ public class AIModelService
                 this.network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
             }
 
-            Evaluation evaluation = this.network.evaluate(this.aiPlatformDataSetIterator);
+            //TODO: remove_hardcoded_dataSetId
+            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.getInstance(8262950843826255554l);
+            Evaluation evaluation = this.network.evaluate(dataSetIterator);
 
             return evaluation.toJson();
         }

@@ -1,4 +1,3 @@
-//
 package io.bugsbunny.dataScience.dl4j;
 
 import com.google.gson.JsonObject;
@@ -21,8 +20,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-//String resource = "dataScience/saturn_data_train.csv";
-//String resource = "dataScience/mnistTrain.bin";
+/*
+String resource = "dataScience/saturn_data_train.csv";
+String resource = "dataScience/mnistTrain.bin";
+*/
 
 @ApplicationScoped
 public class AIPlatformDataSetLoader implements Loader
@@ -38,19 +39,26 @@ public class AIPlatformDataSetLoader implements Loader
     @Override
     public Object load(Source source) throws IOException
     {
-        String path = source.getPath();
-        long dataSetId = Long.parseLong(path);
-        SecurityToken securityToken = ((AIPlatformDataSetSource)source).getSecurityToken();
-        this.securityTokenContainer.getTokenContainer().set(securityToken);
-        JsonObject dataSetJson = JsonParser.parseString(mongoDBJsonStore.readDataSet(dataSetId).toString()).getAsJsonObject();
-        String data = dataSetJson.get("data").getAsString();
+        try
+        {
+            String path = source.getPath();
+            long dataSetId = Long.parseLong(path);
+            SecurityToken securityToken = ((AIPlatformDataSetSource) source).getSecurityToken();
+            this.securityTokenContainer.getTokenContainer().set(securityToken);
+            JsonObject dataSetJson = JsonParser.parseString(mongoDBJsonStore.readDataSet(dataSetId).toString()).getAsJsonObject();
+            String data = dataSetJson.get("data").getAsString();
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-        byteArrayOutputStream.writeBytes(data.getBytes(StandardCharsets.UTF_8));
+            byteArrayOutputStream.writeBytes(data.getBytes(StandardCharsets.UTF_8));
 
-        DataSet dataSet = new DataSet();
-        dataSet.save(byteArrayOutputStream);
-        return dataSet;
+            DataSet dataSet = new DataSet();
+            dataSet.save(byteArrayOutputStream);
+            return dataSet;
+        }
+        catch(Exception e)
+        {
+            return new DataSet();
+        }
     }
 }

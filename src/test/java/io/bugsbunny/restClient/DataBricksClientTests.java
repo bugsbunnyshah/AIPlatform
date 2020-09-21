@@ -1,6 +1,7 @@
 package io.bugsbunny.restClient;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.endpoint.SecurityToken;
@@ -62,7 +63,7 @@ public class DataBricksClientTests {
         this.securityTokenContainer.getTokenContainer().set(securityToken);
     }
 
-    @Test
+    /*@Test
     public void testCreateDevExperiment() throws Exception
     {
         String experiment = "appgal-"+UUID.randomUUID().toString();
@@ -163,5 +164,28 @@ public class DataBricksClientTests {
             logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
+    }*/
+
+    @Test
+    public void testInvokeDatabricksModel() throws Exception
+    {
+        JsonObject jsonObject = new JsonObject();
+        JsonArray columns = new JsonArray();
+        columns.add("x");
+        JsonArray first = new JsonArray();
+        first.add(1);
+        JsonArray second = new JsonArray();
+        second.add(-1);
+        JsonArray data = new JsonArray();
+        data.add(first);
+        data.add(second);
+        jsonObject.add("columns", columns);
+        jsonObject.add("data", data);
+        JsonElement response = this.dataBricksClient.invokeDatabricksModel(jsonObject);
+        logger.info("****************");
+        logger.info(response.toString());
+        logger.info("****************");
+
+        //TODO: ASSERT
     }
 }
