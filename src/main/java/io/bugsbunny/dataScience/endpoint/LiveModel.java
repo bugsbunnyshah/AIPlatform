@@ -6,6 +6,7 @@ import io.bugsbunny.dataScience.service.AIModelService;
 import jep.Interpreter;
 import jep.MainInterpreter;
 import jep.SharedInterpreter;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.nio.charset.StandardCharsets;
 
 @Path("liveModel")
 public class LiveModel
@@ -46,18 +48,27 @@ public class LiveModel
         try
         {
             MainInterpreter.setJepLibraryPath("/Users/babyboy/opt/anaconda3/lib/python3.8/site-packages/jep/jep.cpython-38-darwin.so");
-            StringBuilder script = new StringBuilder();
+
+
+            /*StringBuilder script = new StringBuilder();
             script.append("a = 'Passed'\n");
             script.append("b = 'Failed'\n");
             script.append("result = max(a,b)\n");
-            script.append("print('hello world')\n");
+            script.append("print('hello world')\n");*/
+
+            String script = IOUtils.toString(Thread.currentThread().getContextClassLoader()
+                            .getResourceAsStream("tensorflow/train.py"),
+                    StandardCharsets.UTF_8
+                    );
+
+
             try (Interpreter interp = new SharedInterpreter()) {
-                interp.exec(script.toString());
-                String result = interp.getValue("result", String.class);
+                interp.exec(script);
+                /*String result = interp.getValue("result", String.class);
                 if (!"Passed".equals(result)) {
                     throw new IllegalStateException(
                             "multi-line exec returned " + result);
-                }
+                }*/
             }
 
             JsonObject jsonObject = new JsonObject();

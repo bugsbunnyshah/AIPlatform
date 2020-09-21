@@ -210,6 +210,32 @@
       <artifactId>jep</artifactId>
       <version>3.9.0</version>
     </dependency>
+
+    <!-- TensorFlow -->
+    <!--
+    <dependency>
+      <groupId>org.tensorflow</groupId>
+      <artifactId>tensorflow</artifactId>
+      <version>1.14.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.tensorflow</groupId>
+      <artifactId>libtensorflow</artifactId>
+      <version>1.14.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.tensorflow</groupId>
+      <artifactId>libtensorflow_jni_gpu</artifactId>
+      <version>1.14.0</version>
+    </dependency>
+    -->
+    <!--
+    <dependency>
+      <groupId>org.tensorflow</groupId>
+      <artifactId>tensorflow</artifactId>
+      <version>1.15.0</version>
+    </dependency>
+    -->
     <!-- OpenII -->
     <dependency>
       <groupId>org.apache.axis</groupId>
