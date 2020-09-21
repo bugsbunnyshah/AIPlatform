@@ -24,9 +24,9 @@ public class AzureMLClientTests {
     private AzureMLClient azureMLClient;
 
     @Test
-    public void testVision() throws Exception
+    public void testInvokeAzureModel() throws Exception
     {
-        JsonObject json = this.azureMLClient.vision();
+        JsonObject json = this.azureMLClient.invokeAzureModel();
         logger.info(json.toString());
     }
 }

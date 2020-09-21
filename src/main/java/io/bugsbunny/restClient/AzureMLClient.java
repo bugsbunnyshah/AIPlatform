@@ -21,7 +21,7 @@ public class AzureMLClient
 {
     private static Logger logger = LoggerFactory.getLogger(AzureMLClient.class);
 
-    public JsonObject vision()
+    public JsonObject invokeAzureModel()
     {
         HttpClient httpClient = HttpClient.newBuilder().build();
         try
