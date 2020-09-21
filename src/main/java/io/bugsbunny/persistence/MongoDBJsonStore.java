@@ -488,6 +488,28 @@ public class MongoDBJsonStore {
         return oid;
     }
 
+    public long storeDataSet(long modelId, String dataFormat, String dataSetType, String data)
+    {
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("dataset");
+
+        long oid = new Random().nextLong();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("modelId", modelId);
+        jsonObject.addProperty("dataSetId", oid);
+        jsonObject.addProperty("format",dataFormat);
+        jsonObject.addProperty("dataSetType", dataSetType);
+        jsonObject.addProperty("data", data);
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
+
+        return oid;
+    }
+
     public JsonObject readDataSet(long dataSetId)
     {
         ThreadLocal<SecurityToken> tokenContainer = this.securityTokenContainer.getTokenContainer();
@@ -507,5 +529,37 @@ public class MongoDBJsonStore {
         String documentJson = document.toJson();
 
         return JsonParser.parseString(documentJson).getAsJsonObject();
+    }
+
+    public JsonObject rollOverToTraningDataSets(long modelId)
+    {
+        JsonObject rolledOverDataSetIds = new JsonObject();
+
+        JsonArray dataSetIds = new JsonArray();
+        String dataSettype = "training";
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("dataset");
+
+        String queryJson = "{\"modelId\":"+modelId+"}";
+        Bson bson = Document.parse(queryJson);
+        FindIterable<Document> iterable = collection.find(bson);
+        MongoCursor<Document> cursor = iterable.cursor();
+        while(cursor.hasNext())
+        {
+            Document document = cursor.next();
+            String documentJson = document.toJson();
+            JsonObject dataSetJson = JsonParser.parseString(documentJson).getAsJsonObject();
+            dataSetJson.remove("_id");
+            dataSetJson.addProperty("dataSetType", "training");
+            collection.insertOne(Document.parse(dataSetJson.toString()));
+            dataSetIds.add(dataSetJson.get("dataSetId").getAsLong());
+        }
+
+        rolledOverDataSetIds.add("rolledOverDataSetIds", dataSetIds);
+        return rolledOverDataSetIds;
     }
 }

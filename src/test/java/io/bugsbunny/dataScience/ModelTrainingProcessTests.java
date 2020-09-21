@@ -94,12 +94,47 @@ public class ModelTrainingProcessTests
         int numOutputs = 2;
         int numHiddenNodes = 20;
 
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .seed(seed)
+                .weightInit(WeightInit.XAVIER)
+                .updater(new Nesterovs(learningRate, 0.9))
+                .list()
+                .layer(new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
+                        .activation(Activation.RELU)
+                        .build())
+                .layer(new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .activation(Activation.SOFTMAX)
+                        .nIn(numHiddenNodes).nOut(numOutputs).build())
+                .build();
+
+
+        MultiLayerNetwork model = new MultiLayerNetwork(conf);
+        model.init();
+        model.setListeners(new ScoreIterationListener(10));
+
+        //Deploy the Model
+        ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
+        ModelSerializer.writeModel(model, modelBytes, false);
+        String modelString = Base64.getEncoder().encodeToString(modelBytes.toByteArray());
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("name", UUID.randomUUID().toString());
+        jsonObject.addProperty("model", modelString);
+        logger.info(jsonObject.toString());
+
+        Response packageResponse = given().body(jsonObject.toString()).when().post("/aimodel/performPackaging/")
+                .andReturn();
+        packageResponse.body().prettyPrint();
+        JsonObject deployedModel = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
+        long modelId = deployedModel.get("modelId").getAsLong();
+
         String tmp = "tmp";
 
         //Load the test/evaluation data:
         String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
         JsonObject input = new JsonObject();
+        input.addProperty("modelId", modelId);
         input.addProperty("format", "csv");
         input.addProperty("data", data);
         Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
@@ -139,43 +174,11 @@ public class ModelTrainingProcessTests
         //DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain, batchSize, 0, 2);
         DataSetIterator trainIter = this.aiPlatformDataSetIteratorFactory.getInstance(8262950843826255554l);
 
-        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .seed(seed)
-                .weightInit(WeightInit.XAVIER)
-                .updater(new Nesterovs(learningRate, 0.9))
-                .list()
-                .layer(new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
-                        .activation(Activation.RELU)
-                        .build())
-                .layer(new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD)
-                        .activation(Activation.SOFTMAX)
-                        .nIn(numHiddenNodes).nOut(numOutputs).build())
-                .build();
-
-
-        MultiLayerNetwork model = new MultiLayerNetwork(conf);
-        model.init();
-        model.setListeners(new ScoreIterationListener(10));    //Print score every 10 parameter updates
-
         model.fit(trainIter, nEpochs);
 
         System.out.println("Evaluate model....");
         Evaluation eval = model.evaluate(testIter);
         System.out.println(eval.stats());
-
-        //Deploy the Model
-        ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
-        ModelSerializer.writeModel(model, modelBytes, false);
-        String modelString = Base64.getEncoder().encodeToString(modelBytes.toByteArray());
-
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("name", UUID.randomUUID().toString());
-        jsonObject.addProperty("model", modelString);
-        logger.info(jsonObject.toString());
-
-        Response packageResponse = given().body(jsonObject.toString()).when().post("/aimodel/performPackaging/")
-                .andReturn();
-        packageResponse.body().prettyPrint();
 
         //Run the Model in the Cloud
         response = given().body(packageResponse.body().asString()).when().post("/liveModel/eval").andReturn();

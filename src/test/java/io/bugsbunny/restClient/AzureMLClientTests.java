@@ -23,7 +23,7 @@ public class AzureMLClientTests {
     @Inject
     private AzureMLClient azureMLClient;
 
-    @Test
+    //@Test
     public void testInvokeAzureModel() throws Exception
     {
         JsonObject json = this.azureMLClient.invokeAzureModel();

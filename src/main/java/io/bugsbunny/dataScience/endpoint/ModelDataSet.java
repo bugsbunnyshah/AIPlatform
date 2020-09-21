@@ -49,7 +49,8 @@ public class ModelDataSet
         JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
         String dataFormat = jsonObject.get("format").getAsString();
         String data = jsonObject.get("data").getAsString();
-        long dataSetId = this.modelDataSetService.storeEvalDataSet(dataFormat, data);
+        long modelId = jsonObject.get("modelId").getAsLong();
+        long dataSetId = this.modelDataSetService.storeEvalDataSet(modelId, dataFormat, data);
 
         JsonObject returnValue = new JsonObject();
         returnValue.addProperty("dataSetId", dataSetId);

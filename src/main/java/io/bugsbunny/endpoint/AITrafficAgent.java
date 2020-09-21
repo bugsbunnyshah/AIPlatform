@@ -44,7 +44,9 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     @Override
     public void filter(ContainerRequestContext context) throws IOException
     {
-        if(!context.getUriInfo().getRequestUri().getPath().contains("liveModel/eval"))
+        if(!context.getUriInfo().getRequestUri().getPath().contains("liveModel/eval") &&
+                !context.getUriInfo().getRequestUri().getPath().contains("/dataset/store")
+        )
         {
             return;
         }
@@ -84,7 +86,9 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     @Override
     public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws IOException
     {
-        if(!containerRequestContext.getUriInfo().getRequestUri().getPath().contains("liveModel/eval"))
+        if(!containerRequestContext.getUriInfo().getRequestUri().getPath().contains("liveModel/eval") &&
+                !containerRequestContext.getUriInfo().getRequestUri().getPath().contains("/dataset/store")
+        )
         {
             return;
         }

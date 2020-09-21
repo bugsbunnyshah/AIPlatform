@@ -19,6 +19,8 @@ import java.util.UUID;
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+//TODO: Add Tests for DataMapper and RemoteMOdel ObjectDiffs
+
 @QuarkusTest
 public class AITrafficAgentTests {
     private static Logger logger = LoggerFactory.getLogger(AITrafficAgentTests.class);
@@ -46,7 +48,7 @@ public class AITrafficAgentTests {
     }
 
     @Test
-    public void testEvalWithTrafficReplay() throws Exception
+    public void testEvalLiveModelTrafficReplay() throws Exception
     {
         for(int i=0; i<3; i++)
         {

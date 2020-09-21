@@ -3,9 +3,11 @@ package io.bugsbunny.persistence;
 import com.google.gson.*;
 import com.google.common.hash.HashCode;
 
+import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,10 +17,14 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
+import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 public class MongoDBJsonStoreTests {
@@ -30,6 +36,9 @@ public class MongoDBJsonStoreTests {
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
+
+    @Inject
+    private PackagingService packagingService;
 
     @Inject
     private SecurityTokenContainer securityTokenContainer;
@@ -120,5 +129,44 @@ public class MongoDBJsonStoreTests {
         logger.info(""+storedOid);
         assertEquals(oid, storedOid);
         assertEquals(csv, csvData);
+    }
+
+    @Test
+    public void testRollOverToTraningDataSets() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+        long modelId = liveModelDeployedJson.get("modelId").getAsLong();
+
+        String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonObject input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("format", "csv");
+        input.addProperty("data", data);
+        Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
+        logger.info("************************");
+        logger.info("ModelId: "+modelId);
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+        long dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsLong();
+
+
+        JsonObject rolledOverDataSetIds = this.mongoDBJsonStore.rollOverToTraningDataSets(modelId);
+        logger.info(rolledOverDataSetIds.toString());
+
+        //Assert
+        List<Long> dataSetIds = new ArrayList<>();
+        JsonArray array = rolledOverDataSetIds.getAsJsonArray("rolledOverDataSetIds");
+        Iterator<JsonElement> iterator = array.iterator();
+        while(iterator.hasNext())
+        {
+            dataSetIds.add(iterator.next().getAsLong());
+        }
+        assertTrue(dataSetIds.contains(dataSetId));
     }
 }

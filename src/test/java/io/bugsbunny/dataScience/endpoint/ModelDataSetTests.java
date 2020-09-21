@@ -2,6 +2,7 @@ package io.bugsbunny.dataScience.endpoint;
 
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.ModelDataSetService;
+import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 
@@ -28,6 +29,9 @@ public class ModelDataSetTests {
 
     @Inject
     private ModelDataSetService modelDataSetService;
+
+    @Inject
+    private PackagingService packagingService;
 
     @Inject
     private SecurityTokenContainer securityTokenContainer;
@@ -59,7 +63,7 @@ public class ModelDataSetTests {
 
         JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         long dataSetId = returnValue.get("dataSetId").getAsLong();
-        response = given().get("/dataset/readDataSet/?dataSetId="+dataSetId).andReturn();
+        response = given().get("/dataset/readDataSet/?dataSetId=" + dataSetId).andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         String storedData = returnValue.get("data").getAsString();
         assertEquals(data, storedData);
@@ -69,9 +73,16 @@ public class ModelDataSetTests {
     @Test
     public void testStoreEvalDataSet() throws Exception
     {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+        long modelId = liveModelDeployedJson.get("modelId").getAsLong();
+
         String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
         JsonObject input = new JsonObject();
+        input.addProperty("modelId", modelId);
         input.addProperty("format", "csv");
         input.addProperty("data", data);
 
