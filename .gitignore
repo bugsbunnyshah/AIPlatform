@@ -42,3 +42,4 @@ src/main/resources/META-INF/resources/
 /src/test/resources/dataScience/mnistTest.bin
 /src/test/resources/dataScience/mnistTrain.bin
 /tmp/
+/src/main/resources/tensorflow/mlruns/
