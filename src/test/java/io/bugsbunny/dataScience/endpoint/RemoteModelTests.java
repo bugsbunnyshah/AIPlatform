@@ -1,5 +1,6 @@
 package io.bugsbunny.dataScience.endpoint;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -19,11 +20,23 @@ public class RemoteModelTests {
     @Test
     public void testInvocations() throws Exception
     {
-        JsonObject input = new JsonObject();
+        JsonObject jsonObject = new JsonObject();
+        JsonArray columns = new JsonArray();
+        columns.add("x");
+        JsonArray first = new JsonArray();
+        first.add(1);
+        JsonArray second = new JsonArray();
+        second.add(-1);
+        JsonArray data = new JsonArray();
+        data.add(first);
+        data.add(second);
+        jsonObject.add("columns", columns);
+        jsonObject.add("data", data);
 
-        Response response = given().body(input.toString()).when().post("/remoteModel/mlflow/invocations").andReturn();
+        Response response = given().body(jsonObject.toString()).when().post("/remoteModel/mlflow/invocations").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
+        response.body().prettyPrint();
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
     }
