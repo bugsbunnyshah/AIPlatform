@@ -40,7 +40,7 @@ public class AIModelService
 
     private MultiLayerNetwork network;
 
-    public String eval(long modelId)
+    public String eval(long modelId, long dataSetId)
     {
         try
         {
@@ -54,8 +54,7 @@ public class AIModelService
                 this.network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
             }
 
-            //TODO: remove_hardcoded_dataSetId
-            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.getInstance(8262950843826255554l);
+            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.getInstance(dataSetId);
             Evaluation evaluation = this.network.evaluate(dataSetIterator);
 
             return evaluation.toJson();

@@ -35,7 +35,8 @@ public class LiveModel
     {
         JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
         long modelId =  jsonInput.get("modelId").getAsLong();
-        String eval = this.aiModelService.eval(modelId);
+        long dataSetId =  jsonInput.get("modelId").getAsLong();
+        String eval = this.aiModelService.eval(modelId, dataSetId);
         Response response = Response.ok(eval).build();
         return response;
     }
