@@ -12,6 +12,7 @@
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
+    <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus-plugin.version>1.7.1.Final</quarkus-plugin.version>
@@ -202,6 +203,13 @@
       <artifactId>jimfs</artifactId>
       <version>1.1</version>
     </dependency>
+
+    <!-- Embedded Python -->
+    <dependency>
+      <groupId>black.ninia</groupId>
+      <artifactId>jep</artifactId>
+      <version>3.9.0</version>
+    </dependency>
     <!-- OpenII -->
     <dependency>
       <groupId>org.apache.axis</groupId>
@@ -281,10 +289,20 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
         <configuration>
+          <forkMode>always</forkMode>
           <systemPropertyVariables>
             <!--<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>-->
             <maven.home>${maven.home}</maven.home>
+            <!--
+            <LD_LIBRARY_PATH>/Users/babyboy/opt/anaconda3/lib</LD_LIBRARY_PATH>
+            <PYTHONHOME>/Users/babyboy/opt/anaconda3</PYTHONHOME>
+            -->
           </systemPropertyVariables>
+          <environmentVariables>
+            <AM_HOME>conf</AM_HOME>
+            <LD_LIBRARY_PATH>/Users/babyboy/opt/anaconda3/lib</LD_LIBRARY_PATH>
+            <PYTHONHOME>/Users/babyboy/opt/anaconda3</PYTHONHOME>
+          </environmentVariables>
         </configuration>
       </plugin>
       <plugin>
