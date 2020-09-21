@@ -67,7 +67,7 @@ public class AIModelServiceTests {
         JsonObject response = this.packagingService.performPackaging(modelPackage);
 
         long modelId = response.get("modelId").getAsLong();
-        String result = this.aiModelService.eval(modelId, dataSetId);
+        String result = this.aiModelService.evalJava(modelId, dataSetId);
         logger.info("****************");
         logger.info("ModelId: "+modelId);
         logger.info("****************");

@@ -1,16 +1,13 @@
 package io.bugsbunny.dataScience.service;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIterator;
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
 import io.bugsbunny.persistence.MongoDBJsonStore;
 
-import org.datavec.api.records.reader.RecordReader;
-import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
-import org.datavec.api.split.InputStreamInputSplit;
-import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
-import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
+import jep.Interpreter;
+import jep.SharedInterpreter;
+
+import org.apache.commons.io.IOUtils;
+
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.evaluation.classification.Evaluation;
@@ -19,11 +16,10 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -40,7 +36,7 @@ public class AIModelService
 
     private MultiLayerNetwork network;
 
-    public String eval(long modelId, long dataSetId)
+    public String evalJava(long modelId, long dataSetId)
     {
         try
         {
@@ -62,6 +58,29 @@ public class AIModelService
         catch(Exception e)
         {
             logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String evalPython(long modelId, long dataSetId)
+    {
+        try
+        {
+            String script = IOUtils.toString(Thread.currentThread().getContextClassLoader()
+                            .getResourceAsStream("tensorflow/train.py"),
+                    StandardCharsets.UTF_8
+            );
+
+
+            String score;
+            try (Interpreter interp = new SharedInterpreter()) {
+                interp.exec(script);
+                score = ""+ interp.getValue("score", Float.class);
+            }
+            return score;
+        }
+        catch(Exception e)
+        {
             throw new RuntimeException(e);
         }
     }
