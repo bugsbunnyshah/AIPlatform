@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -22,19 +21,20 @@ public class AzureMLClient
 {
     private static Logger logger = LoggerFactory.getLogger(AzureMLClient.class);
 
-    public JsonObject search(String query)
+    public JsonObject vision()
     {
         HttpClient httpClient = HttpClient.newBuilder().build();
         try
         {
-            query = URLEncoder.encode(query,"UTF-8");
-            String requestUrl = "https://appgalentitysearch.cognitiveservices.azure.com/bing/v7.0/entities/?mkt=en-us&count=10&offset=0&safesearch=Moderate&q="+query;
+            String requestUrl = "https://aiplatform.cognitiveservices.azure.com/vision/v3.0/analyze?visualFeatures=Categories,Description&details=Landmarks";
 
+            JsonObject json = new JsonObject();
+            json.addProperty("url","https://upload.wikimedia.org/wikipedia/commons/3/3c/Shaki_waterfall.jpg");
             HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
             HttpRequest httpRequest = httpRequestBuilder.uri(new URI(requestUrl))
                     .setHeader("Content-Type", "application/json")
-                    .setHeader("Ocp-Apim-Subscription-Key","42f903592a524b86949d9324e02a99ce")
-                    .GET()
+                    .setHeader("Ocp-Apim-Subscription-Key","33ac0f0aaf754d31a12163668944dfb6")
+                    .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
                     .build();
             HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             JsonObject jsonObject = JsonParser.parseString(httpResponse.body()).getAsJsonObject();
