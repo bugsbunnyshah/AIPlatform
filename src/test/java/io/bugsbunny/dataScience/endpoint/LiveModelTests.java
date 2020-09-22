@@ -48,14 +48,14 @@ public class LiveModelTests {
     }
 
     @Test
-    public void testEval() throws Exception
+    public void testEvalJava() throws Exception
     {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject input = this.packagingService.performPackaging(modelPackage);
 
-        Response response = given().body(input.toString()).when().post("/liveModel/eval").andReturn();
+        Response response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
         logger.info("************************");

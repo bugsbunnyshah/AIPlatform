@@ -181,7 +181,7 @@ public class ModelTrainingProcessTests
         System.out.println(eval.stats());
 
         //Run the Model in the Cloud
-        response = given().body(packageResponse.body().asString()).when().post("/liveModel/eval").andReturn();
+        response = given().body(packageResponse.body().asString()).when().post("/liveModel/evalJava").andReturn();
         response.body().prettyPrint();
         assertEquals(200, response.getStatusCode());
     }

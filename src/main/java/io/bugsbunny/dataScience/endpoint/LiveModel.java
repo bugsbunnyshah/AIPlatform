@@ -37,7 +37,7 @@ public class LiveModel
     @Inject
     private AIModelService aiModelService;
 
-    @Path("eval")
+    @Path("evalJava")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response eval(@RequestBody String input)
@@ -50,7 +50,7 @@ public class LiveModel
         return response;
     }
 
-    @Path("python")
+    @Path("evalPython")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response python()

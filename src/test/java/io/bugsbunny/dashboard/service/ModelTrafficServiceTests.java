@@ -52,7 +52,7 @@ public class ModelTrafficServiceTests
 
         JsonObject input = this.packagingService.performPackaging(modelPackage);
         logger.info(input.toString());
-        Response response = given().body(input.toString()).when().post("/liveModel/eval").andReturn();
+        Response response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
         assertEquals(200, response.getStatusCode());
 
         Map<String, List<JsonObject>> modelTraffic = this.modelTrafficService.getModelTraffic("us", "bugsbunny");
