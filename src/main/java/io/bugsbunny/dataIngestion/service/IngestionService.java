@@ -16,17 +16,6 @@ public class IngestionService {
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
-    public void ingestData(String data)
-    {
-        JsonObject jsonObject = new JsonObject();
-        String oid = UUID.randomUUID().toString();
-        int offset = 10;
-        jsonObject.addProperty("oid", oid);
-        jsonObject.addProperty("offset", offset);
-        jsonObject.addProperty("data", data);
-        this.mongoDBJsonStore.storeIngestionImage(jsonObject);
-    }
-
     public void ingestDevModelData(String data)
     {
         JsonObject jsonObject = new JsonObject();

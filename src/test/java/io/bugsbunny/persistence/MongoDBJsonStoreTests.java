@@ -1,7 +1,6 @@
 package io.bugsbunny.persistence;
 
 import com.google.gson.*;
-import com.google.common.hash.HashCode;
 
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.endpoint.SecurityToken;
@@ -78,28 +77,7 @@ public class MongoDBJsonStoreTests {
         assertEquals("James", storedJson.get("firstname").getAsString());
     }
 
-    @Test
-    public void testImageData() throws Exception
-    {
-        String animalsCsvData = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                getResourceAsStream("DataExamples/animals/animals.csv"), StandardCharsets.UTF_8);
 
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("data", animalsCsvData);
-
-        this.mongoDBJsonStore.storeIngestionImage(jsonObject);
-        List<JsonObject> result = this.mongoDBJsonStore.getIngestionImages();
-        JsonObject storedJson = result.get(0);
-        int sourceHashCode = HashCode.fromBytes(jsonObject.toString().getBytes(StandardCharsets.UTF_8)).hashCode();
-        int storedHashCode = HashCode.fromBytes(storedJson.toString().getBytes(StandardCharsets.UTF_8)).hashCode();
-
-        logger.info("***************************");
-        logger.info("SourceHashCode: "+sourceHashCode+", StoredHashCode: "+storedHashCode);
-        logger.info("SourceJson: "+jsonObject.toString());
-        logger.info("StoredJson: "+storedJson.toString());
-        logger.info("***************************");
-        assertEquals(sourceHashCode, storedHashCode);
-    }
 
     @Test
     public void testDevModelData() throws Exception

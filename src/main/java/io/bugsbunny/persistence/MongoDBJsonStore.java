@@ -1,12 +1,13 @@
 package io.bugsbunny.persistence;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import com.mongodb.client.*;
-import io.bugsbunny.endpoint.SecurityToken;
+
 import io.bugsbunny.endpoint.SecurityTokenContainer;
+
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -19,7 +20,8 @@ import javax.inject.Inject;
 import java.util.*;
 
 @ApplicationScoped
-public class MongoDBJsonStore {
+public class MongoDBJsonStore
+{
     private static Logger logger = LoggerFactory.getLogger(MongoDBJsonStore.class);
 
     private MongoClient mongoClient = MongoClients.create();
@@ -106,45 +108,6 @@ public class MongoDBJsonStore {
         }
         return ingestedDataSet;
     }
-
-    //Image Data Ingestion related operations-----------------------------------------------------
-    public void storeIngestionImage(JsonObject jsonObject)
-    {
-        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
-        String region = securityTokenContainer.getTokenContainer().get().getRegion();
-        String databaseName = region + "_" + principal + "_" + "aiplatform";
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-
-        MongoCollection<Document> collection = database.getCollection("ingestionImage");
-
-        Document doc = Document.parse(jsonObject.toString());
-        collection.insertOne(doc);
-    }
-
-    public List<JsonObject> getIngestionImages()
-    {
-        List<JsonObject> ingestion = new ArrayList<>();
-
-        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
-        String region = securityTokenContainer.getTokenContainer().get().getRegion();
-        String databaseName = region + "_" + principal + "_" + "aiplatform";
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-
-        MongoCollection<Document> collection = database.getCollection("ingestionImage");
-
-        FindIterable<Document> iterable = collection.find();
-        MongoCursor<Document> cursor = iterable.cursor();
-        while(cursor.hasNext())
-        {
-            Document document = cursor.next();
-            String documentJson = document.toJson();
-            JsonObject jsonObject = JsonParser.parseString(documentJson).getAsJsonObject();
-            jsonObject.remove("_id");
-            ingestion.add(jsonObject);
-        }
-        return ingestion;
-    }
-
     //AIModelService related operations-----------------------------------------------------
     public void storeDevModels(JsonObject jsonObject)
     {
