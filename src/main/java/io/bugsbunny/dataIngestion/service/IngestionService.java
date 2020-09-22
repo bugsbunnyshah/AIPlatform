@@ -25,6 +25,8 @@ public class IngestionService {
         jsonObject.addProperty("oid", oid);
         jsonObject.addProperty("offset", offset);
         jsonObject.addProperty("data", data);
-        this.mongoDBJsonStore.storeDevModels(jsonObject);
+
+        //TODO: Reconcile
+        //this.mongoDBJsonStore.storeDevModels(jsonObject);
     }
 }

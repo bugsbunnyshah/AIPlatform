@@ -51,16 +51,20 @@ public class LiveModel
     }
 
     @Path("evalPython")
-    @GET
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response python()
+    public Response python(@RequestBody String input)
     {
         try
         {
             logger.info("******************");
             logger.info("EVAL_PYTHON_MODEL");
             logger.info("******************");
-            String eval = this.aiModelService.evalPython(0l,0l);
+            JsonObject inputJson = JsonParser.parseString(input).getAsJsonObject();
+            JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
+            long modelId =  jsonInput.get("modelId").getAsLong();
+            long dataSetId =  jsonInput.get("dataSetId").getAsLong();
+            String eval = this.aiModelService.evalPython(modelId, dataSetId);
             Response response = Response.ok(eval).build();
             return response;
         }

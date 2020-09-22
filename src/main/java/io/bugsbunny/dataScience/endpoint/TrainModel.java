@@ -52,16 +52,20 @@ public class TrainModel
     }
 
     @Path("evalPython")
-    @GET
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response python()
+    public Response python(@RequestBody String input)
     {
         try
         {
             logger.info("******************");
             logger.info("TRAIN_PYTHON_MODEL");
             logger.info("******************");
-            String eval = this.trainingAIModelService.evalPython(0l,0l);
+            JsonObject inputJson = JsonParser.parseString(input).getAsJsonObject();
+            JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
+            long modelId =  jsonInput.get("modelId").getAsLong();
+            long dataSetId =  jsonInput.get("dataSetId").getAsLong();
+            String eval = this.trainingAIModelService.evalPython(modelId, dataSetId);
             Response response = Response.ok(eval).build();
             return response;
         }

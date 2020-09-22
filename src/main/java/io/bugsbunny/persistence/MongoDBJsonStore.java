@@ -57,7 +57,6 @@ public class MongoDBJsonStore
         }
     }
 
-
     public JsonObject getIngestion(String ingestionId)
     {
         JsonObject ingestion = new JsonObject();
@@ -107,81 +106,6 @@ public class MongoDBJsonStore
             ingestedDataSet.add(actual);
         }
         return ingestedDataSet;
-    }
-    //AIModelService related operations-----------------------------------------------------
-    public void storeDevModels(JsonObject jsonObject)
-    {
-        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
-        String region = securityTokenContainer.getTokenContainer().get().getRegion();
-        String databaseName = region + "_" + principal + "_" + "aiplatform";
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-
-        MongoCollection<Document> collection = database.getCollection("devModels");
-
-        Document doc = Document.parse(jsonObject.toString());
-        collection.insertOne(doc);
-    }
-
-    public JsonObject getDevModel(String runId)
-    {
-        JsonObject devModel = new JsonObject();
-
-        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
-        String region = securityTokenContainer.getTokenContainer().get().getRegion();
-        String databaseName = region + "_" + principal + "_" + "aiplatform";
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-
-        MongoCollection<Document> collection = database.getCollection("devModels");
-
-        String queryJson = "{\"run_id\":\""+runId+"\"}";
-        Bson bson = Document.parse(queryJson);
-        FindIterable<Document> iterable = collection.find(bson);
-        MongoCursor<Document> cursor = iterable.cursor();
-        while(cursor.hasNext())
-        {
-            Document document = cursor.next();
-            String documentJson = document.toJson();
-            devModel = JsonParser.parseString(documentJson).getAsJsonObject();
-            return devModel;
-        }
-        return devModel;
-    }
-
-    public void storeLiveModel(JsonObject jsonObject)
-    {
-        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
-        String region = securityTokenContainer.getTokenContainer().get().getRegion();
-        String databaseName = region + "_" + principal + "_" + "aiplatform";
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-
-        MongoCollection<Document> collection = database.getCollection("liveModels");
-
-        Document doc = Document.parse(jsonObject.toString());
-        collection.insertOne(doc);
-    }
-
-    public JsonObject getLiveModel(String runId)
-    {
-        JsonObject liveModel = new JsonObject();
-
-        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
-        String region = securityTokenContainer.getTokenContainer().get().getRegion();
-        String databaseName = region + "_" + principal + "_" + "aiplatform";
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-        MongoCollection<Document> collection = database.getCollection("liveModels");
-
-        String queryJson = "{\"run_id\":\""+runId+"\"}";
-        Bson bson = Document.parse(queryJson);
-        FindIterable<Document> iterable = collection.find(bson);
-        MongoCursor<Document> cursor = iterable.cursor();
-        while(cursor.hasNext())
-        {
-            Document document = cursor.next();
-            String documentJson = document.toJson();
-            liveModel = JsonParser.parseString(documentJson).getAsJsonObject();
-            return liveModel;
-        }
-        return liveModel;
     }
     //Data History related operations-----------------------------------------------------
     public String startDiffChain(JsonObject payload)

@@ -66,15 +66,10 @@ public class AIModelService
     {
         try
         {
-            String script = IOUtils.toString(Thread.currentThread().getContextClassLoader()
-                            .getResourceAsStream("tensorflow/train.py"),
-                    StandardCharsets.UTF_8
-            );
-
-
             String score;
+            String pythonScript = "";
             try (Interpreter interp = new SharedInterpreter()) {
-                interp.exec(script);
+                interp.exec(pythonScript);
                 score = ""+ interp.getValue("score", Float.class);
             }
             return score;
