@@ -1,5 +1,7 @@
 package io.bugsbunny.dataScience.service;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
 import io.bugsbunny.persistence.MongoDBJsonStore;
 import jep.Interpreter;
@@ -44,6 +46,9 @@ public class TrainingAIModelService
                 ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
                 this.network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
             }
+
+            JsonObject dataSet = this.mongoDBJsonStore.readDataSet(dataSetId);
+            logger.info(dataSet.toString());
 
             DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.getInstance(dataSetId);
             Evaluation evaluation = this.network.evaluate(dataSetIterator);

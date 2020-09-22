@@ -512,8 +512,6 @@ public class MongoDBJsonStore {
 
     public JsonObject readDataSet(long dataSetId)
     {
-        ThreadLocal<SecurityToken> tokenContainer = this.securityTokenContainer.getTokenContainer();
-        SecurityToken securityToken = tokenContainer.get();
         String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
         String region = securityTokenContainer.getTokenContainer().get().getRegion();
         String databaseName = region + "_" + principal + "_" + "aiplatform";
