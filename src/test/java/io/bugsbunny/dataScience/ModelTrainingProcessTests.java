@@ -139,8 +139,8 @@ public class ModelTrainingProcessTests
         input.addProperty("data", data);
         Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
         JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        long dataSetId = returnValue.get("dataSetId").getAsLong();
-        response = given().get("/dataset/readDataSet/?dataSetId="+dataSetId).andReturn();
+        long evalDataSetId = returnValue.get("dataSetId").getAsLong();
+        response = given().get("/dataset/readDataSet/?dataSetId="+evalDataSetId).andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         String storedData = returnValue.get("data").getAsString();
         String testFileName = UUID.randomUUID().toString();
@@ -160,7 +160,7 @@ public class ModelTrainingProcessTests
         input.addProperty("data", data);
         response = given().body(input.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        dataSetId = returnValue.get("dataSetId").getAsLong();
+        long dataSetId = returnValue.get("dataSetId").getAsLong();
         response = given().get("/dataset/readDataSet/?dataSetId="+dataSetId).andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         storedData = returnValue.get("data").getAsString();
@@ -181,7 +181,9 @@ public class ModelTrainingProcessTests
         System.out.println(eval.stats());
 
         //Run the Model in the Cloud
-        response = given().body(packageResponse.body().asString()).when().post("/liveModel/evalJava").andReturn();
+        JsonObject deployResult = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
+        deployResult.addProperty("dataSetId",evalDataSetId);
+        response = given().body(deployResult.toString()).when().post("/liveModel/evalJava").andReturn();
         response.body().prettyPrint();
         assertEquals(200, response.getStatusCode());
     }

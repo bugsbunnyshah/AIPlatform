@@ -1,6 +1,7 @@
 package io.bugsbunny.dashboard.service;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
@@ -51,8 +52,32 @@ public class ModelTrafficServiceTests
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject input = this.packagingService.performPackaging(modelPackage);
-        logger.info(input.toString());
-        Response response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
+        JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+        long modelId = liveModelDeployedJson.get("modelId").getAsLong();
+
+        String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("format", "csv");
+        input.addProperty("data", data);
+
+        Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+        JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+        long dataSetId = returnValue.get("dataSetId").getAsLong();
+        input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("dataSetId", dataSetId);
+
+        response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        logger.info("************************");
         assertEquals(200, response.getStatusCode());
 
         Map<String, List<JsonObject>> modelTraffic = this.modelTrafficService.getModelTraffic("us", "bugsbunny");
