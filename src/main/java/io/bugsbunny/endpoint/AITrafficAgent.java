@@ -52,15 +52,30 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         }
 
         String payload = IOUtils.toString(context.getEntityStream(), StandardCharsets.UTF_8);
-        JsonElement input = JsonParser.parseString(payload);
-        //logger.info("***********AITrafficAgent_Incoming**************");
-        //logger.info(payload);
-        //logger.info("************************************************");
+        if(payload == null || payload.length() == 0)
+        {
+            return;
+        }
+
+        JsonElement input;
+        try
+        {
+           input  = JsonParser.parseString(payload);
+           if(!input.isJsonObject() && !input.isJsonArray())
+           {
+               return;
+           }
+        }
+        catch (Exception e)
+        {
+            return;
+        }
 
         String requestChainId = this.getRequestChainId();
         if(requestChainId == null)
         {
-            if(input.isJsonObject()) {
+            if(input.isJsonObject())
+            {
                 requestChainId = this.payloadReplayService.generateDiffChain(input.getAsJsonObject());
             }
             else
@@ -71,7 +86,8 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         }
         else
         {
-            if(input.isJsonObject()) {
+            if(input.isJsonObject())
+            {
                 this.payloadReplayService.addToDiffChain(requestChainId, input.getAsJsonObject());
             }
             else
@@ -95,11 +111,30 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
 
         //Process the response
         Object entity = containerResponseContext.getEntity();
-        //logger.info("***********AITrafficAgent_Outgoing**************");
-        //logger.info(entity.toString());
-        //logger.info("************************************************");
+        if(entity == null)
+        {
+            return;
+        }
+        String entityString = entity.toString();
+        if(entityString == null || entityString.length() == 0)
+        {
+            return;
+        }
 
-        JsonElement output = JsonParser.parseString(entity.toString());
+        JsonElement output;
+        try
+        {
+            output  = JsonParser.parseString(entityString);
+            if(!output.isJsonObject() && !output.isJsonArray())
+            {
+                return;
+            }
+        }
+        catch (Exception e)
+        {
+            return;
+        }
+
         String responseChainId = this.getResponseChainId();
         if(responseChainId == null)
         {

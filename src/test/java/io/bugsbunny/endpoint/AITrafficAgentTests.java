@@ -1,6 +1,7 @@
 package io.bugsbunny.endpoint;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.bugsbunny.data.history.service.PayloadReplayService;
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.quarkus.test.junit.QuarkusTest;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 //TODO: Add Tests for DataMapper and RemoteMOdel ObjectDiffs
@@ -56,16 +58,35 @@ public class AITrafficAgentTests {
                     Thread.currentThread().getContextClassLoader());
 
             JsonObject input = this.packagingService.performPackaging(modelPackage);
-            Response response = given().body(input.toString()).when().post("/liveModel/eval").andReturn();
+            long modelId = input.get("modelId").getAsLong();
+
+            String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
+                    Thread.currentThread().getContextClassLoader());
+            input = new JsonObject();
+            input.addProperty("modelId", modelId);
+            input.addProperty("format", "csv");
+            input.addProperty("data", data);
+
+            Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
+            logger.info("************************");
+            logger.info(response.statusLine());
+            response.body().prettyPrint();
+            logger.info("************************");
+            assertEquals(200, response.getStatusCode());
+            JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+            long dataSetId = returnValue.get("dataSetId").getAsLong();
+            input = new JsonObject();
+            input.addProperty("modelId", modelId);
+            input.addProperty("dataSetId", dataSetId);
+
+            response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
             logger.info("************************");
             logger.info(response.statusLine());
             logger.info("************************");
-            //logger.info(response.body().asString());
-            //logger.info("************************");
+            assertEquals(200, response.getStatusCode());
         }
 
         String token = this.securityTokenContainer.getTokenContainer().get().getToken();
-
 
         String requestChainId = this.aiTrafficAgent.findRequestChainId(token);
         List<JsonObject> traffic = this.payloadReplayService.replayDiffChain(requestChainId);

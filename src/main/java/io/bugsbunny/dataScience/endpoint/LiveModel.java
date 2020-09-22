@@ -57,6 +57,9 @@ public class LiveModel
     {
         try
         {
+            logger.info("******************");
+            logger.info("EVAL_PYTHON_MODEL");
+            logger.info("******************");
             String eval = this.aiModelService.evalPython(0l,0l);
             Response response = Response.ok(eval).build();
             return response;

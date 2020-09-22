@@ -58,6 +58,9 @@ public class TrainModel
     {
         try
         {
+            logger.info("******************");
+            logger.info("TRAIN_PYTHON_MODEL");
+            logger.info("******************");
             String eval = this.trainingAIModelService.evalPython(0l,0l);
             Response response = Response.ok(eval).build();
             return response;
