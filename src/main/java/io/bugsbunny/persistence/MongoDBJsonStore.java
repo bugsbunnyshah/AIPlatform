@@ -19,6 +19,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.*;
 
+//TODO: DISTINGUISH_BETWEEN_DEV_AND_LIVE_MODELS
+
 @ApplicationScoped
 public class MongoDBJsonStore
 {
@@ -316,7 +318,7 @@ public class MongoDBJsonStore
         return diffs;
     }
     //-----------------------------------------------------------------------------
-    public long storeModel(String model)
+    public long storeModel(JsonObject modelPackage)
     {
         String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
         String region = securityTokenContainer.getTokenContainer().get().getRegion();
@@ -325,11 +327,8 @@ public class MongoDBJsonStore
 
         MongoCollection<Document> collection = database.getCollection("liveModels");
         long modelId = new Random().nextLong();
-
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("modelId", modelId);
-        jsonObject.addProperty("model", model);
-        Document doc = Document.parse(jsonObject.toString());
+        modelPackage.addProperty("modelId", modelId);
+        Document doc = Document.parse(modelPackage.toString());
         collection.insertOne(doc);
 
         return modelId;

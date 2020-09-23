@@ -67,7 +67,7 @@ public class AIModelService
         try
         {
             String score;
-            String pythonScript = "";
+            String pythonScript = "score=0.0";
             try (Interpreter interp = new SharedInterpreter()) {
                 interp.exec(pythonScript);
                 score = ""+ interp.getValue("score", Float.class);

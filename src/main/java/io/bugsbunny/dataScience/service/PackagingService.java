@@ -21,7 +21,7 @@ public class PackagingService {
         JsonObject jsonObject = new JsonObject();
 
         JsonObject modelPackage = JsonParser.parseString(packageString).getAsJsonObject();
-        long modelId = this.mongoDBJsonStore.storeModel(modelPackage.get("model").getAsString());
+        long modelId = this.mongoDBJsonStore.storeModel(modelPackage);
 
         jsonObject.addProperty("modelId", modelId);
         return jsonObject;

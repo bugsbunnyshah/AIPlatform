@@ -82,4 +82,29 @@ public class LiveModelTests {
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
     }
+
+    @Test
+    public void testEvalPython() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-python-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject modelDeployedJson = this.packagingService.performPackaging(modelPackage);
+        long modelId = modelDeployedJson.get("modelId").getAsLong();
+
+        String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonObject input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("format", "csv");
+        input.addProperty("data", data);
+
+        Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("modelId: "+modelId);
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+    }
 }
