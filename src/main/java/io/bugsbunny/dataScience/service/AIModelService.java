@@ -6,8 +6,6 @@ import io.bugsbunny.persistence.MongoDBJsonStore;
 import jep.Interpreter;
 import jep.SharedInterpreter;
 
-import org.apache.commons.io.IOUtils;
-
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.evaluation.classification.Evaluation;
@@ -16,14 +14,15 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
-@RequestScoped
+@ApplicationScoped
 public class AIModelService
 {
     private static Logger logger = LoggerFactory.getLogger(AIModelService.class);
@@ -34,24 +33,32 @@ public class AIModelService
     @Inject
     private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
 
-    private MultiLayerNetwork network;
+    private Map<Long, MultiLayerNetwork> activeModels;
+
+    public AIModelService()
+    {
+        this.activeModels = new HashMap<>();
+    }
 
     public String evalJava(long modelId, long dataSetId)
     {
         try
         {
-            if(this.network == null)
+            MultiLayerNetwork network = this.activeModels.get(modelId);
+
+            if(network == null)
             {
-                logger.info("******************************************");
-                logger.info("DESERIALZING_THE_MODEL: "+modelId);
-                logger.info("******************************************");
+                //logger.info("******************************************");
+                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
+                //logger.info("******************************************");
                 String modelString = this.mongoDBJsonStore.getModel(modelId);
                 ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
-                this.network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
+                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
+                this.activeModels.put(modelId, network);
             }
 
             DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.getInstance(dataSetId);
-            Evaluation evaluation = this.network.evaluate(dataSetIterator);
+            Evaluation evaluation = network.evaluate(dataSetIterator);
 
             return evaluation.toJson();
         }

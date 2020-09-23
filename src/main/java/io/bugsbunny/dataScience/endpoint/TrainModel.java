@@ -3,14 +3,12 @@ package io.bugsbunny.dataScience.endpoint;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.AIModelService;
-import io.bugsbunny.dataScience.service.TrainingAIModelService;
 import jep.MainInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -36,7 +34,7 @@ public class TrainModel
     }
 
     @Inject
-    private TrainingAIModelService trainingAIModelService;
+    private AIModelService trainingAIModelService;
 
     @Path("evalJava")
     @POST
