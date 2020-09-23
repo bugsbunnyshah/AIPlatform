@@ -1,7 +1,7 @@
 package io.bugsbunny.dataScience.service;
 
-import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import jep.Interpreter;
 import jep.SharedInterpreter;
@@ -21,6 +21,9 @@ import java.io.ByteArrayInputStream;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
+import io.bugsbunny.persistence.MongoDBJsonStore;
 
 @ApplicationScoped
 public class AIModelService
@@ -73,13 +76,15 @@ public class AIModelService
     {
         try
         {
-            String score;
-            String pythonScript = "score=0.0";
-            try (Interpreter interp = new SharedInterpreter()) {
+            JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+            String pythonScript = modelPackage.get("script").getAsString();
+            String output = (new JsonObject()).toString();
+            try (Interpreter interp = new SharedInterpreter())
+            {
                 interp.exec(pythonScript);
-                score = ""+ interp.getValue("score", Float.class);
+                output = interp.getValue("output", String.class);
             }
-            return score;
+            return output;
         }
         catch(Exception e)
         {

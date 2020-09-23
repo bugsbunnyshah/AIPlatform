@@ -352,6 +352,25 @@ public class MongoDBJsonStore
         String model = JsonParser.parseString(documentJson).getAsJsonObject().get("model").getAsString();
         return model;
     }
+
+    public JsonObject getModelPackage(long modelId)
+    {
+        String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
+        String region = securityTokenContainer.getTokenContainer().get().getRegion();
+        String databaseName = region + "_" + principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("liveModels");
+
+        String queryJson = "{\"modelId\":"+modelId+"}";
+        Bson bson = Document.parse(queryJson);
+        FindIterable<Document> iterable = collection.find(bson);
+        MongoCursor<Document> cursor = iterable.cursor();
+        Document document = cursor.next();
+        String documentJson = document.toJson();
+        JsonObject modelPackage = JsonParser.parseString(documentJson).getAsJsonObject();
+        return modelPackage;
+    }
     //DataLake related operations----------------------------------------------------------------
     public long storeDataSet(String dataFormat, String dataSetType, String data)
     {

@@ -63,8 +63,8 @@ public class TrainModel
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
             long modelId =  jsonInput.get("modelId").getAsLong();
             long dataSetId =  jsonInput.get("dataSetId").getAsLong();
-            String eval = this.trainingAIModelService.evalPython(modelId, dataSetId);
-            Response response = Response.ok(eval).build();
+            String output = this.trainingAIModelService.evalPython(modelId, dataSetId);
+            Response response = Response.ok(output).build();
             return response;
         }
         catch(Exception e)
