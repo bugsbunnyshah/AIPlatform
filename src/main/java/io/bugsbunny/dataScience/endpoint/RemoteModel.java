@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.AIModelService;
+import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.restClient.DataBricksClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,9 @@ public class RemoteModel
     @Inject
     private DataBricksClient dataBricksClient;
 
+    @Inject
+    private PackagingService packagingService;
+
     @Path("/mlflow/invocations")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -31,8 +35,12 @@ public class RemoteModel
     {
         try
         {
-            JsonObject json = JsonParser.parseString(input).getAsJsonObject();
-            JsonElement result = this.dataBricksClient.invokeDatabricksModel(json);
+            JsonObject request = JsonParser.parseString(input).getAsJsonObject();
+            long modelId = request.get("modelId").getAsLong();
+            JsonObject remoteModelPackage = this.packagingService.getModelPackage(modelId);
+
+            JsonElement result = this.dataBricksClient.invokeDatabricksModel(request.get("payload").getAsJsonObject(),
+                    remoteModelPackage);
             Response response = Response.ok(result.toString()).build();
             return response;
         }

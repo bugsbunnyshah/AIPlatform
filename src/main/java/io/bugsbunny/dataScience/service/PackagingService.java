@@ -26,4 +26,9 @@ public class PackagingService {
         jsonObject.addProperty("modelId", modelId);
         return jsonObject;
     }
+
+    public JsonObject getModelPackage(long modelId)
+    {
+        return this.mongoDBJsonStore.getModelPackage(modelId);
+    }
 }

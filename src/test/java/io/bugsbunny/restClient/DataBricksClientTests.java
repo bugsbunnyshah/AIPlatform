@@ -166,8 +166,9 @@ public class DataBricksClientTests {
         }
     }*/
 
-    @Test
-    public void testInvokeDatabricksModel() throws Exception
+    //TODO: Re-activate Later...Redundant
+    //@Test
+    /*public void testInvokeDatabricksModel() throws Exception
     {
         JsonObject jsonObject = new JsonObject();
         JsonArray columns = new JsonArray();
@@ -187,5 +188,5 @@ public class DataBricksClientTests {
         logger.info("****************");
 
         //TODO: ASSERT
-    }
+    }*/
 }

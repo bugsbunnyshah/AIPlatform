@@ -171,18 +171,19 @@ public class DataBricksClient
         }
     }*/
 
-    public JsonElement invokeDatabricksModel(JsonObject input) throws DataBricksProcessException
+    public JsonElement invokeDatabricksModel(JsonObject payload, JsonObject modelPackage) throws DataBricksProcessException
     {
         try
         {
             //Create the Experiment
             HttpClient httpClient = HttpClient.newBuilder().build();
-            String restUrl = "http://127.0.0.1:5000/invocations";
+            String url = modelPackage.get("url").getAsString();
+            String restUrl = url;
 
             HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
             HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
                     .header("Content-Type", "application/json; format=pandas-split")
-                    .POST(HttpRequest.BodyPublishers.ofString(input.toString()))
+                    .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
                     .build();
 
 

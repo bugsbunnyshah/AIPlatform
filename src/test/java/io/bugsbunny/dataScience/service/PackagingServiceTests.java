@@ -47,4 +47,14 @@ public class PackagingServiceTests
         JsonObject response = this.packagingService.performPackaging(modelPackage);
         logger.info(response.toString());
     }
+
+    @Test
+    public void testPerformPackagingRemoteModel() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-remote-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        logger.info(response.toString());
+    }
 }
