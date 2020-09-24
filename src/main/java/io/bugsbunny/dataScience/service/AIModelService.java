@@ -46,6 +46,9 @@ public class AIModelService
     private MongoDBJsonStore mongoDBJsonStore;
 
     @Inject
+    private PackagingService packagingService;
+
+    @Inject
     private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
 
     private Map<Long, MultiLayerNetwork> activeModels;
@@ -93,7 +96,7 @@ public class AIModelService
             return testResponse.toString();
         }
         String output = (new JsonObject()).toString();
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        JsonObject modelPackage = this.packagingService.getModelPackage(modelId);
         String pythonScript = modelPackage.get("script").getAsString();
         try (Interpreter interp = new SharedInterpreter())
         {
