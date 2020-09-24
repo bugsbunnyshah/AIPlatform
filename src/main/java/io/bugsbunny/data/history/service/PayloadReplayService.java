@@ -100,7 +100,7 @@ public class PayloadReplayService {
         if(top.isJsonObject()) {
             this.addToDiffChain(chainId, top.getAsJsonObject());
         }
-        else
+        else if(top.isJsonArray())
         {
             Iterator<JsonElement> itr = top.getAsJsonArray().iterator();
             while(itr.hasNext())
@@ -128,21 +128,29 @@ public class PayloadReplayService {
                 }
             }
         }
+        else if(top.isJsonPrimitive())
+        {
+            JsonObject value = new JsonObject();
+            value.addProperty("value", top.getAsJsonPrimitive().toString());
+            this.addToDiffChain(chainId, value.getAsJsonObject());
+        }
+
+        //Rest of the Array
         int length = payload.size();
         for(int i=1; i<length; i++)
         {
             JsonElement local = payload.get(i);
             if(local.isJsonObject()) {
-                this.addToDiffChain(chainId, payload.get(i).getAsJsonObject());
+                this.addToDiffChain(chainId, local.getAsJsonObject());
             }
             else if(local.isJsonArray())
             {
-                this.addToDiffChain(chainId, payload.get(i).getAsJsonArray());
+                //TODO: DEAL_WITH_ARRAY
             }
             else if(local.isJsonPrimitive())
             {
                 JsonObject localAsJsonObject = new JsonObject();
-                localAsJsonObject.addProperty("value", localAsJsonObject.getAsJsonPrimitive().toString());
+                localAsJsonObject.addProperty("value", local.getAsJsonPrimitive().toString());
                 this.addToDiffChain(chainId, localAsJsonObject);
             }
         }
@@ -158,9 +166,9 @@ public class PayloadReplayService {
 
         JsonElement top = payload.get(0);
         if(top.isJsonObject()) {
-            this.addToDiffChain(chainId, top.getAsJsonObject());
+            this.addToDiffChain(requestChainId, chainId, top.getAsJsonObject());
         }
-        else
+        else if(top.isJsonArray())
         {
             Iterator<JsonElement> itr = top.getAsJsonArray().iterator();
             while(itr.hasNext())
@@ -183,27 +191,35 @@ public class PayloadReplayService {
                     localAsJsonObject.addProperty("value", local.getAsJsonPrimitive().toString());
                     JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(chainId);
                     JsonObject objectDiff = this.objectDiffAlgorithm.diff(lastPayload, localAsJsonObject);
-                    this.mongoDBJsonStore.addToDiffChain(chainId, localAsJsonObject);
-                    this.mongoDBJsonStore.addToDiff(chainId, objectDiff);
+                    this.mongoDBJsonStore.addToDiffChain(requestChainId, chainId, localAsJsonObject);
+                    this.mongoDBJsonStore.addToDiff(requestChainId, chainId, objectDiff);
                 }
             }
         }
+        else if(top.isJsonPrimitive())
+        {
+            JsonObject value = new JsonObject();
+            value.addProperty("value", top.getAsJsonPrimitive().toString());
+            this.addToDiffChain(requestChainId, chainId, value.getAsJsonObject());
+        }
+
+        //Rest of the Array
         int length = payload.size();
         for(int i=1; i<length; i++)
         {
             JsonElement local = payload.get(i);
             if(local.isJsonObject()) {
-                this.addToDiffChain(chainId, payload.get(i).getAsJsonObject());
+                this.addToDiffChain(requestChainId, chainId, local.getAsJsonObject());
             }
             else if(local.isJsonArray())
             {
-                this.addToDiffChain(chainId, payload.get(i).getAsJsonArray());
+                //TODO: DEAL_WITH_ARRAY
             }
             else if(local.isJsonPrimitive())
             {
                 JsonObject localAsJsonObject = new JsonObject();
-                localAsJsonObject.addProperty("value", localAsJsonObject.getAsJsonPrimitive().toString());
-                this.addToDiffChain(chainId, localAsJsonObject);
+                localAsJsonObject.addProperty("value", local.getAsJsonPrimitive().toString());
+                this.addToDiffChain(requestChainId, chainId, localAsJsonObject);
             }
         }
     }
