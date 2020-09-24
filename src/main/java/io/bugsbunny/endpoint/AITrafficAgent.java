@@ -45,7 +45,8 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     public void filter(ContainerRequestContext context) throws IOException
     {
         if(!context.getUriInfo().getRequestUri().getPath().contains("liveModel/eval") &&
-                !context.getUriInfo().getRequestUri().getPath().contains("/dataset/store")
+                !context.getUriInfo().getRequestUri().getPath().contains("/dataset/store") &&
+                !context.getUriInfo().getRequestUri().getPath().contains("/remoteModel/")
         )
         {
             return;
@@ -103,7 +104,8 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws IOException
     {
         if(!containerRequestContext.getUriInfo().getRequestUri().getPath().contains("liveModel/eval") &&
-                !containerRequestContext.getUriInfo().getRequestUri().getPath().contains("/dataset/store")
+                !containerRequestContext.getUriInfo().getRequestUri().getPath().contains("/dataset/store") &&
+                !containerRequestContext.getUriInfo().getRequestUri().getPath().contains("/remoteModel/")
         )
         {
             return;
@@ -121,6 +123,9 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
             return;
         }
 
+        /*logger.info("**********DEBUG_RESPONSE************");
+        logger.info(entityString);
+        logger.info("***************************");*/
         JsonElement output;
         try
         {

@@ -3,6 +3,7 @@ package io.bugsbunny.dataScience.endpoint;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.dataScience.service.AIModelService;
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.endpoint.AITrafficAgent;
 import io.bugsbunny.endpoint.SecurityToken;
@@ -85,6 +86,8 @@ public class TrainModelTests {
     @Test
     public void testEvalPython() throws Exception
     {
+        AIModelService.activateTest();
+
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-python-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
@@ -105,5 +108,20 @@ public class TrainModelTests {
         logger.info("modelId: "+modelId);
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
+
+        long dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsLong();
+        input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("dataSetId", dataSetId);
+        response = given().body(input.toString()).when().post("/trainModel/evalPython/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+
+        //Assert
+        String output = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("output").getAsString();
+        assertEquals("test", output);
     }
 }
