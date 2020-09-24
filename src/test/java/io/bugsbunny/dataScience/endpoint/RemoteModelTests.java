@@ -91,11 +91,11 @@ public class RemoteModelTests {
         //TODO: Assert
         List<Long> dataSetIds = new ArrayList<>();
         JsonArray array = rolledOverDataSetIds.getAsJsonArray("rolledOverDataSetIds");
+        assertTrue(array.size() > 0);
         Iterator<JsonElement> iterator = array.iterator();
         while(iterator.hasNext())
         {
             dataSetIds.add(iterator.next().getAsLong());
         }
-        //assertTrue(dataSetIds.contains(dataSetId));
     }
 }
