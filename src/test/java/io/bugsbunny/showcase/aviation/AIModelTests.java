@@ -1,6 +1,7 @@
 package io.bugsbunny.showcase.aviation;
 
 import io.bugsbunny.dataScience.utils.DownloaderUtility;
+import io.bugsbunny.dataScience.utils.PlotUtil;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -47,11 +48,14 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @QuarkusTest
 public class AIModelTests
 {
     private static Logger logger = LoggerFactory.getLogger(AIModelTests.class);
+
+    public static boolean visualize = true;
 
     @Inject
     private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
@@ -96,17 +100,18 @@ public class AIModelTests
             }
 
             JsonObject csvRow = new JsonObject();
-            csvRow.addProperty("tag", 1);
+            //csvRow.addProperty("tag", 1);
             csvRow.addProperty("scheduled", val);
             csvRow.addProperty("estimated", val);
-            //csvRow.addProperty("actual", actual);
+            csvRow.addProperty("actual", actual);
 
             csvData.add(csvRow);
         }
         JsonObject csvJson = csvDataUtil.convert(csvData);
         csvJson.addProperty("format", "csv");
 
-        logger.info(csvJson.toString());
+        String csv = csvJson.get("data").getAsString();
+        logger.info(csv);
 
         Response response = given().body(csvJson.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
         logger.info("************************");
@@ -170,7 +175,26 @@ public class AIModelTests
 
         //Print the evaluation statistics
         System.out.println(evalResults.stats());
-
         System.out.println("\n****************Example finished********************");
+
+        generateVisuals(model, trainIter, testIter);
+    }
+
+    private static void generateVisuals(MultiLayerNetwork model, DataSetIterator trainIter, DataSetIterator testIter) throws Exception {
+        if (visualize) {
+            double xMin = 0;
+            double xMax = 1.0;
+            double yMin = -0.2;
+            double yMax = 0.8;
+            int nPointsPerAxis = 100;
+
+            //Generate x,y points that span the whole range of features
+            INDArray allXYPoints = PlotUtil.generatePointsOnGraph(xMin, xMax, yMin, yMax, nPointsPerAxis);
+            //Get train data and plot with predictions
+            PlotUtil.plotTrainingData(model, trainIter, allXYPoints, nPointsPerAxis);
+            TimeUnit.SECONDS.sleep(3);
+            //Get test data, run the test data through the network to generate predictions, and plot those predictions:
+            PlotUtil.plotTestData(model, testIter, allXYPoints, nPointsPerAxis);
+        }
     }
 }
