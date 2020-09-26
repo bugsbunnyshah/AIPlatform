@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-@ApplicationScoped
 public class CSVDataUtil {
     private static Logger logger = LoggerFactory.getLogger(CSVDataUtil.class);
 

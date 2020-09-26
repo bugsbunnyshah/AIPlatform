@@ -26,6 +26,9 @@ public class AIPlatformDataSetIteratorFactory
         AIPlatformDataSetSourceFactory sourceFactory = new AIPlatformDataSetSourceFactory(securityToken);
 
         Collection<String> paths = Arrays.asList(""+dataSetId);
-        return new DataSetLoaderIterator(paths,this.aiPlatformDataSetLoader,sourceFactory);
+
+        final DataSetLoaderIterator dataSetLoaderIterator = new DataSetLoaderIterator(paths, this.aiPlatformDataSetLoader, sourceFactory);
+
+        return dataSetLoaderIterator;
     }
 }
