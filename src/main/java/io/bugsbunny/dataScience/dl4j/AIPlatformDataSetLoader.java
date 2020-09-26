@@ -56,10 +56,11 @@ public class AIPlatformDataSetLoader implements Loader
             SecurityToken securityToken = ((AIPlatformDataSetSource) source).getSecurityToken();
             this.securityTokenContainer.getTokenContainer().set(securityToken);
             JsonObject dataSetJson = JsonParser.parseString(mongoDBJsonStore.readDataSet(dataSetId).toString()).getAsJsonObject();
+            logger.info(dataSetJson.toString());
             String data = dataSetJson.get("data").getAsString();
+            long rows = dataSetJson.get("rows").getAsLong();
+            long columns = dataSetJson.get("columns").getAsLong();
 
-            int rows = 100;
-            int columns = 3;
             INDArray features = new NDArray(rows,columns);
             INDArray labels = new NDArray(rows,rows);
             dataSet = new DataSet(features,labels,null,null);

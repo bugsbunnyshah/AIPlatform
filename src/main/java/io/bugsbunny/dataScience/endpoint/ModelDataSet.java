@@ -30,10 +30,8 @@ public class ModelDataSet
     @Produces(MediaType.APPLICATION_JSON)
     public Response storeTrainingDataSet(@RequestBody String input)
     {
-        JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
-        String dataFormat = jsonObject.get("format").getAsString();
-        String data = jsonObject.get("data").getAsString();
-        long dataSetId = this.modelDataSetService.storeTrainingDataSet(dataFormat, data);
+        JsonObject dataSetJson = JsonParser.parseString(input).getAsJsonObject();
+        long dataSetId = this.modelDataSetService.storeTrainingDataSet(dataSetJson);
 
         JsonObject returnValue = new JsonObject();
         returnValue.addProperty("dataSetId", dataSetId);
@@ -46,11 +44,8 @@ public class ModelDataSet
     @Produces(MediaType.APPLICATION_JSON)
     public Response storeEvalDataSet(@RequestBody String input)
     {
-        JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
-        String dataFormat = jsonObject.get("format").getAsString();
-        String data = jsonObject.get("data").getAsString();
-        long modelId = jsonObject.get("modelId").getAsLong();
-        long dataSetId = this.modelDataSetService.storeEvalDataSet(modelId, dataFormat, data);
+        JsonObject dataSetJson = JsonParser.parseString(input).getAsJsonObject();
+        long dataSetId = this.modelDataSetService.storeEvalDataSet(dataSetJson);
 
         JsonObject returnValue = new JsonObject();
         returnValue.addProperty("dataSetId", dataSetId);

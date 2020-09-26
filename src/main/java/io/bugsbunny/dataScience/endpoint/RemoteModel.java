@@ -50,7 +50,8 @@ public class RemoteModel
 
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
             String dataFormat = "remoteModelFormat";
-            this.modelDataSetService.storeEvalDataSet(modelId, dataFormat, data.toString());
+            jsonObject.addProperty("format", dataFormat);
+            this.modelDataSetService.storeEvalDataSet(jsonObject);
 
             Response response = Response.ok(result.toString()).build();
             return response;

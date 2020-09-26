@@ -99,7 +99,10 @@ public class MongoDBJsonStoreTests {
                 StandardCharsets.UTF_8);
         logger.info(csv);
 
-        long oid = this.mongoDBJsonStore.storeDataSet("csv", "training", csv);
+        JsonObject dataSetJson = new JsonObject();
+        dataSetJson.addProperty("format","csv");
+        dataSetJson.addProperty("data", csv);
+        long oid = this.mongoDBJsonStore.storeTrainingDataSet(dataSetJson);
 
         JsonObject dataSet = this.mongoDBJsonStore.readDataSet(oid);
         String csvData = dataSet.get("data").getAsString();

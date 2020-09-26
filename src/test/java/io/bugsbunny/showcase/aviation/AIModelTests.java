@@ -103,14 +103,12 @@ public class AIModelTests
 
             csvData.add(csvRow);
         }
-        String csv = csvDataUtil.convert(csvData);
-        //logger.info(csv);
+        JsonObject csvJson = csvDataUtil.convert(csvData);
+        csvJson.addProperty("format", "csv");
 
-        JsonObject input = new JsonObject();
-        input.addProperty("format", "csv");
-        input.addProperty("data", csv);
+        logger.info(csvJson.toString());
 
-        Response response = given().body(input.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
+        Response response = given().body(csvJson.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
         response.body().prettyPrint();

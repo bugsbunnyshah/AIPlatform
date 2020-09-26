@@ -16,14 +16,15 @@ public class ModelDataSetService {
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
-    public long storeTrainingDataSet(String dataFormat, String data)
+    public long storeTrainingDataSet(JsonObject dataSetJson)
     {
-        return this.mongoDBJsonStore.storeDataSet(dataFormat, "training", data);
+
+        return this.mongoDBJsonStore.storeTrainingDataSet(dataSetJson);
     }
 
-    public long storeEvalDataSet(long modelId, String dataFormat, String data)
+    public long storeEvalDataSet(JsonObject dataSetJson)
     {
-        return this.mongoDBJsonStore.storeDataSet(modelId, dataFormat, "evaluation", data);
+        return this.mongoDBJsonStore.storeEvalDataSet(dataSetJson);
     }
 
     public JsonObject readDataSet(long dataSetId)

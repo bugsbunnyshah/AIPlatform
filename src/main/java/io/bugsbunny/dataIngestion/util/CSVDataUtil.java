@@ -42,20 +42,23 @@ public class CSVDataUtil {
         return array;
     }
 
-    public String convert(JsonArray data)
+    public JsonObject convert(JsonArray data)
     {
+        JsonObject jsonObject = new JsonObject();
+        int rowCount = data.size();
+        int columnCount = 0;
         StringBuilder csvBuilder = new StringBuilder();
         Iterator<JsonElement> rows = data.iterator();
         while(rows.hasNext())
         {
             JsonObject row = rows.next().getAsJsonObject();
             Set<Map.Entry<String, JsonElement>> entrySet = row.entrySet();
-            int size = entrySet.size();
+            columnCount = entrySet.size();
             int count = 0;
             for(Map.Entry<String, JsonElement> entry:entrySet)
             {
                 csvBuilder.append(entry.getValue());
-                if(count != size-1)
+                if(count != columnCount-1)
                 {
                     csvBuilder.append(",");
                 }
@@ -63,6 +66,9 @@ public class CSVDataUtil {
             }
             csvBuilder.append("\n");
         }
-        return csvBuilder.toString();
+        jsonObject.addProperty("rows", rowCount);
+        jsonObject.addProperty("columns", columnCount);
+        jsonObject.addProperty("data", csvBuilder.toString());
+        return jsonObject;
     }
 }

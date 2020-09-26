@@ -372,7 +372,7 @@ public class MongoDBJsonStore
         return modelPackage;
     }
     //DataLake related operations----------------------------------------------------------------
-    public long storeDataSet(String dataFormat, String dataSetType, String data)
+    public long storeTrainingDataSet(JsonObject dataSetJson)
     {
         String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
         String region = securityTokenContainer.getTokenContainer().get().getRegion();
@@ -382,18 +382,15 @@ public class MongoDBJsonStore
         MongoCollection<Document> collection = database.getCollection("dataset");
 
         long oid = new Random().nextLong();
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("dataSetId", oid);
-        jsonObject.addProperty("format",dataFormat);
-        jsonObject.addProperty("dataSetType", dataSetType);
-        jsonObject.addProperty("data", data);
-        Document doc = Document.parse(jsonObject.toString());
+        dataSetJson.addProperty("dataSetId", oid);
+        dataSetJson.addProperty("dataSetType", "training");
+        Document doc = Document.parse(dataSetJson.toString());
         collection.insertOne(doc);
 
         return oid;
     }
 
-    public long storeDataSet(long modelId, String dataFormat, String dataSetType, String data)
+    public long storeEvalDataSet(JsonObject dataSetJson)
     {
         String principal = securityTokenContainer.getTokenContainer().get().getPrincipal();
         String region = securityTokenContainer.getTokenContainer().get().getRegion();
@@ -403,13 +400,9 @@ public class MongoDBJsonStore
         MongoCollection<Document> collection = database.getCollection("dataset");
 
         long oid = new Random().nextLong();
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("modelId", modelId);
-        jsonObject.addProperty("dataSetId", oid);
-        jsonObject.addProperty("format",dataFormat);
-        jsonObject.addProperty("dataSetType", dataSetType);
-        jsonObject.addProperty("data", data);
-        Document doc = Document.parse(jsonObject.toString());
+        dataSetJson.addProperty("dataSetId", oid);
+        dataSetJson.addProperty("dataSetType", "evaluation");
+        Document doc = Document.parse(dataSetJson.toString());
         collection.insertOne(doc);
 
         return oid;
