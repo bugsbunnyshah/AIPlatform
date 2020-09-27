@@ -31,4 +31,9 @@ public class PackagingService {
     {
         return this.mongoDBJsonStore.getModelPackage(modelId);
     }
+
+    public String getModel(long modelId)
+    {
+        return this.mongoDBJsonStore.getModel(modelId);
+    }
 }

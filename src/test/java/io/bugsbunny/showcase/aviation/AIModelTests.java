@@ -9,6 +9,7 @@ import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
 import org.datavec.api.split.FileSplit;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
+import org.deeplearning4j.util.ModelSerializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import io.restassured.response.Response;
@@ -44,8 +45,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -75,7 +78,7 @@ public class AIModelTests
     @Test
     public void testTraining() throws Exception
     {
-        String flightsJson = IOUtils.resourceToString("aviation/flights0.json",
+        /*String flightsJson = IOUtils.resourceToString("aviation/flights0.json",
                 StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
         JsonArray data = JsonParser.parseString(flightsJson).getAsJsonObject().getAsJsonArray("data");
@@ -84,7 +87,6 @@ public class AIModelTests
         JsonArray csvData = new JsonArray();
 
         Random random = new Random();
-        double val = random.nextDouble();
         Iterator<JsonElement> itr = data.iterator();
         while(itr.hasNext())
         {
@@ -100,19 +102,29 @@ public class AIModelTests
             }
 
             JsonObject csvRow = new JsonObject();
-            //csvRow.addProperty("tag", 1);
-            csvRow.addProperty("scheduled", val);
-            csvRow.addProperty("estimated", val);
-            csvRow.addProperty("actual", actual);
+            csvRow.addProperty("scheduled", random.nextDouble());
+            csvRow.addProperty("estimated", random.nextDouble());
 
             csvData.add(csvRow);
+        }*/
+        JsonArray trainCsvData = new JsonArray();
+        Random random = new Random();
+        for(int i=0; i<100; i++)
+        {
+            JsonObject csvRow = new JsonObject();
+            csvRow.addProperty("scheduled", random.nextDouble());
+            csvRow.addProperty("estimated", random.nextDouble());
+            trainCsvData.add(csvRow);
         }
-        JsonObject csvJson = csvDataUtil.convert(csvData);
+        CSVDataUtil csvDataUtil = new CSVDataUtil();
+        JsonObject csvJson = csvDataUtil.convert(trainCsvData);
         csvJson.addProperty("format", "csv");
+        //String csv = csvJson.get("data").getAsString();
 
-        String csv = csvJson.get("data").getAsString();
+        String csv = IOUtils.resourceToString("dataScience/saturn_data_train.csv",
+            StandardCharsets.UTF_8,
+            Thread.currentThread().getContextClassLoader());
         logger.info(csv);
-
         Response response = given().body(csvJson.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
@@ -120,20 +132,46 @@ public class AIModelTests
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
         JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        long dataSetId = returnValue.get("dataSetId").getAsLong();
-        logger.info(""+dataSetId);
+        long trainingDataSetId = returnValue.get("dataSetId").getAsLong();
+        logger.info("TrainingDataSetId: "+trainingDataSetId);
+
+
+        JsonArray testCsvData = new JsonArray();
+        for(int i=0; i<100; i++)
+        {
+            JsonObject csvRow = new JsonObject();
+            csvRow.addProperty("scheduled", random.nextDouble());
+            csvRow.addProperty("estimated", random.nextDouble());
+            testCsvData.add(csvRow);
+        }
+        csvJson = csvDataUtil.convert(testCsvData);
+        csvJson.addProperty("format", "csv");
+        //csv = csvJson.get("data").getAsString();
+        csv = IOUtils.resourceToString("dataScience/saturn_data_eval.csv",
+                StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        logger.info(csv);
+        response = given().body(csvJson.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+        returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+        long evalDataSetId = returnValue.get("dataSetId").getAsLong();
+        logger.info("EvalDataSetId: "+evalDataSetId);
 
         int seed = 123;
         double learningRate = 0.01;
         int batchSize = 50;
         int nEpochs = 30;
 
-        int numInputs = 3;
+        int numInputs = 2;
         int numOutputs = 100;
-        int numHiddenNodes = 3;
+        int numHiddenNodes = 2;
 
-        DataSetIterator trainIter = this.aiPlatformDataSetIteratorFactory.getInstance(dataSetId);
-        DataSetIterator testIter = this.aiPlatformDataSetIteratorFactory.getInstance(dataSetId);
+        DataSetIterator trainIter = this.aiPlatformDataSetIteratorFactory.getInstance(trainingDataSetId);
+        DataSetIterator testIter = this.aiPlatformDataSetIteratorFactory.getInstance(evalDataSetId);
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
@@ -177,24 +215,18 @@ public class AIModelTests
         System.out.println(evalResults.stats());
         System.out.println("\n****************Example finished********************");
 
-        generateVisuals(model, trainIter, testIter);
-    }
-
-    private static void generateVisuals(MultiLayerNetwork model, DataSetIterator trainIter, DataSetIterator testIter) throws Exception {
-        if (visualize) {
-            double xMin = 0;
-            double xMax = 1.0;
-            double yMin = -0.2;
-            double yMax = 0.8;
-            int nPointsPerAxis = 100;
-
-            //Generate x,y points that span the whole range of features
-            INDArray allXYPoints = PlotUtil.generatePointsOnGraph(xMin, xMax, yMin, yMax, nPointsPerAxis);
-            //Get train data and plot with predictions
-            PlotUtil.plotTrainingData(model, trainIter, allXYPoints, nPointsPerAxis);
-            TimeUnit.SECONDS.sleep(3);
-            //Get test data, run the test data through the network to generate predictions, and plot those predictions:
-            PlotUtil.plotTestData(model, testIter, allXYPoints, nPointsPerAxis);
-        }
+        //Deploy the Model
+        ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
+        ModelSerializer.writeModel(model, modelBytes, false);
+        String modelString = Base64.getEncoder().encodeToString(modelBytes.toByteArray());
+        JsonObject modelPackage = new JsonObject();
+        modelPackage.addProperty("name", "name");
+        modelPackage.addProperty("model", modelString);
+        response = given().body(modelPackage.toString()).when().post("/aimodel/performPackaging/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
     }
 }

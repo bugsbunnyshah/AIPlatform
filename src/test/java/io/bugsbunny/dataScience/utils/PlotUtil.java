@@ -190,10 +190,10 @@ public class PlotUtil {
         yAxis.setRange(mins[1], maxs[1]);
 
         XYBlockRenderer renderer = new XYBlockRenderer();
-        renderer.setBlockWidth((maxs[0] - mins[0]) / (nPoints - 1));
-        renderer.setBlockHeight((maxs[1] - mins[1]) / (nPoints - 1));
+        //renderer.setBlockWidth((maxs[0] - mins[0]) / (nPoints - 1));
+        //renderer.setBlockHeight((maxs[1] - mins[1]) / (nPoints - 1));
+        //renderer.setPaintScale(scale);
         PaintScale scale = new GrayPaintScale(0, 1.0);
-        renderer.setPaintScale(scale);
         XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
         plot.setBackgroundPaint(Color.lightGray);
         plot.setDomainGridlinesVisible(false);
@@ -214,18 +214,19 @@ public class PlotUtil {
         legend.setAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
         legend.setAxisOffset(5.0);
         legend.setMargin(new RectangleInsets(5, 5, 5, 5));
-        legend.setFrame(new BlockBorder(Color.red));
+        //legend.setFrame(new BlockBorder(Color.red));
+        legend.setBorder(new BlockBorder(Color.red));
         legend.setPadding(new RectangleInsets(10, 10, 10, 10));
         legend.setStripWidth(10);
         legend.setPosition(RectangleEdge.LEFT);
         chart.addSubtitle(legend);
 
-        ChartUtilities.applyCurrentTheme(chart);
+        //ChartUtilities.applyCurrentTheme(chart);
 
         plot.setDataset(1, xyData);
-        XYLineAndShapeRenderer renderer2 = new XYLineAndShapeRenderer();
-        renderer2.setBaseLinesVisible(false);
-        plot.setRenderer(1, renderer2);
+        //XYLineAndShapeRenderer renderer2 = new XYLineAndShapeRenderer();
+        //renderer2.setBaseLinesVisible(false);
+        //plot.setRenderer(1, renderer2);
 
         plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
 

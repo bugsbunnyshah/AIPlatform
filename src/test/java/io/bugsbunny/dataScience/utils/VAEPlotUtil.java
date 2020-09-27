@@ -172,20 +172,20 @@ public class VAEPlotUtil {
         plot.getRenderer().setBaseOutlineStroke(new BasicStroke(0));
         plot.setNoDataMessage("NO DATA");
 
-        plot.setDomainPannable(false);
-        plot.setRangePannable(false);
-        plot.setDomainZeroBaselineVisible(true);
+        //plot.setDomainPannable(false);
+        //plot.setRangePannable(false);
+        //plot.setDomainZeroBaselineVisible(true);
         plot.setRangeZeroBaselineVisible(true);
 
         plot.setDomainGridlineStroke(new BasicStroke(0.0f));
-        plot.setDomainMinorGridlineStroke(new BasicStroke(0.0f));
+        //plot.setDomainMinorGridlineStroke(new BasicStroke(0.0f));
         plot.setDomainGridlinePaint(Color.blue);
         plot.setRangeGridlineStroke(new BasicStroke(0.0f));
-        plot.setRangeMinorGridlineStroke(new BasicStroke(0.0f));
+        //plot.setRangeMinorGridlineStroke(new BasicStroke(0.0f));
         plot.setRangeGridlinePaint(Color.blue);
 
-        plot.setDomainMinorGridlinesVisible(true);
-        plot.setRangeMinorGridlinesVisible(true);
+        //plot.setDomainMinorGridlinesVisible(true);
+        //plot.setRangeMinorGridlinesVisible(true);
 
         XYLineAndShapeRenderer renderer
             = (XYLineAndShapeRenderer) plot.getRenderer();
@@ -198,14 +198,14 @@ public class VAEPlotUtil {
         domainAxis.setTickMarkInsideLength(2.0f);
         domainAxis.setTickMarkOutsideLength(2.0f);
 
-        domainAxis.setMinorTickCount(2);
-        domainAxis.setMinorTickMarksVisible(true);
+        //domainAxis.setMinorTickCount(2);
+        //domainAxis.setMinorTickMarksVisible(true);
 
         NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
         rangeAxis.setTickMarkInsideLength(2.0f);
         rangeAxis.setTickMarkOutsideLength(2.0f);
-        rangeAxis.setMinorTickCount(2);
-        rangeAxis.setMinorTickMarksVisible(true);
+        //rangeAxis.setMinorTickCount(2);
+        //rangeAxis.setMinorTickMarksVisible(true);
         rangeAxis.setRange(axisMin, axisMax);
         return chart;
     }
