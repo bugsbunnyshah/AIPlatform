@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +16,7 @@ import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 
 @QuarkusTest
-public class PackagingServiceTests
+public class PackagingServiceTests extends BaseTest
 {
     private static Logger logger = LoggerFactory.getLogger(PackagingServiceTests.class);
 
@@ -25,18 +26,6 @@ public class PackagingServiceTests
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
-    @Inject
-    private SecurityTokenContainer securityTokenContainer;
-
-    @BeforeEach
-    public void setUp() throws Exception
-    {
-        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("oauthAgent/token.json"),
-                StandardCharsets.UTF_8);
-        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
-        this.securityTokenContainer.getTokenContainer().set(securityToken);
-    }
 
     @Test
     public void testPerformPackaging() throws Exception

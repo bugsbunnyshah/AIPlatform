@@ -2,6 +2,7 @@ package io.bugsbunny.dataScience.endpoint;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
@@ -21,21 +22,9 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
-public class AIModelPackagingTests
+public class AIModelPackagingTests extends BaseTest
 {
     private static Logger logger = LoggerFactory.getLogger(AIModelPackagingTests.class);
-
-    @Inject
-    private SecurityTokenContainer securityTokenContainer;
-    @BeforeEach
-    public void setUp() throws Exception
-    {
-        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("oauthAgent/token.json"),
-                StandardCharsets.UTF_8);
-        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
-        this.securityTokenContainer.getTokenContainer().set(securityToken);
-    }
 
     @Test
     public void testGetModel() throws Exception

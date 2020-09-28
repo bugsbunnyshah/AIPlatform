@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
@@ -27,23 +28,12 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
-public class DataMapperTests {
+public class DataMapperTests extends BaseTest
+{
     private static Logger logger = LoggerFactory.getLogger(DataMapperTests.class);
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
-
-    @Inject
-    private SecurityTokenContainer securityTokenContainer;
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("oauthAgent/token.json"),
-                StandardCharsets.UTF_8);
-        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
-        this.securityTokenContainer.getTokenContainer().set(securityToken);
-    }
 
     @Test
     public void testMapWithOneToOneFields() throws Exception {

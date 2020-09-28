@@ -8,6 +8,7 @@ import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
@@ -28,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
-public class RemoteModelTests {
+public class RemoteModelTests extends BaseTest {
     private static Logger logger = LoggerFactory.getLogger(RemoteModelTests.class);
 
     @Inject
@@ -37,18 +38,6 @@ public class RemoteModelTests {
     @Inject
     private PackagingService packagingService;
 
-    @Inject
-    private SecurityTokenContainer securityTokenContainer;
-
-    @BeforeEach
-    public void setUp() throws Exception
-    {
-        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("oauthAgent/token.json"),
-                StandardCharsets.UTF_8);
-        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
-        this.securityTokenContainer.getTokenContainer().set(securityToken);
-    }
 
     @Test
     public void testInvocations() throws Exception {

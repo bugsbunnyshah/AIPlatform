@@ -6,9 +6,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataIngestion.service.IngestionService;
 import io.bugsbunny.dataIngestion.service.MapperService;
-import io.bugsbunny.endpoint.OAuthAgent;
-import io.bugsbunny.endpoint.SecurityTokenContainer;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.json.XML;
 import org.slf4j.Logger;
@@ -16,13 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.nio.charset.StandardCharsets;
 
 @Path("dataMapper")
 public class DataMapper {

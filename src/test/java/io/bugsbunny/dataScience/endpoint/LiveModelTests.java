@@ -8,6 +8,8 @@ import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.endpoint.AITrafficAgent;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.test.components.BaseTest;
+import io.bugsbunny.test.components.SecurityTokenMockComponent;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +27,7 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
-public class LiveModelTests {
+public class LiveModelTests extends BaseTest {
     private static Logger logger = LoggerFactory.getLogger(LiveModelTests.class);
 
     @Inject
@@ -36,18 +38,6 @@ public class LiveModelTests {
 
     @Inject
     private PackagingService packagingService;
-
-    @Inject
-    private SecurityTokenContainer securityTokenContainer;
-    @BeforeEach
-    public void setUp() throws Exception
-    {
-        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("oauthAgent/token.json"),
-                StandardCharsets.UTF_8);
-        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
-        this.securityTokenContainer.getTokenContainer().set(securityToken);
-    }
 
     @Test
     public void testEvalJava() throws Exception

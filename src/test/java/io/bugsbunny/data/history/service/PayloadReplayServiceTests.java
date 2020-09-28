@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.test.components.BaseTest;
 import org.apache.commons.io.IOUtils;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -22,24 +23,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-public class PayloadReplayServiceTests {
+public class PayloadReplayServiceTests extends BaseTest
+{
     private static Logger logger = LoggerFactory.getLogger(PayloadReplayServiceTests.class);
 
     @Inject
     private PayloadReplayService payloadReplayService;
-
-    @Inject
-    private SecurityTokenContainer securityTokenContainer;
-
-    @BeforeEach
-    public void setUp() throws Exception
-    {
-        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("oauthAgent/token.json"),
-                StandardCharsets.UTF_8);
-        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
-        this.securityTokenContainer.getTokenContainer().set(securityToken);
-    }
 
     @Test
     public void testDiffChainProcess() throws Exception

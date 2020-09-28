@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-@Priority(2)
+@Priority(1)
 @Provider
 public class AITrafficAgent implements ContainerRequestFilter, ContainerResponseFilter
 {
@@ -169,27 +169,27 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
 
     private String getRequestChainId()
     {
-        String token = this.securityTokenContainer.getTokenContainer().get().getToken();
+        String token = this.securityTokenContainer.getSecurityToken().getToken();
         String requestChainId = this.tokenToRequestChainId.get(token);
         return requestChainId;
     }
 
     private void setRequestChainId(String requestChainId)
     {
-        String token = this.securityTokenContainer.getTokenContainer().get().getToken();
+        String token = this.securityTokenContainer.getSecurityToken().getToken();
         this.tokenToRequestChainId.put(token, requestChainId);
     }
 
     private String getResponseChainId()
     {
-        String token = this.securityTokenContainer.getTokenContainer().get().getToken();
+        String token = this.securityTokenContainer.getSecurityToken().getToken();
         String responseChainId = this.tokenToResponseChainId.get(token);
         return responseChainId;
     }
 
     private void setResponseChainId(String responseChainId)
     {
-        String token = this.securityTokenContainer.getTokenContainer().get().getToken();
+        String token = this.securityTokenContainer.getSecurityToken().getToken();
         this.tokenToResponseChainId.put(token, responseChainId);
     }
 

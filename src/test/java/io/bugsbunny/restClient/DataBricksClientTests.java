@@ -60,7 +60,7 @@ public class DataBricksClientTests {
                         getResourceAsStream("oauthAgent/token.json"),
                 StandardCharsets.UTF_8);
         SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
-        this.securityTokenContainer.getTokenContainer().set(securityToken);
+        this.securityTokenContainer.setSecurityToken(securityToken);
     }
 
     /*@Test

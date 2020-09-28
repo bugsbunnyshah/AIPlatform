@@ -1,24 +1,29 @@
 package io.bugsbunny.endpoint;
 
-import javax.enterprise.context.ApplicationScoped;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-//TODO: MAYBE_REQUEST_SCOPED
-@ApplicationScoped
+import javax.inject.Singleton;
+
+@Singleton
 public class SecurityTokenContainer
 {
-    private ThreadLocal<SecurityToken> tokenContainer = new ThreadLocal<>();
+    private static Logger logger = LoggerFactory.getLogger(SecurityTokenContainer.class);
+
+    private static ThreadLocal<SecurityToken> tokenContainer;
 
     public SecurityTokenContainer()
     {
+        tokenContainer = new ThreadLocal<>();
     }
 
-    public ThreadLocal<SecurityToken> getTokenContainer()
+    public void setSecurityToken(SecurityToken securityToken)
     {
-        return tokenContainer;
+        tokenContainer.set(securityToken);
     }
 
-    public void setTokenContainer(ThreadLocal<SecurityToken> tokenContainer)
+    public SecurityToken getSecurityToken()
     {
-        this.tokenContainer = tokenContainer;
+        return tokenContainer.get();
     }
 }

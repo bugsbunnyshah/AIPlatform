@@ -8,6 +8,7 @@ import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 
 import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
 import org.deeplearning4j.nn.conf.inputs.InputType;
@@ -56,7 +57,7 @@ import static io.restassured.RestAssured.given;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @QuarkusTest
-public class ModelTrainingProcessTests
+public class ModelTrainingProcessTests extends BaseTest
 {
     private static Logger logger = LoggerFactory.getLogger(ModelTrainingProcessTests.class);
 
@@ -68,19 +69,6 @@ public class ModelTrainingProcessTests
 
     @Inject
     private SecurityTokenContainer securityTokenContainer;
-
-    @Inject
-    private MongoDBJsonStore mongoDBJsonStore;
-
-    @BeforeEach
-    public void setUp() throws Exception
-    {
-        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("oauthAgent/token.json"),
-                UTF_8);
-        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
-        this.securityTokenContainer.getTokenContainer().set(securityToken);
-    }
 
     @Test
     public void testSaturnClassifierModel() throws Exception

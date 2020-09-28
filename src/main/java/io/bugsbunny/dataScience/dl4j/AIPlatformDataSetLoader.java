@@ -1,16 +1,12 @@
 package io.bugsbunny.dataScience.dl4j;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.persistence.MongoDBJsonStore;
 
-import org.apache.commons.io.IOUtils;
 import org.nd4j.common.loader.Loader;
 import org.nd4j.common.loader.Source;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -25,9 +21,6 @@ import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Random;
 
 /*
 String resource = "dataScience/saturn_data_train.csv";
@@ -54,12 +47,20 @@ public class AIPlatformDataSetLoader implements Loader
             String path = source.getPath();
             long dataSetId = Long.parseLong(path);
             SecurityToken securityToken = ((AIPlatformDataSetSource) source).getSecurityToken();
-            this.securityTokenContainer.getTokenContainer().set(securityToken);
+            this.securityTokenContainer.setSecurityToken(securityToken);
             JsonObject dataSetJson = JsonParser.parseString(mongoDBJsonStore.readDataSet(dataSetId).toString()).getAsJsonObject();
             logger.info(dataSetJson.toString());
             String data = dataSetJson.get("data").getAsString();
-            long rows = dataSetJson.get("rows").getAsLong();
-            long columns = dataSetJson.get("columns").getAsLong();
+            long rows = 0l;
+            if(dataSetJson.has("rows"))
+            {
+                rows = dataSetJson.get("rows").getAsLong();
+            }
+            long columns = 0l;
+            if(dataSetJson.has("columns"))
+            {
+                columns = dataSetJson.get("columns").getAsLong();
+            }
 
             INDArray features = new NDArray(rows,columns);
             INDArray labels = new NDArray(rows,rows);

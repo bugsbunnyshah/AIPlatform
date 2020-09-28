@@ -4,6 +4,7 @@ import io.bugsbunny.dataScience.utils.DownloaderUtility;
 import io.bugsbunny.dataScience.utils.PlotUtil;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
@@ -54,7 +55,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @QuarkusTest
-public class AIModelTests
+public class AIModelTests extends BaseTest
 {
     private static Logger logger = LoggerFactory.getLogger(AIModelTests.class);
 
@@ -62,18 +63,6 @@ public class AIModelTests
 
     @Inject
     private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
-
-    @Inject
-    private SecurityTokenContainer securityTokenContainer;
-    @BeforeEach
-    public void setUp() throws Exception
-    {
-        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("oauthAgent/token.json"),
-                StandardCharsets.UTF_8);
-        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
-        this.securityTokenContainer.getTokenContainer().set(securityToken);
-    }
 
     @Test
     public void testTraining() throws Exception

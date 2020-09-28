@@ -21,8 +21,7 @@ public class AIPlatformDataSetIteratorFactory
 
     public DataSetIterator getInstance(long dataSetId)
     {
-        ThreadLocal<SecurityToken> tokenContainer = this.securityTokenContainer.getTokenContainer();
-        SecurityToken securityToken = tokenContainer.get();
+        SecurityToken securityToken = this.securityTokenContainer.getSecurityToken();
         AIPlatformDataSetSourceFactory sourceFactory = new AIPlatformDataSetSourceFactory(securityToken);
 
         Collection<String> paths = Arrays.asList(""+dataSetId);

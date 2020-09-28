@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.data.history.service.PayloadReplayService;
 import io.bugsbunny.dataScience.service.PackagingService;
+import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
@@ -15,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,8 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 //TODO: Add Tests for DataMapper and RemoteMOdel ObjectDiffs
 
 @QuarkusTest
-public class AITrafficAgentTests {
-    private static Logger logger = LoggerFactory.getLogger(AITrafficAgentTests.class);
+public class SecurityTokenMockComponentTests extends BaseTest {
+    private static Logger logger = LoggerFactory.getLogger(SecurityTokenMockComponentTests.class);
 
     @Inject
     private PayloadReplayService payloadReplayService;
@@ -38,16 +38,6 @@ public class AITrafficAgentTests {
 
     @Inject
     private SecurityTokenContainer securityTokenContainer;
-
-    @BeforeEach
-    public void setUp() throws Exception
-    {
-        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("oauthAgent/token.json"),
-                StandardCharsets.UTF_8);
-        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
-        this.securityTokenContainer.getTokenContainer().set(securityToken);
-    }
 
     @Test
     public void testEvalLiveModelTrafficReplay() throws Exception
@@ -86,7 +76,7 @@ public class AITrafficAgentTests {
             assertEquals(200, response.getStatusCode());
         }
 
-        String token = this.securityTokenContainer.getTokenContainer().get().getToken();
+        String token = this.securityTokenContainer.getSecurityToken().getToken();
 
         String requestChainId = this.aiTrafficAgent.findRequestChainId(token);
         List<JsonObject> traffic = this.payloadReplayService.replayDiffChain(requestChainId);
