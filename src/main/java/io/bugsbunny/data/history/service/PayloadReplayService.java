@@ -261,12 +261,17 @@ public class PayloadReplayService {
         return replayChain;
     }
 
-    public Map<String,List<JsonObject>> replayDiffChain(String region, String principal)
+    public Map<String,List<JsonObject>> replayDiffChainByPrincipal(String principal)
     {
         Map<String, List<JsonObject>> replayChainMap = new HashMap<>();
 
-        List<JsonObject> diffChain = this.mongoDBJsonStore.readDiffChain(region, principal);
-        List<JsonObject> objectDiffs = this.mongoDBJsonStore.readDiffs(region, principal);
+        List<JsonObject> diffChain = this.mongoDBJsonStore.readDiffChain(principal);
+        List<JsonObject> objectDiffs = this.mongoDBJsonStore.readDiffs(principal);
+
+        if(diffChain == null || diffChain.isEmpty())
+        {
+            return replayChainMap;
+        }
 
 
         List<JsonObject> replayChain = new ArrayList<>();

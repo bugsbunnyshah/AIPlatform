@@ -23,12 +23,12 @@ public class Dashboard {
     @Inject
     private ModelTrafficService modelTrafficService;
 
-    @Path("modelTraffic")
+    /*@Path("modelTraffic")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response modelTraffic()
     {
-        Map<String, List<JsonObject>> modelTraffic = this.modelTrafficService.getModelTraffic("us", "bugsbunny");
+        Map<String, List<JsonObject>> modelTraffic = this.modelTrafficService.getModelTraffic();
         return Response.ok(modelTraffic.toString()).build();
-    }
+    }*/
 }

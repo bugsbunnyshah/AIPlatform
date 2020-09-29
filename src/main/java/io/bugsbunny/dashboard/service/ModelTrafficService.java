@@ -2,6 +2,8 @@ package io.bugsbunny.dashboard.service;
 
 import com.google.gson.JsonObject;
 import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.endpoint.SecurityToken;
+import io.bugsbunny.endpoint.SecurityTokenContainer;
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -39,8 +41,12 @@ public class ModelTrafficService
     @Inject
     private PayloadReplayService payloadReplayService;
 
-    public Map<String,List<JsonObject>> getModelTraffic(String region, String principal)
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
+    public Map<String,List<JsonObject>> getModelTraffic()
     {
-        return this.payloadReplayService.replayDiffChain(region, principal);
+        SecurityToken securityToken = this.securityTokenContainer.getSecurityToken();
+        return this.payloadReplayService.replayDiffChainByPrincipal(securityToken.getPrincipal());
     }
 }

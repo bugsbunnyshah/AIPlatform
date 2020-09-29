@@ -62,9 +62,15 @@ public class AIPlatformDataSetLoader implements Loader
                 columns = dataSetJson.get("columns").getAsLong();
             }
 
-            INDArray features = new NDArray(rows,columns);
-            INDArray labels = new NDArray(rows,rows);
-            dataSet = new DataSet(features,labels,null,null);
+            if(rows > 0) {
+                INDArray features = new NDArray(rows, columns);
+                INDArray labels = new NDArray(rows, rows);
+                dataSet = new DataSet(features, labels, null, null);
+            }
+            else
+            {
+                dataSet = new DataSet();
+            }
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             byteArrayOutputStream.writeBytes(data.getBytes(StandardCharsets.UTF_8));
