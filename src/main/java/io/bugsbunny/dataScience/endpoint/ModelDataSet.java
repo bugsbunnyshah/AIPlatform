@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.AIModelService;
 import io.bugsbunny.dataScience.service.ModelDataSetService;
+import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.persistence.MongoDBJsonStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,9 @@ public class ModelDataSet
 
     @Inject
     private ModelDataSetService modelDataSetService;
+
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
 
     @Path("storeTrainingDataSet")
     @POST

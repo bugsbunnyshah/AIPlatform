@@ -86,12 +86,13 @@ public class MongoDBJsonStoreTests extends BaseTest {
         String csv = IOUtils.toString(
                 Thread.currentThread().getContextClassLoader().getResourceAsStream("dataScience/saturn_data_eval.csv"),
                 StandardCharsets.UTF_8);
-        logger.info(csv);
+        //logger.info(csv);
 
         JsonObject dataSetJson = new JsonObject();
         dataSetJson.addProperty("format","csv");
         dataSetJson.addProperty("data", csv);
         long oid = this.mongoDBJsonStore.storeTrainingDataSet(dataSetJson);
+        logger.info("Lookup DataSetId: "+oid);
 
         JsonObject dataSet = this.mongoDBJsonStore.readDataSet(oid);
         String csvData = dataSet.get("data").getAsString();

@@ -404,10 +404,16 @@ public class MongoDBJsonStore
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
         MongoCursor<Document> cursor = iterable.cursor();
-        Document document = cursor.next();
-        String documentJson = document.toJson();
+        if(cursor.hasNext())
+        {
+            Document document = cursor.next();
+            String documentJson = document.toJson();
 
-        return JsonParser.parseString(documentJson).getAsJsonObject();
+            JsonObject cour = JsonParser.parseString(documentJson).getAsJsonObject();
+            return cour;
+        }
+
+        return null;
     }
 
     public JsonObject rollOverToTraningDataSets(long modelId)

@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-@Priority(1)
+@Priority(2)
 @Provider
 public class AITrafficAgent implements ContainerRequestFilter, ContainerResponseFilter
 {

@@ -22,6 +22,9 @@ public class OAuthAuthenticate
     @Inject
     private OAuthClient oAuthClient;
 
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("token")
@@ -35,6 +38,12 @@ public class OAuthAuthenticate
             String clientSecret = request.get("client_secret").getAsString();
 
             JsonObject jsonObject = this.oAuthClient.getAccessToken(clientId, clientSecret);
+
+            JsonObject securityTokenJson = new JsonObject();
+            securityTokenJson.addProperty("access_token", jsonObject.get("access_token").getAsString());
+            securityTokenJson.addProperty("principal", clientId.hashCode());
+            this.securityTokenContainer.setSecurityToken(SecurityToken.fromJson(securityTokenJson.toString()));
+
             return Response.ok(jsonObject.toString()).build();
         }
         catch(Exception e)

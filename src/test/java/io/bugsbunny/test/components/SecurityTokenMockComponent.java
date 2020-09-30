@@ -51,6 +51,7 @@ public class SecurityTokenMockComponent implements ContainerRequestFilter
             logger.info("*****************************************************************");
             logger.info("(SecurityTokenContainer): " + this.securityTokenContainer);
             logger.info("(SecurityToken): " + this.securityTokenContainer.getSecurityToken());
+            logger.info("(Principal): " + this.securityTokenContainer.getSecurityToken().getPrincipal());
             logger.info("*****************************************************************");
         }
         catch(Exception e)
