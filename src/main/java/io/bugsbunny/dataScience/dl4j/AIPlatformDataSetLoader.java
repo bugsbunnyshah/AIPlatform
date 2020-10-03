@@ -51,6 +51,8 @@ public class AIPlatformDataSetLoader implements Loader
             JsonObject dataSetJson = JsonParser.parseString(mongoDBJsonStore.readDataSet(dataSetId).toString()).getAsJsonObject();
             logger.info(dataSetJson.toString());
             String data = dataSetJson.get("data").getAsString();
+
+
             long rows = 0l;
             if(dataSetJson.has("rows"))
             {
@@ -64,7 +66,7 @@ public class AIPlatformDataSetLoader implements Loader
 
             if(rows > 0) {
                 INDArray features = new NDArray(rows, columns);
-                INDArray labels = new NDArray(rows, rows);
+                INDArray labels = new NDArray(rows, columns);
                 dataSet = new DataSet(features, labels, null, null);
             }
             else
