@@ -235,7 +235,7 @@ public class PlotUtil {
 
     public static INDArray generatePointsOnGraph(double xMin, double xMax, double yMin, double yMax, int nPointsPerAxis) {
         //generate all the x,y points
-        double[][] evalPoints = new double[nPointsPerAxis * nPointsPerAxis][2];
+        double[][] evalPoints = new double[nPointsPerAxis * nPointsPerAxis][5];
         int count = 0;
         for (int i = 0; i < nPointsPerAxis; i++) {
             for (int j = 0; j < nPointsPerAxis; j++) {
@@ -244,6 +244,10 @@ public class PlotUtil {
 
                 evalPoints[count][0] = x;
                 evalPoints[count][1] = y;
+
+                evalPoints[count][2] = y;
+                evalPoints[count][3] = y;
+                evalPoints[count][4] = y;
 
                 count++;
             }

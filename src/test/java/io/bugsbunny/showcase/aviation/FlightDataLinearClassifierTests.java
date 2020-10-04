@@ -128,7 +128,10 @@ public class FlightDataLinearClassifierTests extends BaseTest
         eval.eval(testData.getLabels(), output);
         logger.info(eval.stats());
 
-        //this.generateSaturnVisuals(model, iterator, iterator);
+        this.generateSaturnVisuals(model, iterator, iterator);
+
+
+        Thread.sleep(120000);
     }
 
     private void generateVisuals(MultiLayerNetwork model, DataSetIterator trainIter, DataSetIterator testIter) throws Exception {
@@ -158,8 +161,13 @@ public class FlightDataLinearClassifierTests extends BaseTest
 
         //Generate x,y points that span the whole range of features
         INDArray allXYPoints = PlotUtil.generatePointsOnGraph(xMin, xMax, yMin, yMax, nPointsPerAxis);
+
+        logger.info("*******************");
+        logger.info(allXYPoints.shapeInfoToString());
+
         //Get train data and plot with predictions
         PlotUtil.plotTrainingData(model, trainIter, allXYPoints, nPointsPerAxis);
+
         TimeUnit.SECONDS.sleep(3);
         //Get test data, run the test data through the network to generate predictions, and plot those predictions:
         PlotUtil.plotTestData(model, testIter, allXYPoints, nPointsPerAxis);
