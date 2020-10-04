@@ -1,16 +1,17 @@
 package io.bugsbunny.restClient;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.dataScience.model.DataBricksProcessException;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+
+import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -20,13 +21,14 @@ public class OAuthClient
 {
     private static Logger logger = LoggerFactory.getLogger(OAuthClient.class);
 
-    public JsonObject getAccessToken(String clientId, String clientSecret) throws DataBricksProcessException
+    public JsonObject getAccessToken(String clientId, String clientSecret)
+            throws NetworkException,OAuthException
     {
+        String restUrl = "https://appgallabs.us.auth0.com/oauth/token/";
         try
         {
             //Create the Experiment
             HttpClient httpClient = HttpClient.newBuilder().build();
-            String restUrl = "https://appgallabs.us.auth0.com/oauth/token/";
 
             JsonObject payload = new JsonObject();
             payload.addProperty("client_id", clientId);
@@ -45,14 +47,18 @@ public class OAuthClient
             int status = httpResponse.statusCode();
             if(status != 200)
             {
-                throw new DataBricksProcessException("OAUTH_AUTHENTICATION_FAILURE: "+responseJson);
+                throw new OAuthException("OAUTH_AUTHENTICATION_FAILURE: "+responseJson);
             }
 
             return JsonParser.parseString(responseJson).getAsJsonObject();
         }
-        catch(Exception e)
+        catch(IOException | InterruptedException e)
         {
-            throw new DataBricksProcessException(e);
+            throw new NetworkException(e);
+        }
+        catch(URISyntaxException se)
+        {
+            throw new OAuthException("OAUTH_URI_FAILURE: "+restUrl);
         }
     }
 }
