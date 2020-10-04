@@ -5,15 +5,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.dataIngestion.endpoint.DataMapper;
+
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
-import io.bugsbunny.dataScience.endpoint.ModelDataSet;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.restClient.OAuthClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -32,10 +30,14 @@ public class IngestData extends TimerTask {
 
     private SecurityTokenContainer securityTokenContainer;
 
-    public IngestData(OAuthClient oAuthClient, SecurityTokenContainer securityTokenContainer) {
+    private AviationDataIngestionService aviationDataIngestionService;
+
+    public IngestData(OAuthClient oAuthClient, SecurityTokenContainer securityTokenContainer,
+                      AviationDataIngestionService aviationDataIngestionService) {
         this.oAuthClient = oAuthClient;
         this.securityTokenContainer = securityTokenContainer;
         this.csvDataUtil = new CSVDataUtil();
+        this.aviationDataIngestionService = aviationDataIngestionService;
     }
 
     public void start()
@@ -112,10 +114,6 @@ public class IngestData extends TimerTask {
             }
             JsonObject csvJson = csvDataUtil.convert(trainCsvData);
             csvJson.addProperty("format", "csv");
-            //String csv = csvJson.get("data").getAsString();
-            //long rows = csvJson.get("rows").getAsLong();
-            //long columns = csvJson.get("columns").getAsLong();
-            logger.info(csvJson.toString());
 
             String clientId = "PAlDekAoo0XWjAicU9SQDKgy7B0y2p2t";
             String clientSecret = "U2jMgxL8zJgYOMmHDYTe6-P9yO6Wq51VmixuZSRCaL-11EPE4WrQOWtGLVnQetdd";
@@ -138,10 +136,13 @@ public class IngestData extends TimerTask {
             {
                 return;
             }
-            logger.info(responseJson);
+            JsonObject dataSetJson = JsonParser.parseString(responseJson).getAsJsonObject();
+            long dataSetId = dataSetJson.get("dataSetId").getAsLong();
+            this.aviationDataIngestionService.registerDataSetId(dataSetId);
         }
         catch(Exception e)
         {
+            e.printStackTrace();
             logger.error(e.getMessage(), e);
         }
     }

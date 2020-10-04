@@ -90,10 +90,10 @@ public class AIPlatformDataSetLoader implements Loader
                 dataSet = new DataSet();
             }
 
-            logger.info("********************************");
+            /*logger.info("********************************");
             logger.info("ROWS: "+rows);
             logger.info("COLUMNS: "+columns);
-            logger.info("********************************");
+            logger.info("********************************");*/
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             byteArrayOutputStream.writeBytes(data.getBytes(StandardCharsets.UTF_8));

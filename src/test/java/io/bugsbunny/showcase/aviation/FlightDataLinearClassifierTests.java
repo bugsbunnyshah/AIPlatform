@@ -4,23 +4,29 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
-import io.bugsbunny.dataScience.utils.PlotUtil;
 import io.bugsbunny.restClient.OAuthClient;
 
+import io.bugsbunny.showcase.aviation.service.AviationDataIngestionService;
 import io.bugsbunny.test.components.BaseTest;
+
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.concurrent.TimeUnit;
+import java.util.Base64;
+import java.util.List;
+import java.util.UUID;
 
+import org.deeplearning4j.util.ModelSerializer;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
@@ -28,13 +34,14 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.learning.config.Sgd;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 public class FlightDataLinearClassifierTests extends BaseTest
@@ -46,10 +53,29 @@ public class FlightDataLinearClassifierTests extends BaseTest
     @Inject
     private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
 
-    //@Test
+    @Inject
+    private AviationDataIngestionService aviationDataIngestionService;
+
+    @Test
     public void testClassifier() throws Exception
     {
-        long dataSetId = 539862742631474360l;
+        this.aviationDataIngestionService.startIngestion();
+
+        Thread.sleep(20000);
+
+        List<Long> dataSetIds = this.aviationDataIngestionService.getDataSetIds();
+        int counter = 100;
+        while(dataSetIds.isEmpty() && counter > 0)
+        {
+            dataSetIds = this.aviationDataIngestionService.getDataSetIds();
+            counter--;
+        }
+        assertFalse(dataSetIds.isEmpty());
+        logger.info(dataSetIds.get(dataSetIds.size()-1)+"");
+
+        long trainingDataSetId = dataSetIds.get(0);
+        long testDataSetId = dataSetIds.get(dataSetIds.size()-1);
+        logger.info("TrainingDataSetId: "+trainingDataSetId);
 
         OAuthClient oAuthClient = new OAuthClient();
         String clientId = "PAlDekAoo0XWjAicU9SQDKgy7B0y2p2t";
@@ -60,7 +86,7 @@ public class FlightDataLinearClassifierTests extends BaseTest
 
         //Create the Experiment
         HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://localhost:8080/dataset/readDataSet/?dataSetId="+dataSetId;
+        String restUrl = "http://localhost:8080/dataset/readDataSet/?dataSetId="+trainingDataSetId;
 
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
         HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
@@ -71,26 +97,20 @@ public class FlightDataLinearClassifierTests extends BaseTest
 
 
         HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        String responseJson = httpResponse.body();
         int status = httpResponse.statusCode();
         if(status != 200)
         {
             return;
         }
-        JsonObject dataSet = JsonParser.parseString(responseJson).getAsJsonObject();
-        //logger.info(dataSet.get("data").getAsString());
-        logger.info("ROWS: " +dataSet.get("rows").getAsLong()+"");
-        logger.info("COLUMNS: "+dataSet.get("columns").getAsLong()+"");
 
-        DataSetIterator iterator = this.aiPlatformDataSetIteratorFactory.getInstance(dataSetId);
+        DataSetIterator iterator = this.aiPlatformDataSetIteratorFactory.getInstance(trainingDataSetId);
         DataSet allData = iterator.next();
 
         allData.shuffle();
         DataSet trainingData = allData;
-        DataSet testData = allData;
 
-        int labelIndex = 4;
-        int numClasses = 2;
+        //int labelIndex = 4;
+        //int numClasses = 2;
         final int numInputs = 5;
         int outputNum = 5;
         long seed = 6;
@@ -122,54 +142,30 @@ public class FlightDataLinearClassifierTests extends BaseTest
             model.fit(trainingData);
         }
 
-        //evaluate the model on the test set
-        Evaluation eval = new Evaluation(numClasses);
-        INDArray output = model.output(testData.getFeatures());
-        eval.eval(testData.getLabels(), output);
-        logger.info(eval.stats());
+        //Deploy the Model
+        ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
+        ModelSerializer.writeModel(model, modelBytes, false);
+        String modelString = Base64.getEncoder().encodeToString(modelBytes.toByteArray());
 
-        this.generateSaturnVisuals(model, iterator, iterator);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("name", UUID.randomUUID().toString());
+        jsonObject.addProperty("model", modelString);
+        logger.info(jsonObject.toString());
 
+        Response packageResponse = given().body(jsonObject.toString()).when().post("/aimodel/performPackaging/")
+                .andReturn();
+        packageResponse.body().prettyPrint();
+        JsonObject deployedModel = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
+        long modelId = deployedModel.get("modelId").getAsLong();
+        logger.info("MODEL_ID: "+modelId);
 
-        Thread.sleep(120000);
-    }
-
-    private void generateVisuals(MultiLayerNetwork model, DataSetIterator trainIter, DataSetIterator testIter) throws Exception {
-        double xMin = 0;
-        double xMax = 1.0;
-        double yMin = -0.2;
-        double yMax = 0.8;
-        int nPointsPerAxis = 100;
-
-        //Generate x,y points that span the whole range of features
-        INDArray allXYPoints = PlotUtil.generatePointsOnGraph(xMin, xMax, yMin, yMax, nPointsPerAxis);
-        //Get train data and plot with predictions
-        PlotUtil.plotTrainingData(model, trainIter, allXYPoints, nPointsPerAxis);
-        TimeUnit.SECONDS.sleep(3);
-        //Get test data, run the test data through the network to generate predictions, and plot those predictions:
-        PlotUtil.plotTestData(model, testIter, allXYPoints, nPointsPerAxis);
-    }
-
-    private void generateSaturnVisuals(MultiLayerNetwork model, DataSetIterator trainIter, DataSetIterator testIter) throws Exception {
-        double xMin = -15;
-        double xMax = 15;
-        double yMin = -15;
-        double yMax = 15;
-
-        //Let's evaluate the predictions at every point in the x/y input space, and plot this in the background
-        int nPointsPerAxis = 100;
-
-        //Generate x,y points that span the whole range of features
-        INDArray allXYPoints = PlotUtil.generatePointsOnGraph(xMin, xMax, yMin, yMax, nPointsPerAxis);
-
-        logger.info("*******************");
-        logger.info(allXYPoints.shapeInfoToString());
-
-        //Get train data and plot with predictions
-        PlotUtil.plotTrainingData(model, trainIter, allXYPoints, nPointsPerAxis);
-
-        TimeUnit.SECONDS.sleep(3);
-        //Get test data, run the test data through the network to generate predictions, and plot those predictions:
-        PlotUtil.plotTestData(model, testIter, allXYPoints, nPointsPerAxis);
+        //Run the Model in the Cloud
+        logger.info("TestDataSetId: "+testDataSetId);
+        JsonObject deployResult = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
+        deployResult.addProperty("dataSetId",testDataSetId);
+        logger.info(deployResult.toString());
+        Response response = given().body(deployResult.toString()).when().post("/liveModel/evalJava").andReturn();
+        //response.body().prettyPrint();
+        assertEquals(200, response.getStatusCode());
     }
 }

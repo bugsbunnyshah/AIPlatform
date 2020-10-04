@@ -164,9 +164,9 @@ public class ModelTrainingProcessTests extends BaseTest
 
         model.fit(trainIter, nEpochs);
 
-        System.out.println("Evaluate model....");
+        logger.info("Evaluate model....");
         Evaluation eval = model.evaluate(testIter);
-        System.out.println(eval.stats());
+        logger.info(eval.stats());
 
         //Run the Model in the Cloud
         JsonObject deployResult = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
