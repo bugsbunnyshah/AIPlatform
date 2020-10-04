@@ -46,7 +46,7 @@ public class FlightDataLinearClassifierTests extends BaseTest
     @Inject
     private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
 
-    @Test
+    //@Test
     public void testClassifier() throws Exception
     {
         long dataSetId = 539862742631474360l;

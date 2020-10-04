@@ -19,6 +19,22 @@ public class AIPlatformDataSetIteratorFactory
     @Inject
     private SecurityTokenContainer securityTokenContainer;
 
+    public SecurityTokenContainer getSecurityTokenContainer() {
+        return securityTokenContainer;
+    }
+
+    public void setSecurityTokenContainer(SecurityTokenContainer securityTokenContainer) {
+        this.securityTokenContainer = securityTokenContainer;
+    }
+
+    public AIPlatformDataSetLoader getAiPlatformDataSetLoader() {
+        return aiPlatformDataSetLoader;
+    }
+
+    public void setAiPlatformDataSetLoader(AIPlatformDataSetLoader aiPlatformDataSetLoader) {
+        this.aiPlatformDataSetLoader = aiPlatformDataSetLoader;
+    }
+
     public DataSetIterator getInstance(long dataSetId)
     {
         SecurityToken securityToken = this.securityTokenContainer.getSecurityToken();

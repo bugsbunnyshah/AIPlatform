@@ -43,6 +43,14 @@ public class MongoDBJsonStore
         this.mongoClient.close();
     }
 
+    public SecurityTokenContainer getSecurityTokenContainer() {
+        return securityTokenContainer;
+    }
+
+    public void setSecurityTokenContainer(SecurityTokenContainer securityTokenContainer) {
+        this.securityTokenContainer = securityTokenContainer;
+    }
+
     //Data Ingestion related operations-----------------------------------------------------
     public void storeIngestion(List<JsonObject> jsonObjects)
     {

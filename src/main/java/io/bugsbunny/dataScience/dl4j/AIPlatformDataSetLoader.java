@@ -38,6 +38,22 @@ public class AIPlatformDataSetLoader implements Loader
     @Inject
     private SecurityTokenContainer securityTokenContainer;
 
+    public MongoDBJsonStore getMongoDBJsonStore() {
+        return mongoDBJsonStore;
+    }
+
+    public void setMongoDBJsonStore(MongoDBJsonStore mongoDBJsonStore) {
+        this.mongoDBJsonStore = mongoDBJsonStore;
+    }
+
+    public SecurityTokenContainer getSecurityTokenContainer() {
+        return securityTokenContainer;
+    }
+
+    public void setSecurityTokenContainer(SecurityTokenContainer securityTokenContainer) {
+        this.securityTokenContainer = securityTokenContainer;
+    }
+
     @Override
     public Object load(Source source) throws IOException
     {
