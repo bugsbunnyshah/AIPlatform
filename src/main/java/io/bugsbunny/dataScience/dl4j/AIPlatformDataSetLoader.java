@@ -48,11 +48,11 @@ public class AIPlatformDataSetLoader implements Loader
             long dataSetId = Long.parseLong(path);
             SecurityToken securityToken = ((AIPlatformDataSetSource) source).getSecurityToken();
             this.securityTokenContainer.setSecurityToken(securityToken);
+
+
             JsonObject dataSetJson = JsonParser.parseString(mongoDBJsonStore.readDataSet(dataSetId).toString()).getAsJsonObject();
-            logger.info(dataSetJson.toString());
+
             String data = dataSetJson.get("data").getAsString();
-
-
             long rows = 0l;
             if(dataSetJson.has("rows"))
             {
@@ -73,6 +73,11 @@ public class AIPlatformDataSetLoader implements Loader
             {
                 dataSet = new DataSet();
             }
+
+            logger.info("********************************");
+            logger.info("ROWS: "+rows);
+            logger.info("COLUMNS: "+columns);
+            logger.info("********************************");
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             byteArrayOutputStream.writeBytes(data.getBytes(StandardCharsets.UTF_8));

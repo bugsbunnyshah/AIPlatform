@@ -19,8 +19,6 @@ public class AviationDataIngestionServiceTests extends BaseTest
     @Test
     public void testIngestion() throws Exception
     {
-        //IngestData ingestData = new IngestData();
-        //ingestData.start();
         Thread.sleep(20000);
     }
 }

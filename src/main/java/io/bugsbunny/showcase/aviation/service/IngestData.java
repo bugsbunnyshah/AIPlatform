@@ -112,14 +112,10 @@ public class IngestData extends TimerTask {
             }
             JsonObject csvJson = csvDataUtil.convert(trainCsvData);
             csvJson.addProperty("format", "csv");
-            String csv = csvJson.get("data").getAsString();
-            long rows = csvJson.get("rows").getAsLong();
-            long columns = csvJson.get("columns").getAsLong();
-            //logger.info(csv);
-
-            JsonObject input = new JsonObject();
-            input.addProperty("format", "csv");
-            input.addProperty("data", csv);
+            //String csv = csvJson.get("data").getAsString();
+            //long rows = csvJson.get("rows").getAsLong();
+            //long columns = csvJson.get("columns").getAsLong();
+            logger.info(csvJson.toString());
 
             String clientId = "PAlDekAoo0XWjAicU9SQDKgy7B0y2p2t";
             String clientSecret = "U2jMgxL8zJgYOMmHDYTe6-P9yO6Wq51VmixuZSRCaL-11EPE4WrQOWtGLVnQetdd";
@@ -131,7 +127,7 @@ public class IngestData extends TimerTask {
             httpRequest = httpRequestBuilder.uri(new URI(restUrl)).
                     header("Bearer", token).
                     header("Principal", clientId)
-                    .POST(HttpRequest.BodyPublishers.ofString(input.toString()))
+                    .POST(HttpRequest.BodyPublishers.ofString(csvJson.toString()))
                     .build();
 
 
