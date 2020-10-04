@@ -1,0 +1,41 @@
+package io.bugsbunny.endpoint;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Priority;
+import javax.inject.Inject;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.ext.Provider;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+@Priority(0)
+@Provider
+public class SecurityTokenProcessor implements ContainerRequestFilter
+{
+    private static Logger logger = LoggerFactory.getLogger(SecurityTokenProcessor.class);
+
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
+
+    @Override
+    public void filter(ContainerRequestContext context) throws IOException
+    {
+        String bearerToken = context.getHeaderString("Bearer");
+        if(bearerToken != null)
+        {
+            String principal = context.getHeaderString("Principal");
+            JsonObject json = new JsonObject();
+            json.addProperty("access_token", bearerToken);
+            json.addProperty("principal", principal.hashCode());
+            SecurityToken securityToken = SecurityToken.fromJson(json.toString());
+            this.securityTokenContainer.setSecurityToken(securityToken);
+        }
+    }
+}
