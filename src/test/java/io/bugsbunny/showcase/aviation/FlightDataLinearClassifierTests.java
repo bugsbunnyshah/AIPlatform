@@ -56,7 +56,7 @@ public class FlightDataLinearClassifierTests extends BaseTest
     @Inject
     private AviationDataIngestionService aviationDataIngestionService;
 
-    @Test
+    //@Test
     public void testClassifier() throws Exception
     {
         this.aviationDataIngestionService.startIngestion();
