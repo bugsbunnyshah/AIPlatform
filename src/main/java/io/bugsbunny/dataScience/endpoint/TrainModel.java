@@ -3,6 +3,7 @@ package io.bugsbunny.dataScience.endpoint;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.AIModelService;
+import jep.JepException;
 import jep.MainInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,12 +65,17 @@ public class TrainModel
             long modelId =  jsonInput.get("modelId").getAsLong();
             long dataSetId =  jsonInput.get("dataSetId").getAsLong();
             String output = this.trainingAIModelService.evalPython(modelId, dataSetId);
-            Response response = Response.ok(output).build();
+
+
+            JsonObject result = new JsonObject();
+            result.addProperty("output", output);
+            Response response = Response.ok(result.toString()).build();
             return response;
         }
-        catch(Exception e)
+        catch(JepException |UnsatisfiedLinkError jepError)
         {
-            throw new RuntimeException(e);
+            logger.error(jepError.getMessage(), jepError);
+            return Response.serverError().build();
         }
     }
 }

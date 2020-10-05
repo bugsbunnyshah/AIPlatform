@@ -32,16 +32,6 @@ public class AIModelService
 {
     private static Logger logger = LoggerFactory.getLogger(AIModelService.class);
 
-    private static ThreadLocal<Boolean> testInvocation;
-    public static void activateTest()
-    {
-        AIModelService.testInvocation = new ThreadLocal<>();
-    }
-    public static boolean isTest()
-    {
-        return (AIModelService.testInvocation != null);
-    }
-
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
@@ -90,17 +80,13 @@ public class AIModelService
 
     public String evalPython(long modelId, long dataSetId) throws JepException
     {
-        if(AIModelService.isTest())
-        {
-            JsonObject testResponse = new JsonObject();
-            testResponse.addProperty("output", "test");
-            return testResponse.toString();
-        }
-        String output = (new JsonObject()).toString();
+        String output;
         JsonObject modelPackage = this.packagingService.getModelPackage(modelId);
         String pythonScript = modelPackage.get("script").getAsString();
         try (Interpreter interp = new SharedInterpreter())
         {
+            interp.set("dataSetId", dataSetId);
+            interp.set("modelId", modelId);
             interp.exec(pythonScript);
             output = interp.getValue("output", String.class);
         }

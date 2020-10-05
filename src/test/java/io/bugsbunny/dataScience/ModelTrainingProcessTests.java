@@ -195,36 +195,10 @@ public class ModelTrainingProcessTests extends BaseTest
         double alpha = 0.1;
 
         logger.info("Load data....");
-        //DataSetIterator mnistTrain = new MnistDataSetIterator(batchSize, true, 12345);
-        DataSetIterator mnistTrain = this.aiPlatformDataSetIteratorFactory.getInstance(
-                new long[]{8262950843826255554l});
+        DataSetIterator mnistTrain = new MnistDataSetIterator(batchSize, true, 12345);
+        //DataSetIterator mnistTrain = this.aiPlatformDataSetIteratorFactory.getInstance(
+        //        new long[]{8262950843826255554l});
         DataSetIterator mnistTest = new MnistDataSetIterator(10000, false, 12345);
-
-        /*logger.info("**************************");
-        OutputStream os = new FileOutputStream("mnistTrain.bin", true);
-        while(mnistTrain.hasNext())
-        {
-            DataSet dataSet = mnistTrain.next();
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            dataSet.save(bos);
-            os.write(bos.toByteArray());
-        }
-        logger.info("**************************");
-        os.flush();
-        os.close();
-
-        logger.info("**************************");
-        os = new FileOutputStream("mnistTest.bin", true);
-        while(mnistTest.hasNext())
-        {
-            DataSet dataSet = mnistTest.next();
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            dataSet.save(bos);
-            os.write(bos.toByteArray());
-        }
-        logger.info("**************************");
-        os.flush();
-        os.close();*/
 
         logger.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()

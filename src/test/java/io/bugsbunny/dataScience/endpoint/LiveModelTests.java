@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
 public class LiveModelTests extends BaseTest {
@@ -77,15 +78,18 @@ public class LiveModelTests extends BaseTest {
     @Test
     public void testEvalPython() throws Exception
     {
-        AIModelService.activateTest();
+        String pythonScript = IOUtils.resourceToString("dataScience/train.py", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
 
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-python-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
+        JsonObject modelPackageJson = JsonParser.parseString(modelPackage).getAsJsonObject();
+        modelPackageJson.addProperty("script", pythonScript);
 
-        JsonObject modelDeployedJson = this.packagingService.performPackaging(modelPackage);
+        JsonObject modelDeployedJson = this.packagingService.performPackaging(modelPackageJson.toString());
         long modelId = modelDeployedJson.get("modelId").getAsLong();
 
-        String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
+        String data = IOUtils.resourceToString("dataScience/numpyTest.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
         JsonObject input = new JsonObject();
         input.addProperty("modelId", modelId);
@@ -113,6 +117,6 @@ public class LiveModelTests extends BaseTest {
 
         //Assert
         String output = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("output").getAsString();
-        assertEquals("test", output);
+        assertNotNull(output);
     }
 }

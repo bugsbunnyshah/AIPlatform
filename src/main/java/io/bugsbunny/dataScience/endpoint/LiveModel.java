@@ -67,11 +67,14 @@ public class LiveModel
             long dataSetId =  jsonInput.get("dataSetId").getAsLong();
             String output = this.aiModelService.evalPython(modelId, dataSetId);
 
-            Response response = Response.ok(output).build();
+            JsonObject result = new JsonObject();
+            result.addProperty("output", output);
+            Response response = Response.ok(result.toString()).build();
             return response;
         }
         catch(JepException|UnsatisfiedLinkError jepError)
         {
+            logger.error(jepError.getMessage(), jepError);
             return Response.serverError().build();
         }
     }

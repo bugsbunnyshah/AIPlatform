@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
 public class TrainModelTests extends BaseTest
@@ -75,8 +76,6 @@ public class TrainModelTests extends BaseTest
     @Test
     public void testEvalPython() throws Exception
     {
-        AIModelService.activateTest();
-
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-python-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
@@ -111,6 +110,6 @@ public class TrainModelTests extends BaseTest
 
         //Assert
         String output = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("output").getAsString();
-        assertEquals("test", output);
+        assertNotNull(output);
     }
 }
