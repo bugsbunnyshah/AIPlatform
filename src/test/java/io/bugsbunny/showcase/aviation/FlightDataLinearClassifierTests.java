@@ -56,7 +56,7 @@ public class FlightDataLinearClassifierTests extends BaseTest
     @Inject
     private AviationDataIngestionService aviationDataIngestionService;
 
-    @Test
+    //@Test
     public void testClassifier() throws Exception
     {
         this.aviationDataIngestionService.startIngestion();
@@ -164,8 +164,14 @@ public class FlightDataLinearClassifierTests extends BaseTest
         JsonObject deployResult = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
         deployResult.addProperty("dataSetId",testDataSetId);
         logger.info(deployResult.toString());
-        Response response = given().body(deployResult.toString()).when().post("/liveModel/evalJava").andReturn();
-        //response.body().prettyPrint();
-        assertEquals(200, response.getStatusCode());
+        restUrl = "http://localhost:8080/liveModel/evalJava/";
+        httpRequest = httpRequestBuilder.uri(new URI(restUrl))
+                .header("Bearer",token)
+                .header("Principal",clientId)
+                .POST(HttpRequest.BodyPublishers.ofString(deployedModel.toString()))
+                .build();
+        httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        logger.info(httpResponse.body());
+        assertEquals(200, httpResponse.statusCode());
     }
 }
