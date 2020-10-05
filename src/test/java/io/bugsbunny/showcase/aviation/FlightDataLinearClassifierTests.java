@@ -102,7 +102,14 @@ public class FlightDataLinearClassifierTests extends BaseTest
             return;
         }
 
-        DataSetIterator iterator = this.aiPlatformDataSetIteratorFactory.getInstance(new long[]{trainingDataSetId});
+        long[] trainingDataSets = new long[dataSetIds.size()];
+        for(int i=0; i<dataSetIds.size();i++)
+        {
+            trainingDataSets[i] = dataSetIds.get(i);
+        }
+        DataSetIterator iterator = this.aiPlatformDataSetIteratorFactory.getInstance(
+                trainingDataSets
+        );
         DataSet allData = iterator.next();
 
         allData.shuffle();
