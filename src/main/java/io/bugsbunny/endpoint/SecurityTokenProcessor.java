@@ -33,9 +33,16 @@ public class SecurityTokenProcessor implements ContainerRequestFilter
             String principal = context.getHeaderString("Principal");
             JsonObject json = new JsonObject();
             json.addProperty("access_token", bearerToken);
-            json.addProperty("principal", principal.hashCode());
+            json.addProperty("principal", principal);
             SecurityToken securityToken = SecurityToken.fromJson(json.toString());
             this.securityTokenContainer.setSecurityToken(securityToken);
+
+            //logger.info("*****************************************************************");
+            //logger.info("(SecurityTokenContainer): " + this.securityTokenContainer);
+            //logger.info("(SecurityToken): " + this.securityTokenContainer.getSecurityToken());
+            //logger.info("(Principal): " + this.securityTokenContainer.getSecurityToken().getPrincipal());
+            //logger.info("(ClientId): " + principal);
+            //logger.info("*****************************************************************");
         }
     }
 }

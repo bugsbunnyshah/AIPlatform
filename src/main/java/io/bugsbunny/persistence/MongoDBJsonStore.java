@@ -342,10 +342,18 @@ public class MongoDBJsonStore
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
         MongoCursor<Document> cursor = iterable.cursor();
-        Document document = cursor.next();
-        String documentJson = document.toJson();
-        String model = JsonParser.parseString(documentJson).getAsJsonObject().get("model").getAsString();
-        return model;
+        if(cursor.hasNext())
+        {
+            Document document = cursor.next();
+            String documentJson = document.toJson();
+            return JsonParser.parseString(documentJson).getAsJsonObject().get("model").getAsString();
+        }
+
+        logger.info("***************************");
+        logger.info("Database: "+databaseName);
+        logger.info("MODEL_NOT_FOUND: "+modelId);
+        logger.info("***************************");
+        return null;
     }
 
     public JsonObject getModelPackage(long modelId)
@@ -360,10 +368,13 @@ public class MongoDBJsonStore
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
         MongoCursor<Document> cursor = iterable.cursor();
-        Document document = cursor.next();
-        String documentJson = document.toJson();
-        JsonObject modelPackage = JsonParser.parseString(documentJson).getAsJsonObject();
-        return modelPackage;
+        if(cursor.hasNext())
+        {
+            Document document = cursor.next();
+            String documentJson = document.toJson();
+            return JsonParser.parseString(documentJson).getAsJsonObject();
+        }
+        return null;
     }
     //DataLake related operations----------------------------------------------------------------
     public long storeTrainingDataSet(JsonObject dataSetJson)

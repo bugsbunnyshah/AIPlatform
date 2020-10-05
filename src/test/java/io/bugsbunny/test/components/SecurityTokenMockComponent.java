@@ -44,7 +44,7 @@ public class SecurityTokenMockComponent implements ContainerRequestFilter
                     StandardCharsets.UTF_8,
                     Thread.currentThread().getContextClassLoader());
             JsonObject securityTokenJson = JsonParser.parseString(token).getAsJsonObject();
-            securityTokenJson.addProperty("principal", "" + credentialsJson.get("client_id").getAsString().hashCode());
+            securityTokenJson.addProperty("principal", credentialsJson.get("client_id").getAsString());
             SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson.toString());
             this.securityTokenContainer.setSecurityToken(securityToken);
 

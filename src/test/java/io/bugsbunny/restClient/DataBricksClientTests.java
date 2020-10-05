@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import net.minidev.json.JSONValue;
 import org.apache.commons.io.IOUtils;
@@ -41,27 +42,11 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
-public class DataBricksClientTests {
+public class DataBricksClientTests extends BaseTest {
     private static Logger logger = LoggerFactory.getLogger(DataBricksClientTests.class);
 
     @Inject
     private DataBricksClient dataBricksClient;
-
-    @Inject
-    private MongoDBJsonStore mongoDBJsonStore;
-
-    @Inject
-    private SecurityTokenContainer securityTokenContainer;
-
-    @BeforeEach
-    public void setUp() throws Exception
-    {
-        String securityTokenJson = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("oauthAgent/token.json"),
-                StandardCharsets.UTF_8);
-        SecurityToken securityToken = SecurityToken.fromJson(securityTokenJson);
-        this.securityTokenContainer.setSecurityToken(securityToken);
-    }
 
     /*@Test
     public void testCreateDevExperiment() throws Exception

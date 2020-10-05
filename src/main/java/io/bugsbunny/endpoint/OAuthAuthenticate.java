@@ -41,7 +41,7 @@ public class OAuthAuthenticate
 
             JsonObject securityTokenJson = new JsonObject();
             securityTokenJson.addProperty("access_token", jsonObject.get("access_token").getAsString());
-            securityTokenJson.addProperty("principal", clientId.hashCode());
+            securityTokenJson.addProperty("principal", clientId);
             this.securityTokenContainer.setSecurityToken(SecurityToken.fromJson(securityTokenJson.toString()));
 
             return Response.ok(jsonObject.toString()).build();

@@ -56,7 +56,7 @@ public class FlightDataLinearClassifierTests extends BaseTest
     @Inject
     private AviationDataIngestionService aviationDataIngestionService;
 
-    //@Test
+    @Test
     public void testClassifier() throws Exception
     {
         this.aviationDataIngestionService.startIngestion();
@@ -88,8 +88,7 @@ public class FlightDataLinearClassifierTests extends BaseTest
         HttpClient httpClient = HttpClient.newBuilder().build();
         String restUrl = "http://localhost:8080/dataset/readDataSet/?dataSetId="+trainingDataSetId;
 
-        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
-        HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
+        HttpRequest httpRequest = HttpRequest.newBuilder().uri(new URI(restUrl))
                 .header("Bearer",token)
                 .header("Principal",clientId)
                 .GET()
@@ -152,23 +151,27 @@ public class FlightDataLinearClassifierTests extends BaseTest
         jsonObject.addProperty("model", modelString);
         logger.info(jsonObject.toString());
 
-        Response packageResponse = given().body(jsonObject.toString()).when().post("/aimodel/performPackaging/")
-                .andReturn();
-        packageResponse.body().prettyPrint();
-        JsonObject deployedModel = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
+        restUrl = "http://localhost:8080/aimodel/performPackaging/";
+        httpRequest = HttpRequest.newBuilder().uri(new URI(restUrl))
+                .header("Bearer",token)
+                .header("Principal",clientId)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonObject.toString()))
+                .build();
+        httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        JsonObject deployedModel = JsonParser.parseString(httpResponse.body()).getAsJsonObject();
         long modelId = deployedModel.get("modelId").getAsLong();
         logger.info("MODEL_ID: "+modelId);
 
         //Run the Model in the Cloud
-        logger.info("TestDataSetId: "+testDataSetId);
-        JsonObject deployResult = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
+        JsonObject deployResult = new JsonObject();
         deployResult.addProperty("dataSetId",testDataSetId);
+        deployResult.addProperty("modelId",modelId);
         logger.info(deployResult.toString());
         restUrl = "http://localhost:8080/liveModel/evalJava/";
-        httpRequest = httpRequestBuilder.uri(new URI(restUrl))
+        httpRequest = HttpRequest.newBuilder().uri(new URI(restUrl))
                 .header("Bearer",token)
                 .header("Principal",clientId)
-                .POST(HttpRequest.BodyPublishers.ofString(deployedModel.toString()))
+                .POST(HttpRequest.BodyPublishers.ofString(deployResult.toString()))
                 .build();
         httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
         logger.info(httpResponse.body());
