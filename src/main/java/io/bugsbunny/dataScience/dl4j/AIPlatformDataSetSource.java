@@ -13,13 +13,13 @@ public class AIPlatformDataSetSource implements Source
 {
     private static Logger logger = LoggerFactory.getLogger(AIPlatformDataSetSource.class);
 
-    private String dataSetId;
+    private String dataSetIds;
     private SecurityToken securityToken;
 
-    public AIPlatformDataSetSource(SecurityToken securityToken, String dataSetId)
+    public AIPlatformDataSetSource(SecurityToken securityToken, String dataSetIds)
     {
         this.securityToken = securityToken;
-        this.dataSetId = dataSetId;
+        this.dataSetIds = dataSetIds;
     }
 
     public SecurityToken getSecurityToken()
@@ -36,6 +36,6 @@ public class AIPlatformDataSetSource implements Source
     @Override
     public String getPath()
     {
-        return this.dataSetId;
+        return this.dataSetIds;
     }
 }

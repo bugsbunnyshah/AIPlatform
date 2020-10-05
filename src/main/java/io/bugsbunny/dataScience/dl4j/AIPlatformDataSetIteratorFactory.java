@@ -1,5 +1,6 @@
 package io.bugsbunny.dataScience.dl4j;
 
+import com.google.gson.JsonArray;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import org.deeplearning4j.datasets.iterator.loader.DataSetLoaderIterator;
@@ -35,14 +36,20 @@ public class AIPlatformDataSetIteratorFactory
         this.aiPlatformDataSetLoader = aiPlatformDataSetLoader;
     }
 
-    public DataSetIterator getInstance(long dataSetId)
+    public DataSetIterator getInstance(long[] dataSetIds)
     {
         SecurityToken securityToken = this.securityTokenContainer.getSecurityToken();
         AIPlatformDataSetSourceFactory sourceFactory = new AIPlatformDataSetSourceFactory(securityToken);
 
-        Collection<String> paths = Arrays.asList(""+dataSetId);
+        JsonArray array = new JsonArray();
+        for(long dataSetId:dataSetIds)
+        {
+            array.add(dataSetId);
+        }
+        Collection<String> paths = Arrays.asList(array.toString());
 
-        final DataSetLoaderIterator dataSetLoaderIterator = new DataSetLoaderIterator(paths, this.aiPlatformDataSetLoader, sourceFactory);
+        final DataSetLoaderIterator dataSetLoaderIterator = new DataSetLoaderIterator(paths,
+                this.aiPlatformDataSetLoader, sourceFactory);
 
         return dataSetLoaderIterator;
     }

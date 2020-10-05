@@ -160,7 +160,8 @@ public class ModelTrainingProcessTests extends BaseTest
         //        storedData.getBytes(UTF_8)));
         rrTrain.initialize(new FileSplit(trainFile));
         //DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain, batchSize, 0, 2);
-        DataSetIterator trainIter = this.aiPlatformDataSetIteratorFactory.getInstance(8262950843826255554l);
+        DataSetIterator trainIter = this.aiPlatformDataSetIteratorFactory.getInstance(
+                new long[]{8262950843826255554l});
 
         model.fit(trainIter, nEpochs);
 
@@ -195,7 +196,8 @@ public class ModelTrainingProcessTests extends BaseTest
 
         logger.info("Load data....");
         //DataSetIterator mnistTrain = new MnistDataSetIterator(batchSize, true, 12345);
-        DataSetIterator mnistTrain = this.aiPlatformDataSetIteratorFactory.getInstance(8262950843826255554l);
+        DataSetIterator mnistTrain = this.aiPlatformDataSetIteratorFactory.getInstance(
+                new long[]{8262950843826255554l});
         DataSetIterator mnistTest = new MnistDataSetIterator(10000, false, 12345);
 
         /*logger.info("**************************");

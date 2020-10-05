@@ -75,7 +75,8 @@ public class AIModelService
                 this.activeModels.put(modelId, network);
             }
 
-            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.getInstance(dataSetId);
+            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
+                    getInstance(new long[]{dataSetId});
             Evaluation evaluation = network.evaluate(dataSetIterator);
 
             return evaluation.toJson();

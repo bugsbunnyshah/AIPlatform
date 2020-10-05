@@ -1,5 +1,7 @@
 package io.bugsbunny.dataScience.dl4j;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -21,6 +23,7 @@ import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 
 /*
 String resource = "dataScience/saturn_data_train.csv";
@@ -58,35 +61,49 @@ public class AIPlatformDataSetLoader implements Loader
     public Object load(Source source) throws IOException
     {
         DataSet dataSet = null;
-        try
-        {
+        try {
             String path = source.getPath();
-            long dataSetId = Long.parseLong(path);
+            JsonArray dataSetArray = JsonParser.parseString(path).getAsJsonArray();
             SecurityToken securityToken = ((AIPlatformDataSetSource) source).getSecurityToken();
             this.securityTokenContainer.setSecurityToken(securityToken);
 
-
-            JsonObject dataSetJson = JsonParser.parseString(mongoDBJsonStore.readDataSet(dataSetId).toString()).getAsJsonObject();
-
-            String data = dataSetJson.get("data").getAsString();
             long rows = 0l;
-            if(dataSetJson.has("rows"))
-            {
-                rows = dataSetJson.get("rows").getAsLong();
-            }
             long columns = 0l;
-            if(dataSetJson.has("columns"))
+            Iterator<JsonElement> iterator = dataSetArray.iterator();
+            StringBuilder csvData = new StringBuilder();
+            while (iterator.hasNext())
             {
-                columns = dataSetJson.get("columns").getAsLong();
+                JsonObject dataSetJson = JsonParser.parseString(mongoDBJsonStore.
+                        readDataSet(iterator.next().getAsLong()).toString()).getAsJsonObject();
+                String format = dataSetJson.get("format").getAsString();
+                if(!format.equals("csv"))
+                {
+                    continue;
+                }
+
+                String data = dataSetJson.get("data").getAsString();
+
+                if (dataSetJson.has("rows"))
+                {
+                    rows = dataSetJson.get("rows").getAsLong();
+                }
+                if (dataSetJson.has("columns"))
+                {
+                    columns = dataSetJson.get("columns").getAsLong();
+                }
+
+                csvData.append(data);
+                if(iterator.hasNext())
+                {
+                    csvData.append("\n");
+                }
             }
 
-            if(rows > 0) {
+            if (rows > 0) {
                 INDArray features = new NDArray(rows, columns);
                 INDArray labels = new NDArray(rows, columns);
                 dataSet = new DataSet(features, labels, null, null);
-            }
-            else
-            {
+            } else {
                 dataSet = new DataSet();
             }
 
@@ -96,7 +113,7 @@ public class AIPlatformDataSetLoader implements Loader
             logger.info("********************************");*/
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            byteArrayOutputStream.writeBytes(data.getBytes(StandardCharsets.UTF_8));
+            byteArrayOutputStream.writeBytes(csvData.toString().getBytes(StandardCharsets.UTF_8));
             dataSet.save(byteArrayOutputStream);
 
             return dataSet;

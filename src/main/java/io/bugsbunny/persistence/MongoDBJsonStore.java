@@ -58,7 +58,7 @@ public class MongoDBJsonStore
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        MongoCollection<Document> collection = database.getCollection("ingestion");
+        MongoCollection<Document> collection = database.getCollection("datalake");
 
         for(JsonObject jsonObject:jsonObjects) {
             Document doc = Document.parse(jsonObject.toString());
@@ -74,7 +74,7 @@ public class MongoDBJsonStore
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        MongoCollection<Document> collection = database.getCollection("ingestion");
+        MongoCollection<Document> collection = database.getCollection("datalake");
 
         String queryJson = "{\"ingestionId\":\""+ingestionId+"\"}";
         Bson bson = Document.parse(queryJson);
@@ -98,7 +98,7 @@ public class MongoDBJsonStore
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        MongoCollection<Document> collection = database.getCollection("ingestion");
+        MongoCollection<Document> collection = database.getCollection("datalake");
 
         FindIterable<Document> iterable = collection.find();
         MongoCursor<Document> cursor = iterable.cursor();
@@ -321,7 +321,7 @@ public class MongoDBJsonStore
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        MongoCollection<Document> collection = database.getCollection("liveModels");
+        MongoCollection<Document> collection = database.getCollection("aimodels");
         long modelId = new Random().nextLong();
         modelPackage.addProperty("modelId", modelId);
         Document doc = Document.parse(modelPackage.toString());
@@ -336,7 +336,7 @@ public class MongoDBJsonStore
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        MongoCollection<Document> collection = database.getCollection("liveModels");
+        MongoCollection<Document> collection = database.getCollection("aimodels");
 
         String queryJson = "{\"modelId\":"+modelId+"}";
         Bson bson = Document.parse(queryJson);
@@ -362,7 +362,7 @@ public class MongoDBJsonStore
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        MongoCollection<Document> collection = database.getCollection("liveModels");
+        MongoCollection<Document> collection = database.getCollection("aimodels");
 
         String queryJson = "{\"modelId\":"+modelId+"}";
         Bson bson = Document.parse(queryJson);
