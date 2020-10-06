@@ -1,5 +1,6 @@
 package io.bugsbunny.dataScience.service;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -49,7 +50,7 @@ public class AIModelService
         this.activeModels = new HashMap<>();
     }
 
-    public String evalJava(long modelId, long dataSetId)
+    public String evalJava(long modelId, long[] dataSetIds)
     {
         try
         {
@@ -67,7 +68,7 @@ public class AIModelService
             }
 
             DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
-                    getInstance(new long[]{dataSetId});
+                    getInstance(dataSetIds);
             Evaluation evaluation = network.evaluate(dataSetIterator);
 
             return evaluation.toJson();
@@ -79,7 +80,7 @@ public class AIModelService
         }
     }
 
-    public String trainJava(long modelId, long dataSetId)
+    public String trainJava(long modelId, long[] dataSetIds)
     {
         try
         {
@@ -97,7 +98,7 @@ public class AIModelService
             }
 
             DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
-                    getInstance(new long[]{dataSetId});
+                    getInstance(dataSetIds);
             network.fit(dataSetIterator);
 
             //Deploy the Model
@@ -120,14 +121,19 @@ public class AIModelService
         }
     }
 
-    public String evalPython(long modelId, long dataSetId) throws JepException
+    public String evalPython(long modelId, long[] dataSetIds) throws JepException
     {
         String output;
         JsonObject modelPackage = this.packagingService.getModelPackage(modelId);
         String pythonScript = modelPackage.get("script").getAsString();
         try (Interpreter interp = new SharedInterpreter())
         {
-            interp.set("dataSetId", dataSetId);
+            JsonArray dataSetIdArray = new JsonArray();
+            for(long dataSetId:dataSetIds)
+            {
+                dataSetIdArray.add(dataSetId);
+            }
+            interp.set("dataSetId", dataSetIdArray.toString());
             interp.set("modelId", modelId);
             interp.exec(pythonScript);
             output = interp.getValue("output", String.class);

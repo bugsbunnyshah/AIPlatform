@@ -1,5 +1,7 @@
 package io.bugsbunny.dataScience.endpoint;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.AIModelService;
@@ -19,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.util.Iterator;
 
 @Path("trainModel")
 public class TrainModel
@@ -65,8 +68,16 @@ public class TrainModel
         try {
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
             long modelId = jsonInput.get("modelId").getAsLong();
-            long dataSetId = jsonInput.get("dataSetId").getAsLong();
-            String eval = this.trainingAIModelService.trainJava(modelId, dataSetId);
+            JsonArray dataSetIdArray = jsonInput.get("dataSetIds").getAsJsonArray();
+            long[] dataSetIds = new long[dataSetIdArray.size()];
+            Iterator<JsonElement> iterator = dataSetIdArray.iterator();
+            int counter = 0;
+            while(iterator.hasNext())
+            {
+                dataSetIds[counter] = iterator.next().getAsLong();
+                counter++;
+            }
+            String eval = this.trainingAIModelService.trainJava(modelId, dataSetIds);
             Response response = Response.ok(eval).build();
             return response;
         }
@@ -99,8 +110,16 @@ public class TrainModel
             logger.info("******************");
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
             long modelId =  jsonInput.get("modelId").getAsLong();
-            long dataSetId =  jsonInput.get("dataSetId").getAsLong();
-            String output = this.trainingAIModelService.evalPython(modelId, dataSetId);
+            JsonArray dataSetIdArray = jsonInput.get("dataSetIds").getAsJsonArray();
+            long[] dataSetIds = new long[dataSetIdArray.size()];
+            Iterator<JsonElement> iterator = dataSetIdArray.iterator();
+            int counter = 0;
+            while(iterator.hasNext())
+            {
+                dataSetIds[counter] = iterator.next().getAsLong();
+                counter++;
+            }
+            String output = this.trainingAIModelService.evalPython(modelId, dataSetIds);
 
 
             JsonObject result = new JsonObject();

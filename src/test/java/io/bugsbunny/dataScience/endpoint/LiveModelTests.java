@@ -1,5 +1,6 @@
 package io.bugsbunny.dataScience.endpoint;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.data.history.service.PayloadReplayService;
@@ -65,8 +66,10 @@ public class LiveModelTests extends BaseTest {
         JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         long dataSetId = returnValue.get("dataSetId").getAsLong();
         input = new JsonObject();
+        JsonArray dataSetIdArray = new JsonArray();
+        dataSetIdArray.add(dataSetId);
         input.addProperty("modelId", modelId);
-        input.addProperty("dataSetId", dataSetId);
+        input.add("dataSetIds", dataSetIdArray);
 
         response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
         logger.info("************************");

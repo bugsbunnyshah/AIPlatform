@@ -55,7 +55,7 @@ public class AIModelServiceTests extends BaseTest {
         JsonObject response = this.packagingService.performPackaging(modelPackage);
 
         long modelId = response.get("modelId").getAsLong();
-        String result = this.aiModelService.evalJava(modelId, dataSetId);
+        String result = this.aiModelService.evalJava(modelId, new long[]{dataSetId});
         logger.info("****************");
         logger.info("ModelId: "+modelId);
         logger.info("****************");

@@ -1,5 +1,7 @@
 package io.bugsbunny.dataScience.endpoint;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,8 +66,10 @@ public class TrainModelTests extends BaseTest
         JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         long dataSetId = returnValue.get("dataSetId").getAsLong();
         input = new JsonObject();
+        JsonArray dataSetIdArray = new JsonArray();
+        dataSetIdArray.add(dataSetId);
         input.addProperty("modelId", modelId);
-        input.addProperty("dataSetId", dataSetId);
+        input.add("dataSetIds", dataSetIdArray);
 
         response = given().body(input.toString()).when().post("/trainModel/trainJava").andReturn();
         logger.info("************************");

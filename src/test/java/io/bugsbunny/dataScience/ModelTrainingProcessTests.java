@@ -1,5 +1,6 @@
 package io.bugsbunny.dataScience;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -171,7 +172,9 @@ public class ModelTrainingProcessTests extends BaseTest
 
         //Run the Model in the Cloud
         JsonObject deployResult = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
-        deployResult.addProperty("dataSetId",evalDataSetId);
+        JsonArray dataSetIdArray = new JsonArray();
+        dataSetIdArray.add(dataSetId);
+        deployResult.add("dataSetIds",dataSetIdArray);
         response = given().body(deployResult.toString()).when().post("/liveModel/evalJava").andReturn();
         response.body().prettyPrint();
         assertEquals(200, response.getStatusCode());

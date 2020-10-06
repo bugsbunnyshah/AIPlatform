@@ -1,5 +1,7 @@
 package io.bugsbunny.dataScience.endpoint;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -22,6 +24,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.util.Iterator;
 
 @Path("liveModel")
 public class LiveModel
@@ -68,8 +71,16 @@ public class LiveModel
         try {
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
             long modelId = jsonInput.get("modelId").getAsLong();
-            long dataSetId = jsonInput.get("dataSetId").getAsLong();
-            String eval = this.aiModelService.evalJava(modelId, dataSetId);
+            JsonArray dataSetIdArray = jsonInput.get("dataSetIds").getAsJsonArray();
+            long[] dataSetIds = new long[dataSetIdArray.size()];
+            Iterator<JsonElement> iterator = dataSetIdArray.iterator();
+            int counter = 0;
+            while(iterator.hasNext())
+            {
+                dataSetIds[counter] = iterator.next().getAsLong();
+                counter++;
+            }
+            String eval = this.aiModelService.evalJava(modelId, dataSetIds);
             Response response = Response.ok(eval).build();
             return response;
         }
@@ -99,11 +110,18 @@ public class LiveModel
             logger.info("******************");
             logger.info("EVAL_PYTHON_MODEL");
             logger.info("******************");
-            JsonObject inputJson = JsonParser.parseString(input).getAsJsonObject();
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
             long modelId =  jsonInput.get("modelId").getAsLong();
-            long dataSetId =  jsonInput.get("dataSetId").getAsLong();
-            String output = this.aiModelService.evalPython(modelId, dataSetId);
+            JsonArray dataSetIdArray = jsonInput.get("dataSetIds").getAsJsonArray();
+            long[] dataSetIds = new long[dataSetIdArray.size()];
+            Iterator<JsonElement> iterator = dataSetIdArray.iterator();
+            int counter = 0;
+            while(iterator.hasNext())
+            {
+                dataSetIds[counter] = iterator.next().getAsLong();
+                counter++;
+            }
+            String output = this.aiModelService.evalPython(modelId, dataSetIds);
 
             JsonObject result = new JsonObject();
             result.addProperty("output", output);
