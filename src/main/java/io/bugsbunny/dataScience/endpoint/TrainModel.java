@@ -44,15 +44,13 @@ public class TrainModel
                 }
             }
         }
-        catch (Exception e)
+        catch (Exception | UnsatisfiedLinkError e)
         {
             isPythonDetected = false;
-            logger.error(e.getMessage(), e);
-        }
-        catch (UnsatisfiedLinkError e)
-        {
-            isPythonDetected = false;
-            logger.error(e.getMessage(), e);
+            logger.info("*******************************************");
+            logger.info("PYTHON_RUNTIME_WAS_NOT_DETECTED");
+            logger.info("PYTHON_AIMODELS_CANNOT_BE_SUPPORTED_FOR_NOW");
+            logger.info("*******************************************");
         }
     }
 
