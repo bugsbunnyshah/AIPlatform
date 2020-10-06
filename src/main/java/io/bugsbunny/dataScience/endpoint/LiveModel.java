@@ -5,8 +5,10 @@ import com.google.gson.JsonParser;
 
 import io.bugsbunny.dataScience.service.AIModelService;
 
+import jep.Interpreter;
 import jep.JepException;
 import jep.MainInterpreter;
+import jep.SharedInterpreter;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,15 +36,26 @@ public class LiveModel
         {
             String jepLibraryPath = ConfigProvider.getConfig().getValue("jepLibraryPath", String.class);
             File file = new File(jepLibraryPath);
-            LiveModel.isPythonDetected = file.exists();
-            if(LiveModel.isPythonDetected) {
+            isPythonDetected = file.exists();
+            if(isPythonDetected) {
                 MainInterpreter.setJepLibraryPath(jepLibraryPath);
+
+                String pythonScript = "print('PYTHON_LOADED')";
+                try (Interpreter interp = new SharedInterpreter())
+                {
+                    interp.exec(pythonScript);
+                }
             }
         }
         catch (Exception e)
         {
+            isPythonDetected = false;
             logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+        }
+        catch (UnsatisfiedLinkError e)
+        {
+            isPythonDetected = false;
+            logger.error(e.getMessage(), e);
         }
     }
 
