@@ -101,6 +101,8 @@ public class AIModelService
                     getInstance(dataSetIds);
             network.fit(dataSetIterator);
 
+            Evaluation evaluation = network.evaluate(dataSetIterator);
+
             //Deploy the Model
             ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
             ModelSerializer.writeModel(network, modelBytes, false);
@@ -112,7 +114,7 @@ public class AIModelService
 
             this.activeModels.put(modelId, network);
 
-            return new JsonObject().toString();
+            return evaluation.toJson();
         }
         catch(Exception e)
         {

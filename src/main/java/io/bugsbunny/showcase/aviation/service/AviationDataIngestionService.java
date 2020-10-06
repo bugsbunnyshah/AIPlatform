@@ -1,5 +1,6 @@
 package io.bugsbunny.showcase.aviation.service;
 
+import io.bugsbunny.dataScience.service.ModelDataSetService;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.restClient.OAuthClient;
 
@@ -22,6 +23,9 @@ public class AviationDataIngestionService {
     @Inject
     private SecurityTokenContainer securityTokenContainer;
 
+    @Inject
+    private ModelDataSetService modelDataSetService;
+
     private IngestData ingestData;
 
     private List<Long> dataSetIds;
@@ -33,7 +37,8 @@ public class AviationDataIngestionService {
 
     public void startIngestion()
     {
-        this.ingestData = new IngestData(this.oAuthClient,this.securityTokenContainer, this);
+        this.ingestData = new IngestData(this.oAuthClient,this.securityTokenContainer, this,
+                this.modelDataSetService);
         ingestData.start();
     }
 

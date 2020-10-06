@@ -180,7 +180,7 @@ public class ModelTrainingProcessTests extends BaseTest
         assertEquals(200, response.getStatusCode());
     }
 
-    @Test
+    //@Test
     public void testMnistModel() throws Exception
     {
         int outputNum = 10; // The number of possible outcomes

@@ -7,8 +7,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
+import io.bugsbunny.dataScience.service.ModelDataSetService;
+import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.restClient.OAuthClient;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,12 +35,18 @@ public class IngestData extends TimerTask {
 
     private AviationDataIngestionService aviationDataIngestionService;
 
+    private ModelDataSetService modelDataSetService;
+
+    private SecurityToken securityToken;
+
     public IngestData(OAuthClient oAuthClient, SecurityTokenContainer securityTokenContainer,
-                      AviationDataIngestionService aviationDataIngestionService) {
+                      AviationDataIngestionService aviationDataIngestionService, ModelDataSetService modelDataSetService) {
         this.oAuthClient = oAuthClient;
         this.securityTokenContainer = securityTokenContainer;
         this.csvDataUtil = new CSVDataUtil();
         this.aviationDataIngestionService = aviationDataIngestionService;
+        this.modelDataSetService = modelDataSetService;
+        this.securityToken = this.securityTokenContainer.getSecurityToken();
     }
 
     public void start()
@@ -52,8 +61,10 @@ public class IngestData extends TimerTask {
         try
         {
             //Create the Experiment
+            String aviationDataSource = ConfigProvider.getConfig().getValue("aviationDataSource", String.class);
+            String aviationDataSourceAccessKey = ConfigProvider.getConfig().getValue("aviationDataSourceAccessKey", String.class);
             HttpClient httpClient = HttpClient.newBuilder().build();
-            String restUrl = "https://api.aviationstack.com/v1/flights/?access_key=680da0736176cb1218acdb0d6e1cc10e";
+            String restUrl = "https://"+aviationDataSource+"/v1/flights/?access_key="+aviationDataSourceAccessKey;
 
             HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
             HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
@@ -115,34 +126,13 @@ public class IngestData extends TimerTask {
             JsonObject csvJson = csvDataUtil.convert(trainCsvData);
             csvJson.addProperty("format", "csv");
 
-            String clientId = "PAlDekAoo0XWjAicU9SQDKgy7B0y2p2t";
-            String clientSecret = "U2jMgxL8zJgYOMmHDYTe6-P9yO6Wq51VmixuZSRCaL-11EPE4WrQOWtGLVnQetdd";
-            JsonObject securityToken = this.oAuthClient.getAccessToken(clientId,clientSecret);
 
-            String token = securityToken.get("access_token").getAsString();
-            restUrl = "http://localhost:8080/dataset/storeTrainingDataSet/";
-            httpRequestBuilder = HttpRequest.newBuilder();
-            httpRequest = httpRequestBuilder.uri(new URI(restUrl)).
-                    header("Bearer", token).
-                    header("Principal", clientId)
-                    .POST(HttpRequest.BodyPublishers.ofString(csvJson.toString()))
-                    .build();
-
-
-            httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            responseJson = httpResponse.body();
-            status = httpResponse.statusCode();
-            if(status != 200)
-            {
-                return;
-            }
-            JsonObject dataSetJson = JsonParser.parseString(responseJson).getAsJsonObject();
-            long dataSetId = dataSetJson.get("dataSetId").getAsLong();
+            this.securityTokenContainer.setSecurityToken(this.securityToken);
+            long dataSetId = this.modelDataSetService.storeTrainingDataSet(csvJson);
             this.aviationDataIngestionService.registerDataSetId(dataSetId);
         }
         catch(Exception e)
         {
-            e.printStackTrace();
             logger.error(e.getMessage(), e);
         }
     }
