@@ -2,7 +2,9 @@ package io.bugsbunny.dataScience.endpoint;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import io.bugsbunny.dataScience.service.AIModelService;
+
 import jep.JepException;
 import jep.MainInterpreter;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -17,18 +19,25 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 
 @Path("liveModel")
 public class LiveModel
 {
     private static Logger logger = LoggerFactory.getLogger(LiveModel.class);
 
+    private static boolean isPythonDetected = false;
+
     static
     {
         try
         {
             String jepLibraryPath = ConfigProvider.getConfig().getValue("jepLibraryPath", String.class);
-            MainInterpreter.setJepLibraryPath(jepLibraryPath);
+            File file = new File(jepLibraryPath);
+            LiveModel.isPythonDetected = file.exists();
+            if(LiveModel.isPythonDetected) {
+                MainInterpreter.setJepLibraryPath(jepLibraryPath);
+            }
         }
         catch (Exception e)
         {
@@ -69,6 +78,13 @@ public class LiveModel
     {
         try
         {
+            if(!isPythonDetected)
+            {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("message", "PYTHON_RUNTIME_NOT_DETECTED");
+                return Response.status(404).entity(jsonObject.toString()).build();
+            }
+
             logger.info("******************");
             logger.info("EVAL_PYTHON_MODEL");
             logger.info("******************");

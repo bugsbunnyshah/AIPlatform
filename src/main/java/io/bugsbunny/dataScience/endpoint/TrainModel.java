@@ -16,18 +16,25 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 
 @Path("trainModel")
 public class TrainModel
 {
     private static Logger logger = LoggerFactory.getLogger(TrainModel.class);
 
+    private static boolean isPythonDetected = false;
+
     static
     {
         try
         {
             String jepLibraryPath = ConfigProvider.getConfig().getValue("jepLibraryPath", String.class);
-            MainInterpreter.setJepLibraryPath(jepLibraryPath);
+            File file = new File(jepLibraryPath);
+            TrainModel.isPythonDetected = file.exists();
+            if(TrainModel.isPythonDetected) {
+                MainInterpreter.setJepLibraryPath(jepLibraryPath);
+            }
         }
         catch (Exception e)
         {
@@ -39,7 +46,7 @@ public class TrainModel
     @Inject
     private AIModelService trainingAIModelService;
 
-    @Path("evalJava")
+    @Path("trainJava")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response eval(@RequestBody String input)
@@ -52,13 +59,21 @@ public class TrainModel
         return response;
     }
 
-    @Path("evalPython")
+    @Path("trainPython")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response python(@RequestBody String input)
     {
         try
         {
+
+            if(!isPythonDetected)
+            {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("message", "PYTHON_RUNTIME_NOT_DETECTED");
+                return Response.status(404).entity(jsonObject.toString()).build();
+            }
+
             logger.info("******************");
             logger.info("TRAIN_PYTHON_MODEL");
             logger.info("******************");
