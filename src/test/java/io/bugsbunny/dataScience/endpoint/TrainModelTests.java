@@ -66,7 +66,7 @@ public class TrainModelTests extends BaseTest
         input.addProperty("modelId", modelId);
         input.addProperty("dataSetId", dataSetId);
 
-        response = given().body(input.toString()).when().post("/trainModel/evalJava").andReturn();
+        response = given().body(input.toString()).when().post("/trainModel/trainJava").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
         logger.info("************************");
@@ -101,7 +101,7 @@ public class TrainModelTests extends BaseTest
         input = new JsonObject();
         input.addProperty("modelId", modelId);
         input.addProperty("dataSetId", dataSetId);
-        response = given().body(input.toString()).when().post("/trainModel/evalPython/").andReturn();
+        response = given().body(input.toString()).when().post("/trainModel/trainPython/").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
         response.body().prettyPrint();
