@@ -376,6 +376,20 @@ public class MongoDBJsonStore
         }
         return null;
     }
+
+    public void updateModel(long modelId, JsonObject modelPackage)
+    {
+        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
+        String databaseName = principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+        MongoCollection<Document> collection = database.getCollection("aimodels");
+
+        JsonObject currentModel = this.getModelPackage(modelId);
+        Bson bson = Document.parse(currentModel.toString());
+        collection.deleteOne(bson);
+
+        this.storeModel(modelPackage);
+    }
     //DataLake related operations----------------------------------------------------------------
     public long storeTrainingDataSet(JsonObject dataSetJson)
     {

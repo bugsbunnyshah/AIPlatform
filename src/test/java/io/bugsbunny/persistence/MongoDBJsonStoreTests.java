@@ -69,13 +69,7 @@ public class MongoDBJsonStoreTests extends BaseTest {
 
 
     @Test
-    public void testDevModelData() throws Exception
-    {
-
-    }
-
-    @Test
-    public void testDataHistoryStorage() throws Exception
+    public void testAIModelStorageLifeCycle() throws Exception
     {
 
     }

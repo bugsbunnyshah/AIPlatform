@@ -51,9 +51,10 @@ public class DataMapper {
         }
         catch(Exception e)
         {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("error", e.getMessage());
-            return Response.status(500).entity(jsonObject.toString()).build();
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
         }
     }
 
@@ -91,9 +92,10 @@ public class DataMapper {
         }
         catch(Exception e)
         {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("error", e.getMessage());
-            return Response.status(500).entity(jsonObject.toString()).build();
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
         }
     }
 
@@ -133,9 +135,10 @@ public class DataMapper {
         }
         catch(Exception e)
         {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("error", e.getMessage());
-            return Response.status(500).entity(jsonObject.toString()).build();
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
         }
     }
 }

@@ -43,12 +43,21 @@ public class LiveModel
     @Produces(MediaType.APPLICATION_JSON)
     public Response eval(@RequestBody String input)
     {
-        JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
-        long modelId =  jsonInput.get("modelId").getAsLong();
-        long dataSetId =  jsonInput.get("dataSetId").getAsLong();
-        String eval = this.aiModelService.evalJava(modelId, dataSetId);
-        Response response = Response.ok(eval).build();
-        return response;
+        try {
+            JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
+            long modelId = jsonInput.get("modelId").getAsLong();
+            long dataSetId = jsonInput.get("dataSetId").getAsLong();
+            String eval = this.aiModelService.evalJava(modelId, dataSetId);
+            Response response = Response.ok(eval).build();
+            return response;
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
     }
 
     @Path("evalPython")
@@ -75,7 +84,9 @@ public class LiveModel
         catch(JepException|UnsatisfiedLinkError jepError)
         {
             logger.error(jepError.getMessage(), jepError);
-            return Response.serverError().build();
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", jepError.getMessage());
+            return Response.status(500).entity(error.toString()).build();
         }
     }
 }

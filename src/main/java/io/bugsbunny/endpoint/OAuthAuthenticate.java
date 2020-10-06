@@ -49,7 +49,9 @@ public class OAuthAuthenticate
         catch(Exception e)
         {
             logger.error(e.getMessage(), e);
-            return Response.status(500).build();
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
         }
     }
 }

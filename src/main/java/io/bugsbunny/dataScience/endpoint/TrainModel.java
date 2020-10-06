@@ -45,7 +45,7 @@ public class TrainModel
         JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
         long modelId =  jsonInput.get("modelId").getAsLong();
         long dataSetId =  jsonInput.get("dataSetId").getAsLong();
-        String eval = this.trainingAIModelService.evalJava(modelId, dataSetId);
+        String eval = this.trainingAIModelService.trainJava(modelId, dataSetId);
         Response response = Response.ok(eval).build();
         return response;
     }

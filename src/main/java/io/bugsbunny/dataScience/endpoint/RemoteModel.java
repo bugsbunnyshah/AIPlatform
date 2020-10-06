@@ -56,10 +56,12 @@ public class RemoteModel
             Response response = Response.ok(result.toString()).build();
             return response;
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             logger.error(e.getMessage(), e);
-            return Response.serverError().build();
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
         }
     }
 }

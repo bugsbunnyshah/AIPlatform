@@ -38,7 +38,7 @@ public class TrainModelTests extends BaseTest
     private PackagingService packagingService;
 
     @Test
-    public void testEvalJava() throws Exception
+    public void testTrainJava() throws Exception
     {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());

@@ -41,9 +41,10 @@ public class DataReplay {
         }
         catch(Exception e)
         {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("error", e.getMessage());
-            return Response.status(500).entity(jsonObject.toString()).build();
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
         }
     }
 
@@ -52,7 +53,16 @@ public class DataReplay {
     @Produces(MediaType.APPLICATION_JSON)
     public Response chain(@QueryParam("oid") String oid)
     {
-        List<JsonObject> diffChain = this.payloadReplayService.replayDiffChain(oid);
-        return Response.ok(diffChain.toString()).build();
+        try {
+            List<JsonObject> diffChain = this.payloadReplayService.replayDiffChain(oid);
+            return Response.ok(diffChain.toString()).build();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
     }
 }

@@ -34,13 +34,22 @@ public class ModelDataSet
     @Produces(MediaType.APPLICATION_JSON)
     public Response storeTrainingDataSet(@RequestBody String input)
     {
-        JsonObject dataSetJson = JsonParser.parseString(input).getAsJsonObject();
-        long dataSetId = this.modelDataSetService.storeTrainingDataSet(dataSetJson);
+        try {
+            JsonObject dataSetJson = JsonParser.parseString(input).getAsJsonObject();
+            long dataSetId = this.modelDataSetService.storeTrainingDataSet(dataSetJson);
 
-        JsonObject returnValue = new JsonObject();
-        returnValue.addProperty("dataSetId", dataSetId);
-        Response response = Response.ok(returnValue.toString()).build();
-        return response;
+            JsonObject returnValue = new JsonObject();
+            returnValue.addProperty("dataSetId", dataSetId);
+            Response response = Response.ok(returnValue.toString()).build();
+            return response;
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
     }
 
     @Path("storeEvalDataSet")
@@ -48,13 +57,22 @@ public class ModelDataSet
     @Produces(MediaType.APPLICATION_JSON)
     public Response storeEvalDataSet(@RequestBody String input)
     {
-        JsonObject dataSetJson = JsonParser.parseString(input).getAsJsonObject();
-        long dataSetId = this.modelDataSetService.storeEvalDataSet(dataSetJson);
+        try {
+            JsonObject dataSetJson = JsonParser.parseString(input).getAsJsonObject();
+            long dataSetId = this.modelDataSetService.storeEvalDataSet(dataSetJson);
 
-        JsonObject returnValue = new JsonObject();
-        returnValue.addProperty("dataSetId", dataSetId);
-        Response response = Response.ok(returnValue.toString()).build();
-        return response;
+            JsonObject returnValue = new JsonObject();
+            returnValue.addProperty("dataSetId", dataSetId);
+            Response response = Response.ok(returnValue.toString()).build();
+            return response;
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
     }
 
     @Path("readDataSet")
@@ -62,8 +80,17 @@ public class ModelDataSet
     @Produces(MediaType.APPLICATION_JSON)
     public Response readDataSet(@QueryParam("dataSetId") long dataSetId)
     {
-        JsonObject jsonInput = this.modelDataSetService.readDataSet(dataSetId);
-        Response response = Response.ok(jsonInput.toString()).build();
-        return response;
+        try {
+            JsonObject jsonInput = this.modelDataSetService.readDataSet(dataSetId);
+            Response response = Response.ok(jsonInput.toString()).build();
+            return response;
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
     }
 }

@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 
-@ApplicationScoped
+//@ApplicationScoped
 public class ModelDeployer {
     private static Logger logger = LoggerFactory.getLogger(ModelDeployer.class);
 

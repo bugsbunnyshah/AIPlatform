@@ -20,6 +20,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,6 +71,47 @@ public class AIModelService
             Evaluation evaluation = network.evaluate(dataSetIterator);
 
             return evaluation.toJson();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String trainJava(long modelId, long dataSetId)
+    {
+        try
+        {
+            MultiLayerNetwork network = this.activeModels.get(modelId);
+
+            if(network == null)
+            {
+                //logger.info("******************************************");
+                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
+                //logger.info("******************************************");
+                String modelString = this.mongoDBJsonStore.getModel(modelId);
+                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
+                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
+                this.activeModels.put(modelId, network);
+            }
+
+            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
+                    getInstance(new long[]{dataSetId});
+            network.fit(dataSetIterator);
+
+            //Deploy the Model
+            ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
+            ModelSerializer.writeModel(network, modelBytes, false);
+            String modelString = Base64.getEncoder().encodeToString(modelBytes.toByteArray());
+
+            JsonObject currentModel = this.mongoDBJsonStore.getModelPackage(modelId);
+            currentModel.addProperty("model", modelString);
+            this.mongoDBJsonStore.updateModel(modelId, currentModel);
+
+            this.activeModels.put(modelId, network);
+
+            return new JsonObject().toString();
         }
         catch(Exception e)
         {
