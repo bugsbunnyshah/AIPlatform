@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.AIModelService;
 import jep.JepException;
 import jep.MainInterpreter;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +27,8 @@ public class LiveModel
     {
         try
         {
-            MainInterpreter.setJepLibraryPath("/Users/babyboy/opt/anaconda3/lib/python3.8/site-packages/jep/jep.cpython-38-darwin.so");
+            String jepLibraryPath = ConfigProvider.getConfig().getValue("jepLibraryPath", String.class);
+            MainInterpreter.setJepLibraryPath(jepLibraryPath);
         }
         catch (Exception e)
         {
