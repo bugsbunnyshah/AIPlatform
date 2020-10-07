@@ -1,3 +1,5 @@
+Braineous - The AI PLatform by AppGal Labs
+
 Build without testsuite > mvn clean package -DskipTests
 
 Build with testsuite > mvn clean package
