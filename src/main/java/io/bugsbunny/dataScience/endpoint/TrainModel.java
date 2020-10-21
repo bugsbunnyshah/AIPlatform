@@ -63,7 +63,7 @@ public class TrainModel
     @Path("trainJava")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response eval(@RequestBody String input)
+    public Response trainJava(@RequestBody String input)
     {
         try {
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
@@ -93,7 +93,7 @@ public class TrainModel
     @Path("trainPython")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response python(@RequestBody String input)
+    public Response trainPython(@RequestBody String input)
     {
         try
         {
