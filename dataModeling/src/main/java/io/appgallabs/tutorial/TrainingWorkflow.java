@@ -89,6 +89,7 @@ public class TrainingWorkflow {
         input.addProperty("modelId", modelId);
         input.addProperty("format", "csv");
         input.addProperty("data", data);
+        logger.info(input.toString());
         response = saveTrainingDataSet(input.toString());
         logger.info(response.toString());
 
@@ -98,10 +99,18 @@ public class TrainingWorkflow {
         trainingDataSetIds.add(response.get("dataSetId").getAsString());
         trainingInput.addProperty("modelId", modelId);
         trainingInput.add("dataSetIds", trainingDataSetIds);
+        logger.info(trainingInput.toString());
         response = trainModelInCloud(trainingInput.toString());
         logger.info(response.toString());
 
-        //Ingest the data that will train the model
+        //Deploy the trained model as a live model
+        JsonObject deploy = new JsonObject();
+        deploy.addProperty("modelId", modelId);
+        logger.info(deploy.toString());
+        response = deployLiveModelInCloud(deploy.toString());
+        logger.info(response.toString());
+
+        //Ingest the data that will call the live model
         data = IOUtils.toString(Thread.currentThread().
                         getContextClassLoader().
                         getResourceAsStream("dataScience/saturn_data_eval.csv"),
@@ -111,6 +120,7 @@ public class TrainingWorkflow {
         input.addProperty("modelId", modelId);
         input.addProperty("format", "csv");
         input.addProperty("data", data);
+        logger.info(input.toString());
         response = saveLiveDataSet(input.toString());
         logger.info(response.toString());
 
@@ -120,6 +130,7 @@ public class TrainingWorkflow {
         liveDataSetIds.add(response.get("dataSetId").getAsString());
         liveInput.addProperty("modelId", modelId);
         liveInput.add("dataSetIds", liveDataSetIds);
+        logger.info(liveInput.toString());
         response = evaluateLiveModelInCloud(liveInput.toString());
         logger.info(response.toString());
 
@@ -190,6 +201,26 @@ public class TrainingWorkflow {
         //Create the Experiment
         HttpClient httpClient = HttpClient.newBuilder().build();
         String restUrl = "http://localhost:8080/trainModel/trainJava/";
+
+        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
+        HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
+                .header("Content-Type", "application/json")
+                .header("Principal", principal)
+                .header("Bearer","")
+                .POST(HttpRequest.BodyPublishers.ofString(payload))
+                .build();
+
+        HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        String responseJson = httpResponse.body();
+
+        return JsonParser.parseString(responseJson).getAsJsonObject();
+    }
+
+    private static JsonObject deployLiveModelInCloud(String payload) throws Exception
+    {
+        //Create the Experiment
+        HttpClient httpClient = HttpClient.newBuilder().build();
+        String restUrl = "http://localhost:8080/liveModel/deployJavaModel/";
 
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
         HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))

@@ -2,9 +2,9 @@ package io.bugsbunny.dataScience.service;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
-import io.bugsbunny.endpoint.SecurityToken;
+import io.bugsbunny.dataScience.endpoint.ModelIsLive;
+import io.bugsbunny.dataScience.endpoint.ModelNotFoundException;
 import jep.Interpreter;
 import jep.JepException;
 import jep.SharedInterpreter;
@@ -50,8 +50,18 @@ public class AIModelService
         this.activeModels = new HashMap<>();
     }
 
-    public String evalJava(long modelId, long[] dataSetIds)
+    public String trainJava(long modelId, long[] dataSetIds) throws ModelNotFoundException, ModelIsLive
     {
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        if(modelPackage == null)
+        {
+            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
+        }
+        if(modelPackage.get("live").getAsBoolean() == true)
+        {
+            throw new ModelIsLive("LIVE_MODEL_TRAINING_DOESNOT_MAKE_SENSE:"+modelId);
+        }
+        String modelString = this.mongoDBJsonStore.getModel(modelId);
         try
         {
             MultiLayerNetwork network = this.activeModels.get(modelId);
@@ -61,37 +71,6 @@ public class AIModelService
                 //logger.info("******************************************");
                 //logger.info("DESERIALZING_THE_MODEL: "+modelId);
                 //logger.info("******************************************");
-                String modelString = this.mongoDBJsonStore.getModel(modelId);
-                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
-                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
-                this.activeModels.put(modelId, network);
-            }
-
-            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
-                    getInstance(dataSetIds);
-            Evaluation evaluation = network.evaluate(dataSetIterator);
-
-            return evaluation.toJson();
-        }
-        catch(Exception e)
-        {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String trainJava(long modelId, long[] dataSetIds)
-    {
-        try
-        {
-            MultiLayerNetwork network = this.activeModels.get(modelId);
-
-            if(network == null)
-            {
-                //logger.info("******************************************");
-                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
-                //logger.info("******************************************");
-                String modelString = this.mongoDBJsonStore.getModel(modelId);
                 ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
                 network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
                 this.activeModels.put(modelId, network);
@@ -103,16 +82,72 @@ public class AIModelService
 
             Evaluation evaluation = network.evaluate(dataSetIterator);
 
-            //Deploy the Model
-            ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
-            ModelSerializer.writeModel(network, modelBytes, false);
-            String modelString = Base64.getEncoder().encodeToString(modelBytes.toByteArray());
+            this.activeModels.put(modelId, network);
+
+            return evaluation.toJson();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deployModel(long modelId) throws ModelNotFoundException
+    {
+        String modelString = this.mongoDBJsonStore.getModel(modelId);
+        if(modelString == null)
+        {
+            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
+        }
+
+        try {
+            //Taking care of idempotency, whatever that means...I know and understand..but what a freaking word lol
+            if(this.activeModels.get(modelId) != null)
+            {
+                return;
+            }
 
             JsonObject currentModel = this.mongoDBJsonStore.getModelPackage(modelId);
             currentModel.addProperty("model", modelString);
-            this.mongoDBJsonStore.updateModel(modelId, currentModel);
+            this.mongoDBJsonStore.deployModel(modelId);
 
+
+            ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
+            MultiLayerNetwork network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
             this.activeModels.put(modelId, network);
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String evalJava(long modelId, long[] dataSetIds) throws ModelNotFoundException
+    {
+        String modelString = this.mongoDBJsonStore.getModel(modelId);
+        if(modelString == null)
+        {
+            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
+        }
+        try
+        {
+            MultiLayerNetwork network = this.activeModels.get(modelId);
+
+            if(network == null)
+            {
+                //logger.info("******************************************");
+                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
+                //logger.info("******************************************");
+                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
+                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
+                this.activeModels.put(modelId, network);
+            }
+
+            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
+                    getInstance(dataSetIds);
+            Evaluation evaluation = network.evaluate(dataSetIterator);
 
             return evaluation.toJson();
         }

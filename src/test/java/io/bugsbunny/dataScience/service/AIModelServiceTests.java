@@ -2,6 +2,7 @@ package io.bugsbunny.dataScience.service;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.dataScience.endpoint.ModelIsLive;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.test.components.BaseTest;
@@ -60,5 +61,63 @@ public class AIModelServiceTests extends BaseTest {
         logger.info("ModelId: "+modelId);
         logger.info("****************");
         assertNotNull(result);
+    }
+
+    @Test
+    public void testAIModelLifeCycle() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        long modelId = response.get("modelId").getAsLong();
+        logger.info("****************");
+        logger.info("ModelId: "+modelId);
+        logger.info("****************");
+
+        //Make sure model is not deployed
+        response = this.packagingService.getModelPackage(modelId);
+        response.remove("model");
+        logger.info(response.toString());
+        assertFalse(response.get("live").getAsBoolean());
+
+        this.aiModelService.deployModel(modelId);
+        response = this.packagingService.getModelPackage(modelId);
+        response.remove("model");
+        logger.info(response.toString());
+        assertTrue(response.get("live").getAsBoolean());
+    }
+
+    @Test
+    public void testCannotTrainLiveModel() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        long modelId = response.get("modelId").getAsLong();
+        logger.info("****************");
+        logger.info("ModelId: "+modelId);
+        logger.info("****************");
+
+        //Make sure model is not deployed
+        response = this.packagingService.getModelPackage(modelId);
+        response.remove("model");
+        logger.info(response.toString());
+        assertFalse(response.get("live").getAsBoolean());
+
+        this.aiModelService.deployModel(modelId);
+        response = this.packagingService.getModelPackage(modelId);
+        response.remove("model");
+        logger.info(response.toString());
+        assertTrue(response.get("live").getAsBoolean());
+
+        boolean isModelLive = false;
+        try {
+            this.aiModelService.trainJava(modelId, null);
+        }
+        catch(ModelIsLive modelIsLive)
+        {
+            isModelLive = true;
+        }
+        assertTrue(isModelLive);
     }
 }

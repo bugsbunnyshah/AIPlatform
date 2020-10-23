@@ -81,6 +81,20 @@ public class TrainModel
             Response response = Response.ok(eval).build();
             return response;
         }
+        catch(ModelNotFoundException modelNotFoundException)
+        {
+            logger.error(modelNotFoundException.getMessage(), modelNotFoundException);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", modelNotFoundException.getMessage());
+            return Response.status(404).entity(error.toString()).build();
+        }
+        catch(ModelIsLive modelIsLive)
+        {
+            logger.error(modelIsLive.getMessage(), modelIsLive);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", modelIsLive.getMessage());
+            return Response.status(422).entity(error.toString()).build();
+        }
         catch(Exception e)
         {
             logger.error(e.getMessage(), e);

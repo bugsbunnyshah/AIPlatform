@@ -66,7 +66,7 @@ public class LiveModel
     @Path("evalJava")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response eval(@RequestBody String input)
+    public Response evalJava(@RequestBody String input)
     {
         try {
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
@@ -84,6 +84,45 @@ public class LiveModel
             Response response = Response.ok(eval).build();
             return response;
         }
+        catch(ModelNotFoundException modelNotFoundException)
+        {
+            logger.error(modelNotFoundException.getMessage(), modelNotFoundException);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", modelNotFoundException.getMessage());
+            return Response.status(404).entity(error.toString()).build();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
+    }
+
+    @Path("deployJavaModel")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deployJavaModel(@RequestBody String input)
+    {
+        try {
+            JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
+            long modelId = jsonInput.get("modelId").getAsLong();
+
+            this.aiModelService.deployModel(modelId);
+            JsonObject result = new JsonObject();
+            result.addProperty("success", true);
+            result.addProperty("liveModelId", modelId);
+            Response response = Response.ok(result.toString()).build();
+            return response;
+        }
+        catch(ModelNotFoundException modelNotFoundException)
+        {
+            logger.error(modelNotFoundException.getMessage(), modelNotFoundException);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", modelNotFoundException.getMessage());
+            return Response.status(404).entity(error.toString()).build();
+        }
         catch(Exception e)
         {
             logger.error(e.getMessage(), e);
@@ -96,7 +135,7 @@ public class LiveModel
     @Path("evalPython")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response python(@RequestBody String input)
+    public Response evalPython(@RequestBody String input)
     {
         try
         {

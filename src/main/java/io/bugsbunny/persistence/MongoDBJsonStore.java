@@ -377,7 +377,7 @@ public class MongoDBJsonStore
         return null;
     }
 
-    public void updateModel(long modelId, JsonObject modelPackage)
+    public void deployModel(long modelId)
     {
         String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
@@ -388,7 +388,20 @@ public class MongoDBJsonStore
         Bson bson = Document.parse(currentModel.toString());
         collection.deleteOne(bson);
 
-        this.storeModel(modelPackage);
+        currentModel.remove("_id");
+        currentModel.addProperty("live", true);
+        this.storeLiveModel(currentModel);
+    }
+
+    private void storeLiveModel(JsonObject modelPackage)
+    {
+        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
+        String databaseName = principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("aimodels");
+        Document doc = Document.parse(modelPackage.toString());
+        collection.insertOne(doc);
     }
     //DataLake related operations----------------------------------------------------------------
     public long storeTrainingDataSet(JsonObject dataSetJson)
