@@ -45,10 +45,12 @@ public class AIModelService
     private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
 
     private Map<Long, MultiLayerNetwork> activeModels;
+    private Map<Long, MultiLayerNetwork> trainingModels;
 
     public AIModelService()
     {
         this.activeModels = new HashMap<>();
+        this.trainingModels = new HashMap<>();
     }
 
     public String trainJava(long modelId, long[] dataSetIds) throws ModelNotFoundException, ModelIsLive
@@ -74,7 +76,7 @@ public class AIModelService
                 //logger.info("******************************************");
                 ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
                 network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
-                this.activeModels.put(modelId, network);
+                this.trainingModels.put(modelId, network);
             }
 
             DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
@@ -83,7 +85,7 @@ public class AIModelService
 
             Evaluation evaluation = network.evaluate(dataSetIterator);
 
-            this.activeModels.put(modelId, network);
+            this.trainingModels.put(modelId, network);
 
             return evaluation.toJson();
         }
@@ -104,7 +106,7 @@ public class AIModelService
         String modelString = modelPackage.get("model").getAsString();
         try {
             //Taking care of idempotency, whatever that means...I know and understand..but what a freaking word lol
-            if(this.activeModels.get(modelId) != null)
+            if(this.trainingModels.get(modelId) != null)
             {
                 return;
             }
@@ -117,6 +119,7 @@ public class AIModelService
             ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
             MultiLayerNetwork network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
             this.activeModels.put(modelId, network);
+            this.trainingModels.remove(modelId);
         }
         catch(Exception e)
         {

@@ -106,9 +106,9 @@ public class TrainingWorkflow {
         //Deploy the trained model as a live model
         JsonObject deploy = new JsonObject();
         deploy.addProperty("modelId", modelId);
-        logger.info(deploy.toString());
+        logger.info("DEPLOY_REQUEST: "+deploy.toString());
         response = deployLiveModelInCloud(deploy.toString());
-        logger.info(response.toString());
+        logger.info("DEPLOY_RESPONSE: "+response.toString());
 
         //Ingest the data that will call the live model
         data = IOUtils.toString(Thread.currentThread().
