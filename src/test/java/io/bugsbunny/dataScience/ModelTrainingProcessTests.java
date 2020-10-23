@@ -170,6 +170,11 @@ public class ModelTrainingProcessTests extends BaseTest
         Evaluation eval = model.evaluate(testIter);
         logger.info(eval.stats());
 
+        //Deploy the model
+        JsonObject deployModel = new JsonObject();
+        deployModel.addProperty("modelId", modelId);
+        given().body(deployModel.toString()).when().post("/liveModel/deployJavaModel").andReturn();
+
         //Run the Model in the Cloud
         JsonObject deployResult = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
         JsonArray dataSetIdArray = new JsonArray();

@@ -72,6 +72,12 @@ public class SecurityTokenMockComponentTests extends BaseTest {
             input.addProperty("modelId", modelId);
             input.add("dataSetIds", dataSetIdArray);
 
+            //Deploy the model
+            JsonObject deployModel = new JsonObject();
+            deployModel.addProperty("modelId", modelId);
+            given().body(deployModel.toString()).when().post("/liveModel/deployJavaModel").andReturn();
+
+
             response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
             logger.info("************************");
             logger.info(response.statusLine());
