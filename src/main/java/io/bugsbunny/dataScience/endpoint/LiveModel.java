@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 
 import io.bugsbunny.dataScience.service.AIModelService;
 
+import io.bugsbunny.persistence.MongoDBJsonStore;
 import jep.Interpreter;
 import jep.JepException;
 import jep.MainInterpreter;
@@ -63,6 +64,9 @@ public class LiveModel
     @Inject
     private AIModelService aiModelService;
 
+    @Inject
+    private MongoDBJsonStore mongoDBJsonStore;
+
     @Path("evalJava")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -91,6 +95,13 @@ public class LiveModel
             error.addProperty("exception", modelNotFoundException.getMessage());
             return Response.status(404).entity(error.toString()).build();
         }
+        catch(ModelIsNotLive modelIsNotLive)
+        {
+            logger.error(modelIsNotLive.getMessage(), modelIsNotLive);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", modelIsNotLive.getMessage());
+            return Response.status(422).entity(error.toString()).build();
+        }
         catch(Exception e)
         {
             logger.error(e.getMessage(), e);
@@ -110,10 +121,15 @@ public class LiveModel
             long modelId = jsonInput.get("modelId").getAsLong();
 
             this.aiModelService.deployModel(modelId);
+
+            JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+            modelPackage.remove("_id");
+            modelPackage.remove("model");
+
             JsonObject result = new JsonObject();
             result.addProperty("success", true);
             result.addProperty("liveModelId", modelId);
-            Response response = Response.ok(result.toString()).build();
+            Response response = Response.ok(modelPackage.toString()).build();
             return response;
         }
         catch(ModelNotFoundException modelNotFoundException)

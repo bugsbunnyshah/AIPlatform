@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import io.bugsbunny.dataScience.endpoint.ModelIsLive;
+import io.bugsbunny.dataScience.endpoint.ModelIsNotLive;
 import io.bugsbunny.dataScience.endpoint.ModelNotFoundException;
 import jep.Interpreter;
 import jep.JepException;
@@ -57,11 +58,11 @@ public class AIModelService
         {
             throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
         }
-        if(modelPackage.get("live").getAsBoolean() == true)
+        if(modelPackage.get("live").getAsBoolean())
         {
             throw new ModelIsLive("LIVE_MODEL_TRAINING_DOESNOT_MAKE_SENSE:"+modelId);
         }
-        String modelString = this.mongoDBJsonStore.getModel(modelId);
+        String modelString = modelPackage.get("model").getAsString();
         try
         {
             MultiLayerNetwork network = this.activeModels.get(modelId);
@@ -95,12 +96,12 @@ public class AIModelService
 
     public void deployModel(long modelId) throws ModelNotFoundException
     {
-        String modelString = this.mongoDBJsonStore.getModel(modelId);
-        if(modelString == null)
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        if(modelPackage == null)
         {
             throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
         }
-
+        String modelString = modelPackage.get("model").getAsString();
         try {
             //Taking care of idempotency, whatever that means...I know and understand..but what a freaking word lol
             if(this.activeModels.get(modelId) != null)
@@ -124,13 +125,19 @@ public class AIModelService
         }
     }
 
-    public String evalJava(long modelId, long[] dataSetIds) throws ModelNotFoundException
+    public String evalJava(long modelId, long[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
     {
-        String modelString = this.mongoDBJsonStore.getModel(modelId);
-        if(modelString == null)
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+
+        if(modelPackage == null)
         {
             throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
         }
+        if(!modelPackage.get("live").getAsBoolean())
+        {
+            throw new ModelIsNotLive("MODEL_IS_NOT_LIVE_YET:"+modelId);
+        }
+        String modelString = modelPackage.get("model").getAsString();
         try
         {
             MultiLayerNetwork network = this.activeModels.get(modelId);
