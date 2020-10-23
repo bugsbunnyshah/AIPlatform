@@ -106,7 +106,7 @@ public class AIModelService
         String modelString = modelPackage.get("model").getAsString();
         try {
             //Taking care of idempotency, whatever that means...I know and understand..but what a freaking word lol
-            if(this.trainingModels.get(modelId) != null)
+            if(modelPackage.get("live").getAsBoolean())
             {
                 return;
             }
