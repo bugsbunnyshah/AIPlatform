@@ -16,17 +16,14 @@ public class IngestionService {
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
-    public void ingestDevModelData(String data)
+    public JsonObject ingestDevModelData(String data)
     {
         JsonObject jsonObject = new JsonObject();
-
-        String oid = UUID.randomUUID().toString();
-        int offset = 10;
-        jsonObject.addProperty("oid", oid);
-        jsonObject.addProperty("offset", offset);
         jsonObject.addProperty("data", data);
 
-        //TODO: Reconcile
-        //this.mongoDBJsonStore.storeDevModels(jsonObject);
+        long dataSetId = this.mongoDBJsonStore.storeIngestion(jsonObject);
+        jsonObject.addProperty("dataSetId", dataSetId);
+
+        return jsonObject;
     }
 }

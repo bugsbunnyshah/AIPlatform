@@ -44,28 +44,46 @@ public class CSVDataUtil {
 
     public JsonObject convert(JsonArray data)
     {
-        JsonObject jsonObject = new JsonObject();
+        //logger.info("*********************************");
+        //logger.info("ARRAY: "+data.toString());
+        //logger.info("ARRAYSIZE: "+data.size());
+        //logger.info("*********************************");
+
         int rowCount = data.size();
         int columnCount = 0;
         StringBuilder csvBuilder = new StringBuilder();
         Iterator<JsonElement> rows = data.iterator();
         while(rows.hasNext())
         {
-            JsonObject row = rows.next().getAsJsonObject();
-            Set<Map.Entry<String, JsonElement>> entrySet = row.entrySet();
-            columnCount = entrySet.size();
-            int count = 0;
-            for(Map.Entry<String, JsonElement> entry:entrySet)
-            {
-                csvBuilder.append(entry.getValue());
-                if(count != columnCount-1)
-                {
-                    csvBuilder.append(",");
+            JsonElement row = rows.next();
+
+            if(row.isJsonObject()) {
+                JsonObject jsonObject = row.getAsJsonObject();
+                Set<Map.Entry<String, JsonElement>> entrySet = jsonObject.entrySet();
+                columnCount = entrySet.size();
+                int count = 0;
+                for (Map.Entry<String, JsonElement> entry : entrySet) {
+                    csvBuilder.append(entry.getValue());
+                    if (count != columnCount - 1) {
+                        csvBuilder.append(",");
+                    }
+                    count++;
                 }
-                count++;
+                csvBuilder.append("\n");
             }
-            csvBuilder.append("\n");
+            else
+            {
+                String value = row.getAsString();
+                columnCount = 1;
+                csvBuilder.append(value+"\n");
+            }
         }
+
+        logger.info("**************************");
+        logger.info("RowCount: "+rowCount);
+        logger.info("ColumnCount: "+columnCount);
+
+        JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("rows", rowCount);
         jsonObject.addProperty("columns", columnCount);
         jsonObject.addProperty("data", csvBuilder.toString());

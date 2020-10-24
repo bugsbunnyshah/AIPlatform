@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.persistence.MongoDBJsonStore;
 import org.mitre.harmony.matchers.ElementPair;
 import org.mitre.harmony.matchers.MatcherManager;
@@ -37,6 +38,8 @@ public class MapperService {
     @Inject
     private PayloadReplayService payloadReplayService;
 
+    private CSVDataUtil csvDataUtil = new CSVDataUtil();
+
     public JsonArray map(String sourceSchema, String destinationSchema, JsonArray sourceData)
     {
         JsonArray result = new JsonArray();
@@ -45,7 +48,11 @@ public class MapperService {
             int size = sourceData.size();
             for(int i=0; i<size; i++)
             {
-                JsonObject root = sourceData.get(i).getAsJsonObject();
+                JsonElement root = sourceData.get(i);
+                if(root.isJsonPrimitive())
+                {
+                    continue;
+                }
 
                 HierarchicalSchemaInfo sourceSchemaInfo = this.populateHierarchialSchema(root.toString(),
                         root.toString(), null);
@@ -58,7 +65,9 @@ public class MapperService {
                 FilteredSchemaInfo f2 = new FilteredSchemaInfo(destinationSchemaInfo);
                 f2.addElements(destinationSchemaInfo.getElements(Entity.class));
                 Map<SchemaElement, Double> scores = this.findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
-                //logger.info(scores.toString());
+                logger.info("*************************************");
+                logger.info(scores.toString());
+                logger.info("*************************************");
                 JsonObject local = this.performMapping(scores, root.toString());
                 result.add(local);
             }
@@ -74,6 +83,15 @@ public class MapperService {
         }
     }
 
+
+    public JsonArray mapXml(String sourceSchema, String destinationSchema, JsonObject sourceData)
+    {
+        JsonArray result = new JsonArray();
+        this.traverse(sourceData, result);
+        result = this.map(sourceSchema, destinationSchema, result);
+        return result;
+    }
+    //---------------------------------------------------------------------------------------------------------------------
     private HierarchicalSchemaInfo createHierachialSchemaInfo(String schemaName)
     {
         Schema schema = new Schema();
@@ -197,5 +215,60 @@ public class MapperService {
             }
         }
         return result;
+    }
+
+    private void traverse(JsonObject currentObject, JsonArray result)
+    {
+        Iterator<String> allProps = currentObject.keySet().iterator();
+        while(allProps.hasNext())
+        {
+            String nextObject = allProps.next();
+            JsonElement resolve = currentObject.get(nextObject);
+            if(resolve.isJsonObject())
+            {
+                JsonObject resolveJson = resolve.getAsJsonObject();
+                if(resolveJson.keySet().size()==1) {
+                    this.resolve(resolveJson, result);
+                }
+                else
+                {
+                    this.traverse(resolveJson, result);
+                }
+            }
+            else
+            {
+                //resolve is an array, means its a leaf
+                JsonArray resolveArray = resolve.getAsJsonArray();
+                Iterator<JsonElement> itr = resolveArray.iterator();
+                while(itr.hasNext())
+                {
+                    result.add(itr.next());
+                }
+            }
+        }
+    }
+
+    private void resolve(JsonObject leaf, JsonArray result)
+    {
+        JsonArray finalResult=null;
+        if (leaf.isJsonObject()) {
+            String child = leaf.keySet().iterator().next();
+            JsonElement childElement = leaf.get(child);
+            if(childElement.isJsonArray()) {
+                finalResult = childElement.getAsJsonArray();
+            }
+            else
+            {
+                this.traverse(childElement.getAsJsonObject(), result);
+            }
+        } else {
+            finalResult = leaf.getAsJsonArray();
+        }
+        if(finalResult != null) {
+            Iterator<JsonElement> itr = finalResult.iterator();
+            while (itr.hasNext()) {
+                result.add(itr.next());
+            }
+        }
     }
 }

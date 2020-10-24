@@ -5,27 +5,24 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import io.bugsbunny.endpoint.SecurityToken;
-import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.persistence.MongoDBJsonStore;
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.BeforeEach;
+import org.json.JSONObject;
+import org.json.XML;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Iterator;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 public class DataMapperTests extends BaseTest
@@ -34,6 +31,8 @@ public class DataMapperTests extends BaseTest
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
+
+    private CSVDataUtil csvDataUtil = new CSVDataUtil();
 
     @Test
     public void testMapWithOneToOneFields() throws Exception {
@@ -55,10 +54,13 @@ public class DataMapperTests extends BaseTest
         String jsonResponse = response.getBody().prettyPrint();
         logger.info("**************");
         logger.info(response.getStatusLine());
+        logger.info(jsonResponse);
         logger.info("***************");
 
         //assert the body
-        JsonArray array = JsonParser.parseString(jsonResponse).getAsJsonArray();
+        JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+        assertNotNull(ingestedData.get("dataSetId"));
+        JsonArray array = JsonParser.parseString(ingestedData.get("data").getAsString()).getAsJsonArray();
         JsonObject jsonObject = array.get(0).getAsJsonObject();
         int statusCode = response.getStatusCode();
         assertEquals(200, statusCode);
@@ -96,41 +98,15 @@ public class DataMapperTests extends BaseTest
         logger.info("***************");
 
         //assert the body
-        JsonArray array = JsonParser.parseString(jsonResponse).getAsJsonArray();
+        JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+        assertNotNull(ingestedData.get("dataSetId"));
+        JsonArray array = JsonParser.parseString(ingestedData.get("data").getAsString()).getAsJsonArray();
         JsonObject jsonObject = array.get(0).getAsJsonObject();
         int statusCode = response.getStatusCode();
         assertEquals(200, statusCode);
         assertEquals("123456789", jsonObject.get("Id").getAsString());
         assertEquals("1234567", jsonObject.get("Rcvr").getAsString());
         assertEquals(Boolean.TRUE, jsonObject.get("HasSig").getAsBoolean());
-    }
-
-    @Test
-    public void testMapXmlSourceData() throws Exception {
-        String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream("people.xml"),
-                StandardCharsets.UTF_8);
-
-        JsonObject input = new JsonObject();
-        input.addProperty("sourceSchema", xml);
-        input.addProperty("destinationSchema", xml);
-        input.addProperty("sourceData", xml);
-
-
-        Response response = given().body(input.toString()).when().post("/dataMapper/mapXml")
-                .andReturn();
-
-        String jsonResponse = response.getBody().prettyPrint();
-        logger.info("****");
-        logger.info(response.getStatusLine());
-        logger.info("****");
-        assertEquals(200, response.getStatusCode());
-
-        JsonObject storedJson = this.mongoDBJsonStore.getIngestion("1");
-        logger.info("*******");
-        logger.info(storedJson.toString());
-        logger.info("*******");
-
-        //TODO:JSon compare
     }
 
     @Test
@@ -146,9 +122,97 @@ public class DataMapperTests extends BaseTest
         Response response = given().body(input.toString()).when().post("/dataMapper/mapCsv")
                 .andReturn();
 
+        String jsonResponse = response.getBody().prettyPrint();
         logger.info("****");
         logger.info(response.getStatusLine());
+        logger.info(jsonResponse);
         logger.info("****");
         assertEquals(200, response.getStatusCode());
+
+        //assert the body
+        JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+        assertNotNull(ingestedData.get("dataSetId"));
+        JsonArray array = JsonParser.parseString(ingestedData.get("data").getAsString()).getAsJsonArray();
+        int statusCode = response.getStatusCode();
+        assertEquals(200, statusCode);
+        assertEquals(5, array.size());
+    }
+
+    @Test
+    public void testMapXmlSourceData() throws Exception {
+        String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
+                        .getResourceAsStream("dataMapper/people.xml"),
+                StandardCharsets.UTF_8);
+
+        JsonObject input = new JsonObject();
+        input.addProperty("sourceSchema", xml);
+        input.addProperty("destinationSchema", xml);
+        input.addProperty("sourceData", xml);
+
+
+        Response response = given().body(input.toString()).when().post("/dataMapper/mapXml/")
+                .andReturn();
+
+        String jsonResponse = response.getBody().prettyPrint();
+        logger.info("****");
+        logger.info(response.getStatusLine());
+        //logger.info(jsonResponse);
+        logger.info("****");
+        assertEquals(200, response.getStatusCode());
+
+        //assert the body
+    }
+
+    @Test
+    public void testXmlTraversal() throws Exception
+    {
+        String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream("dataMapper/people.xml"),
+                StandardCharsets.UTF_8);
+
+        JSONObject sourceJson = XML.toJSONObject(xml);
+        String json = sourceJson.toString(4);
+
+
+        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+        this.traverse(jsonObject);
+    }
+
+    private void traverse(JsonObject currentObject)
+    {
+        Iterator<String> allProps = currentObject.keySet().iterator();
+        while(allProps.hasNext())
+        {
+            String nextObject = allProps.next();
+            JsonElement resolve = currentObject.get(nextObject);
+            if(resolve.isJsonObject())
+            {
+                JsonObject resolveJson = resolve.getAsJsonObject();
+                if(resolveJson.keySet().size()==1) {
+                    this.resolve(resolveJson);
+                }
+                else
+                {
+                    this.traverse(resolveJson);
+                }
+            }
+            else
+            {
+                //resolve is an array, means its a leaf
+                JsonObject csv = csvDataUtil.convert(resolve.getAsJsonArray());
+                logger.info(csv.get("data").getAsString());
+            }
+        }
+    }
+
+    private void resolve(JsonObject leaf)
+    {
+        JsonArray finalResult;
+        if (leaf.isJsonObject()) {
+            finalResult = leaf.get(leaf.keySet().iterator().next()).getAsJsonArray();
+        } else {
+            finalResult = leaf.getAsJsonArray();
+        }
+        JsonObject csv = csvDataUtil.convert(finalResult);
+        logger.info(csv.get("data").getAsString());
     }
 }

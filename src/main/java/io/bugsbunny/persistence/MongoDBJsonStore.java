@@ -52,7 +52,7 @@ public class MongoDBJsonStore
     }
 
     //Data Ingestion related operations-----------------------------------------------------
-    public void storeIngestion(List<JsonObject> jsonObjects)
+    public long storeIngestion(JsonObject jsonObject)
     {
         String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
@@ -60,10 +60,11 @@ public class MongoDBJsonStore
 
         MongoCollection<Document> collection = database.getCollection("datalake");
 
-        for(JsonObject jsonObject:jsonObjects) {
-            Document doc = Document.parse(jsonObject.toString());
-            collection.insertOne(doc);
-        }
+        long oid = new Random().nextLong();
+        jsonObject.addProperty("dataSetId", oid);
+        collection.insertOne(Document.parse(jsonObject.toString()));
+
+        return oid;
     }
 
     public JsonObject getIngestion(String ingestionId)

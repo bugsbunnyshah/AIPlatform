@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataIngestion.service.IngestionService;
 import io.bugsbunny.dataIngestion.service.MapperService;
+import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import org.json.JSONObject;
 import org.json.XML;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Iterator;
 
 @Path("dataMapper")
 public class DataMapper {
@@ -28,6 +30,8 @@ public class DataMapper {
 
     @Inject
     private IngestionService ingestionService;
+
+    private CSVDataUtil csvDataUtil = new CSVDataUtil();
 
     @Path("map")
     @POST
@@ -44,9 +48,9 @@ public class DataMapper {
             JsonArray array = JsonParser.parseString(sourceData).getAsJsonArray();
 
             JsonArray result = this.mapperService.map(sourceSchema, destinationSchema, array);
-            this.ingestionService.ingestDevModelData(result.toString());
+            JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
 
-            Response response = Response.ok(result.toString()).build();
+            Response response = Response.ok(responseJson.toString()).build();
             return response;
         }
         catch(Exception e)
@@ -69,23 +73,13 @@ public class DataMapper {
 
             String sourceSchema = jsonObject.get("sourceSchema").getAsString();
             String destinationSchema = jsonObject.get("destinationSchema").getAsString();
-            String sourceData = jsonObject.get("sourceData").getAsString();
-            JSONObject sourceJson = XML.toJSONObject(sourceData);
-            String json = sourceJson.toString(4);
-            JsonElement jsonElement = JsonParser.parseString(json);
-            JsonArray array;
-            if(jsonElement.isJsonObject())
-            {
-                array = new JsonArray();
-                array.add(jsonElement);
-            }
-            else
-            {
-                array = jsonElement.getAsJsonArray();
-            }
+            String xml = jsonObject.get("sourceData").getAsString();
 
-            JsonArray result = this.mapperService.map(sourceSchema, destinationSchema, array);
-            this.ingestionService.ingestDevModelData(result.toString());
+            JSONObject sourceJson = XML.toJSONObject(xml);
+            String json = sourceJson.toString(4);
+            JsonObject sourceJsonObject = JsonParser.parseString(json).getAsJsonObject();
+
+            JsonArray result = this.mapperService.mapXml(sourceSchema, destinationSchema, sourceJsonObject);
 
             Response response = Response.ok(result.toString()).build();
             return response;
@@ -128,9 +122,9 @@ public class DataMapper {
                 array.add(row);
             }
             JsonArray result = this.mapperService.map(sourceSchema,destinationSchema,array);
-            this.ingestionService.ingestDevModelData(result.toString());
+            JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
 
-            Response response = Response.ok(result.toString()).build();
+            Response response = Response.ok(responseJson.toString()).build();
             return response;
         }
         catch(Exception e)

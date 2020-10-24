@@ -48,27 +48,6 @@ public class MongoDBJsonStoreTests extends BaseTest {
     }
 
     @Test
-    public void testIngestionData() throws Exception
-    {
-        String json = IOUtils.toString(Thread.currentThread().getContextClassLoader().
-                        getResourceAsStream("people.json"),
-                StandardCharsets.UTF_8);
-
-        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
-        List<JsonObject> objects = Arrays.asList(new JsonObject[]{jsonObject});
-
-        this.mongoDBJsonStore.storeIngestion(objects);
-        JsonObject storedJson = this.mongoDBJsonStore.getIngestion("1");
-
-        logger.info("*******");
-        logger.info(storedJson.toString());
-        logger.info("*******");
-        assertEquals("James", storedJson.get("firstname").getAsString());
-    }
-
-
-
-    @Test
     public void testAIModelStorageLifeCycle() throws Exception
     {
 
