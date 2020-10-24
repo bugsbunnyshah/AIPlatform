@@ -21,8 +21,7 @@ public class IngestionService {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("data", data);
 
-        long dataSetId = this.mongoDBJsonStore.storeIngestion(jsonObject);
-        jsonObject.addProperty("dataSetId", dataSetId);
+        this.mongoDBJsonStore.storeIngestion(jsonObject);
 
         return jsonObject;
     }

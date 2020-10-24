@@ -90,6 +90,7 @@ public class MapperService {
     public JsonArray mapXml(String sourceSchema, String destinationSchema, JsonObject sourceData)
     {
         JsonArray result = new JsonArray();
+
         this.traverse(sourceData, result);
 
         result = this.map(sourceSchema, destinationSchema, result);
@@ -113,7 +114,17 @@ public class MapperService {
     private HierarchicalSchemaInfo populateHierarchialSchema(String object, String sourceData, String parent)
     {
         HierarchicalSchemaInfo schemaInfo = this.createHierachialSchemaInfo(object);
-        JsonObject jsonObject = JsonParser.parseString(sourceData).getAsJsonObject();
+        JsonElement sourceElement = JsonParser.parseString(sourceData);
+        JsonObject jsonObject = new JsonObject();
+        if(!sourceElement.isJsonPrimitive())
+        {
+            jsonObject = sourceElement.getAsJsonObject();
+        }
+        else
+        {
+            jsonObject = new JsonObject();
+            jsonObject.addProperty(sourceData, sourceElement.toString());
+        }
 
         Set<Map.Entry<String, JsonElement>> entrySet = jsonObject.entrySet();
         for(Map.Entry<String, JsonElement> entry:entrySet)
@@ -141,7 +152,7 @@ public class MapperService {
             }
             else if(jsonElement.isJsonArray())
             {
-                JsonObject top = jsonElement.getAsJsonArray().get(0).getAsJsonObject();
+                JsonElement top = jsonElement.getAsJsonArray().get(0);
                 HierarchicalSchemaInfo fieldInfos = this.populateHierarchialSchema(field,
                         top.toString(), object);
 
@@ -170,7 +181,6 @@ public class MapperService {
     private JsonObject performMapping(Map<SchemaElement, Double> scores, String json) throws IOException
     {
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
-        //logger.info("*******BINDAASBHIDDU******");
 
         JsonObject result = new JsonObject();
         Set<Map.Entry<SchemaElement, Double>> entrySet = scores.entrySet();
@@ -231,7 +241,12 @@ public class MapperService {
             if(resolve.isJsonObject())
             {
                 JsonObject resolveJson = resolve.getAsJsonObject();
-                if(resolveJson.keySet().size()==1 || resolveJson.keySet().size()==0) {
+                if(resolveJson.keySet().size()==0)
+                {
+                    //EMPTY TAG...skip it
+                    continue;
+                }
+                if(resolveJson.keySet().size()==1) {
                     //logger.info(nextObject+": RESOLVING");
                     this.resolve(nextObject, resolveJson, result);
                 }
@@ -241,55 +256,55 @@ public class MapperService {
                     this.traverse(resolveJson, result);
                 }
             }
-            /*else
-            {
-                //resolve is an array, means its a leaf
-                logger.info(nextObject+": LEAF");
-                JsonArray resolveArray = resolve.getAsJsonArray();
-                Iterator<JsonElement> itr = resolveArray.iterator();
-                while(itr.hasNext())
-                {
-                    result.add(itr.next());
-                }
-            }*/
         }
     }
 
-    private void resolve(String label, JsonObject leaf, JsonArray result)
+    private void resolve(String parent, JsonObject leaf, JsonArray result)
     {
+        //logger.info("*********************************");
+        //logger.info("PARENT: "+parent);
+        //logger.info("*********************************");
         JsonArray finalResult=null;
         if (leaf.isJsonObject()) {
             String child = leaf.keySet().iterator().next();
             JsonElement childElement = leaf.get(child);
             if(childElement.isJsonArray()) {
-                //logger.info(label+": CHILD_ARRAY");
+                //logger.info(parent+": CHILD_ARRAY");
                 finalResult = childElement.getAsJsonArray();
             }
             else
             {
-                //logger.info(label+": CHILD_OBJECT");
-                this.traverse(childElement.getAsJsonObject(), result);
+                //logger.info(parent+": CHILD_OBJECT");
+                finalResult = new JsonArray();
+                finalResult.add(childElement);
+                //this.traverse(childElement.getAsJsonObject(), result);
             }
         } else {
-            //logger.info(label+": LEAF_ARRAY");
+            //logger.info(parent+": LEAF_ARRAY");
             finalResult = leaf.getAsJsonArray();
         }
+
+
         if(finalResult != null) {
-            //logger.info(label+": CALUCLATING");
+            //logger.info(parent+": CALCULATING");
             Iterator<JsonElement> itr = finalResult.iterator();
-            while (itr.hasNext()) {
+            JsonArray jsonArray = new JsonArray();
+            while (itr.hasNext())
+            {
                 JsonElement jsonElement = itr.next();
-                //logger.info(label+":"+jsonElement.toString());
                 if(jsonElement.isJsonPrimitive())
                 {
                     JsonObject primitive = new JsonObject();
-                    primitive.addProperty(label,jsonElement.toString());
-                    result.add(primitive);
+                    primitive.addProperty(parent,jsonElement.toString());
+                    jsonArray.add(primitive);
                 }
                 else {
-                    result.add(jsonElement);
+                    jsonArray.add(jsonElement);
                 }
             }
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.add(parent,jsonArray);
+            result.add(jsonObject);
         }
     }
 }

@@ -80,8 +80,9 @@ public class DataMapper {
             JsonObject sourceJsonObject = JsonParser.parseString(json).getAsJsonObject();
 
             JsonArray result = this.mapperService.mapXml(sourceSchema, destinationSchema, sourceJsonObject);
+            JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
 
-            Response response = Response.ok(result.toString()).build();
+            Response response = Response.ok(responseJson.toString()).build();
             return response;
         }
         catch(Exception e)

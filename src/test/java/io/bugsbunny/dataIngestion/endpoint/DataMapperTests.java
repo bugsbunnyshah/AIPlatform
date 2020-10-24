@@ -59,7 +59,7 @@ public class DataMapperTests extends BaseTest
 
         //assert the body
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
-        assertNotNull(ingestedData.get("dataSetId"));
+        assertNotNull(ingestedData.get("dataLakeId"));
         JsonArray array = JsonParser.parseString(ingestedData.get("data").getAsString()).getAsJsonArray();
         JsonObject jsonObject = array.get(0).getAsJsonObject();
         int statusCode = response.getStatusCode();
@@ -99,7 +99,7 @@ public class DataMapperTests extends BaseTest
 
         //assert the body
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
-        assertNotNull(ingestedData.get("dataSetId"));
+        assertNotNull(ingestedData.get("dataLakeId"));
         JsonArray array = JsonParser.parseString(ingestedData.get("data").getAsString()).getAsJsonArray();
         JsonObject jsonObject = array.get(0).getAsJsonObject();
         int statusCode = response.getStatusCode();
@@ -131,7 +131,7 @@ public class DataMapperTests extends BaseTest
 
         //assert the body
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
-        assertNotNull(ingestedData.get("dataSetId"));
+        assertNotNull(ingestedData.get("dataLakeId"));
         JsonArray array = JsonParser.parseString(ingestedData.get("data").getAsString()).getAsJsonArray();
         int statusCode = response.getStatusCode();
         assertEquals(200, statusCode);
@@ -161,9 +161,11 @@ public class DataMapperTests extends BaseTest
         assertEquals(200, response.getStatusCode());
 
         //assert the body
+        JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+        assertNotNull(ingestedData.get("dataLakeId"));
     }
 
-    @Test
+    //@Test
     public void testXmlTraversal() throws Exception
     {
         String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream("dataMapper/people.xml"),

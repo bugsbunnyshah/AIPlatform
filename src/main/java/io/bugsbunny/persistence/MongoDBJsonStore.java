@@ -61,7 +61,7 @@ public class MongoDBJsonStore
         MongoCollection<Document> collection = database.getCollection("datalake");
 
         long oid = new Random().nextLong();
-        jsonObject.addProperty("dataSetId", oid);
+        jsonObject.addProperty("dataLakeId", oid);
         collection.insertOne(Document.parse(jsonObject.toString()));
 
         return oid;
