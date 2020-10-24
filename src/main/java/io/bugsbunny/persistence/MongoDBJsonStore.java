@@ -67,7 +67,7 @@ public class MongoDBJsonStore
         return oid;
     }
 
-    public JsonObject getIngestion(String ingestionId)
+    public JsonObject getIngestion(long dataLakeId)
     {
         JsonObject ingestion = new JsonObject();
 
@@ -77,7 +77,7 @@ public class MongoDBJsonStore
 
         MongoCollection<Document> collection = database.getCollection("datalake");
 
-        String queryJson = "{\"ingestionId\":\""+ingestionId+"\"}";
+        String queryJson = "{\"dataLakeId\":"+dataLakeId+"}";
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
         MongoCursor<Document> cursor = iterable.cursor();

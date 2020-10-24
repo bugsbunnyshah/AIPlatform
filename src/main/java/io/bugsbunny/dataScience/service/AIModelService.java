@@ -44,6 +44,9 @@ public class AIModelService
     @Inject
     private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
 
+    @Inject
+    private ModelDataSetService modelDataSetService;
+
     private Map<Long, MultiLayerNetwork> activeModels;
     private Map<Long, MultiLayerNetwork> trainingModels;
 
@@ -79,6 +82,64 @@ public class AIModelService
                 this.trainingModels.put(modelId, network);
             }
 
+            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
+                    getInstance(dataSetIds);
+            network.fit(dataSetIterator);
+
+            Evaluation evaluation = network.evaluate(dataSetIterator);
+
+            this.trainingModels.put(modelId, network);
+
+            return evaluation.toJson();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String trainJavaFromDataLake(long modelId, long[] dataLakeIds) throws ModelNotFoundException, ModelIsLive
+    {
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        if(modelPackage == null)
+        {
+            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
+        }
+        if(modelPackage.get("live").getAsBoolean())
+        {
+            throw new ModelIsLive("LIVE_MODEL_TRAINING_DOESNOT_MAKE_SENSE:"+modelId);
+        }
+        String modelString = modelPackage.get("model").getAsString();
+        try
+        {
+            MultiLayerNetwork network = this.activeModels.get(modelId);
+
+            if(network == null)
+            {
+                //logger.info("******************************************");
+                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
+                //logger.info("******************************************");
+                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
+                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
+                this.trainingModels.put(modelId, network);
+            }
+
+            long[] dataSetIds = new long[dataLakeIds.length];
+            for(int i=0; i<dataLakeIds.length;i++)
+            {
+                long dataLakeId = dataLakeIds[i];
+                JsonObject ingestedData = this.mongoDBJsonStore.getIngestion(dataLakeId);
+                //logger.info("***************************************************");
+                //logger.info("DataLakeId: "+dataLakeId+":"+ingestedData.toString());
+                //logger.info("***************************************************");
+
+                JsonObject input = new JsonObject();
+                input.addProperty("format", "csv");
+                input.addProperty("data", ingestedData.get("data").toString());
+                long dataSetId = this.modelDataSetService.storeTrainingDataSet(input);
+                dataSetIds[i] = dataSetId;
+            }
             DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
                     getInstance(dataSetIds);
             network.fit(dataSetIterator);
@@ -153,6 +214,62 @@ public class AIModelService
                 ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
                 network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
                 this.activeModels.put(modelId, network);
+            }
+
+            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
+                    getInstance(dataSetIds);
+            Evaluation evaluation = network.evaluate(dataSetIterator);
+
+            return evaluation.toJson();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String evalJavaFromDataLake(long modelId, long[] dataLakeIds) throws ModelNotFoundException, ModelIsNotLive
+    {
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+
+        if(modelPackage == null)
+        {
+            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
+        }
+        if(!modelPackage.get("live").getAsBoolean())
+        {
+            throw new ModelIsNotLive("MODEL_IS_NOT_LIVE_YET:"+modelId);
+        }
+        String modelString = modelPackage.get("model").getAsString();
+        try
+        {
+            MultiLayerNetwork network = this.activeModels.get(modelId);
+
+            if(network == null)
+            {
+                //logger.info("******************************************");
+                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
+                //logger.info("******************************************");
+                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
+                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
+                this.activeModels.put(modelId, network);
+            }
+
+            long[] dataSetIds = new long[dataLakeIds.length];
+            for(int i=0; i<dataLakeIds.length;i++)
+            {
+                long dataLakeId = dataLakeIds[i];
+                JsonObject ingestedData = this.mongoDBJsonStore.getIngestion(dataLakeId);
+                //logger.info("***************************************************");
+                //logger.info("DataLakeId: "+dataLakeId+":"+ingestedData.toString());
+                //logger.info("***************************************************");
+
+                JsonObject input = new JsonObject();
+                input.addProperty("format", "csv");
+                input.addProperty("data", ingestedData.get("data").toString());
+                long dataSetId = this.modelDataSetService.storeTrainingDataSet(input);
+                dataSetIds[i] = dataSetId;
             }
 
             DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.

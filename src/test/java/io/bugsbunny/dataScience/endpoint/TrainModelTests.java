@@ -118,4 +118,53 @@ public class TrainModelTests extends BaseTest
         //String output = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("output").getAsString();
         //assertNotNull(output);
     }
+
+    @Test
+    public void testTrainJavaFromDataLake() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject input = this.packagingService.performPackaging(modelPackage);
+        JsonObject trainingModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+        long modelId = trainingModelDeployedJson.get("modelId").getAsLong();
+
+        String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
+                        .getResourceAsStream("dataMapper/people.xml"),
+                StandardCharsets.UTF_8);
+
+        input = new JsonObject();
+        input.addProperty("sourceSchema", xml);
+        input.addProperty("destinationSchema", xml);
+        input.addProperty("sourceData", xml);
+
+
+        Response ingestionResponse = given().body(input.toString()).when().post("/dataMapper/mapXml/")
+                .andReturn();
+
+        String jsonResponse = ingestionResponse.getBody().prettyPrint();
+        logger.info("****");
+        logger.info(ingestionResponse.getStatusLine());
+        logger.info(jsonResponse);
+        logger.info("****");
+        assertEquals(200, ingestionResponse.getStatusCode());
+
+        //assert the body
+        JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+        assertNotNull(ingestedData.get("dataLakeId"));
+        input = new JsonObject();
+        JsonArray jsonArray = new JsonArray();
+        jsonArray.add(ingestedData.get("dataLakeId").getAsLong());
+        input.addProperty("modelId", modelId);
+        input.add("dataLakeIds", jsonArray);
+
+        Response response = given().body(input.toString()).when().post("/trainModel/trainJavaFromDataLake")
+
+                .andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+    }
 }

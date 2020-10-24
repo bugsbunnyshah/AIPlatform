@@ -251,4 +251,89 @@ public class AIModelServiceTests extends BaseTest {
         }
         assertTrue(modelNotLive);
     }
+
+    @Test
+    public void testTrainJavaFromDataLake() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject response = this.packagingService.performPackaging(modelPackage);
+
+        String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
+                        .getResourceAsStream("dataMapper/people.xml"),
+                StandardCharsets.UTF_8);
+
+        JsonObject input = new JsonObject();
+        input.addProperty("sourceSchema", xml);
+        input.addProperty("destinationSchema", xml);
+        input.addProperty("sourceData", xml);
+
+
+        Response ingestionResponse = given().body(input.toString()).when().post("/dataMapper/mapXml/")
+                .andReturn();
+
+        String jsonResponse = ingestionResponse.getBody().prettyPrint();
+        logger.info("****");
+        logger.info(ingestionResponse.getStatusLine());
+        logger.info(jsonResponse);
+        logger.info("****");
+        assertEquals(200, ingestionResponse.getStatusCode());
+
+        //assert the body
+        JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+        assertNotNull(ingestedData.get("dataLakeId"));
+
+        long modelId = response.get("modelId").getAsLong();
+        String result = this.aiModelService.trainJavaFromDataLake(modelId,
+                new long[]{ingestedData.get("dataLakeId").getAsLong()});
+        logger.info("****************");
+        logger.info("ModelId: "+modelId);
+        logger.info("****************");
+        assertNotNull(result);
+        logger.info(result.toString());
+    }
+
+    @Test
+    public void testEvalJavaFromDataLake() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject response = this.packagingService.performPackaging(modelPackage);
+
+        String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
+                        .getResourceAsStream("dataMapper/people.xml"),
+                StandardCharsets.UTF_8);
+
+        JsonObject input = new JsonObject();
+        input.addProperty("sourceSchema", xml);
+        input.addProperty("destinationSchema", xml);
+        input.addProperty("sourceData", xml);
+
+
+        Response ingestionResponse = given().body(input.toString()).when().post("/dataMapper/mapXml/")
+                .andReturn();
+
+        String jsonResponse = ingestionResponse.getBody().prettyPrint();
+        logger.info("****");
+        logger.info(ingestionResponse.getStatusLine());
+        logger.info(jsonResponse);
+        logger.info("****");
+        assertEquals(200, ingestionResponse.getStatusCode());
+
+        //assert the body
+        JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+        assertNotNull(ingestedData.get("dataLakeId"));
+
+        long modelId = response.get("modelId").getAsLong();
+        this.aiModelService.deployModel(modelId);
+        String result = this.aiModelService.evalJavaFromDataLake(modelId,
+                new long[]{ingestedData.get("dataLakeId").getAsLong()});
+        logger.info("****************");
+        logger.info("ModelId: "+modelId);
+        logger.info("****************");
+        assertNotNull(result);
+        logger.info(result.toString());
+    }
 }
