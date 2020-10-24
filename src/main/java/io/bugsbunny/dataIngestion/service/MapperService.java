@@ -42,6 +42,9 @@ public class MapperService {
 
     public JsonArray map(String sourceSchema, String destinationSchema, JsonArray sourceData)
     {
+        //logger.info("**************************************************");
+        //logger.info("SOURCE_DATA: "+sourceData.toString());
+        //logger.info("**************************************************");
         JsonArray result = new JsonArray();
         try
         {
@@ -65,9 +68,9 @@ public class MapperService {
                 FilteredSchemaInfo f2 = new FilteredSchemaInfo(destinationSchemaInfo);
                 f2.addElements(destinationSchemaInfo.getElements(Entity.class));
                 Map<SchemaElement, Double> scores = this.findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
-                logger.info("*************************************");
-                logger.info(scores.toString());
-                logger.info("*************************************");
+                //logger.info("*************************************");
+                //logger.info(scores.toString());
+                //logger.info("*************************************");
                 JsonObject local = this.performMapping(scores, root.toString());
                 result.add(local);
             }
@@ -88,6 +91,7 @@ public class MapperService {
     {
         JsonArray result = new JsonArray();
         this.traverse(sourceData, result);
+
         result = this.map(sourceSchema, destinationSchema, result);
         return result;
     }
@@ -227,47 +231,64 @@ public class MapperService {
             if(resolve.isJsonObject())
             {
                 JsonObject resolveJson = resolve.getAsJsonObject();
-                if(resolveJson.keySet().size()==1) {
-                    this.resolve(resolveJson, result);
+                if(resolveJson.keySet().size()==1 || resolveJson.keySet().size()==0) {
+                    //logger.info(nextObject+": RESOLVING");
+                    this.resolve(nextObject, resolveJson, result);
                 }
                 else
                 {
+                    //logger.info(nextObject+": TRAVERSING");
                     this.traverse(resolveJson, result);
                 }
             }
-            else
+            /*else
             {
                 //resolve is an array, means its a leaf
+                logger.info(nextObject+": LEAF");
                 JsonArray resolveArray = resolve.getAsJsonArray();
                 Iterator<JsonElement> itr = resolveArray.iterator();
                 while(itr.hasNext())
                 {
                     result.add(itr.next());
                 }
-            }
+            }*/
         }
     }
 
-    private void resolve(JsonObject leaf, JsonArray result)
+    private void resolve(String label, JsonObject leaf, JsonArray result)
     {
         JsonArray finalResult=null;
         if (leaf.isJsonObject()) {
             String child = leaf.keySet().iterator().next();
             JsonElement childElement = leaf.get(child);
             if(childElement.isJsonArray()) {
+                //logger.info(label+": CHILD_ARRAY");
                 finalResult = childElement.getAsJsonArray();
             }
             else
             {
+                //logger.info(label+": CHILD_OBJECT");
                 this.traverse(childElement.getAsJsonObject(), result);
             }
         } else {
+            //logger.info(label+": LEAF_ARRAY");
             finalResult = leaf.getAsJsonArray();
         }
         if(finalResult != null) {
+            //logger.info(label+": CALUCLATING");
             Iterator<JsonElement> itr = finalResult.iterator();
             while (itr.hasNext()) {
-                result.add(itr.next());
+                JsonElement jsonElement = itr.next();
+                //logger.info(label+":"+jsonElement.toString());
+                if(jsonElement.isJsonPrimitive())
+                {
+                    JsonObject primitive = new JsonObject();
+                    primitive.addProperty(label,jsonElement.toString());
+                    result.add(primitive);
+                }
+                else {
+                    result.add(jsonElement);
+                }
             }
         }
     }
