@@ -328,6 +328,7 @@ public class AIModelService
         }
 
         //Also undeploy the model
+        this.mongoDBJsonStore.undeployModel(modelId);
         this.activeModels.remove(modelId);
 
         return rollbackDataSetIds;

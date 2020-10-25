@@ -233,5 +233,20 @@ public class LiveModelTests extends BaseTest {
         response.body().prettyPrint();
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
+
+        response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        logger.info("************************");
+        assertEquals(422, response.getStatusCode());
+        response.body().prettyPrint();
+
+        //Start the retraining
+        response = given().body(input.toString()).when().post("/trainModel/trainJava").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+        response.body().prettyPrint();
     }
 }

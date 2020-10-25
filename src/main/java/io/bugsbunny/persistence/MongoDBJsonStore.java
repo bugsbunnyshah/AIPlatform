@@ -394,6 +394,22 @@ public class MongoDBJsonStore
         this.storeLiveModel(currentModel);
     }
 
+    public void undeployModel(long modelId)
+    {
+        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
+        String databaseName = principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+        MongoCollection<Document> collection = database.getCollection("aimodels");
+
+        JsonObject currentModel = this.getModelPackage(modelId);
+        Bson bson = Document.parse(currentModel.toString());
+        collection.deleteOne(bson);
+
+        currentModel.remove("_id");
+        currentModel.addProperty("live", false);
+        this.storeLiveModel(currentModel);
+    }
+
     private void storeLiveModel(JsonObject modelPackage)
     {
         String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
