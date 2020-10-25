@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
-import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;

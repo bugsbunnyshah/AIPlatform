@@ -1,7 +1,7 @@
 //
 package io.bugsbunny.dataScience.dl4j;
 
-import io.bugsbunny.endpoint.SecurityToken;
+import io.bugsbunny.preprocess.SecurityToken;
 import org.nd4j.common.loader.Source;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

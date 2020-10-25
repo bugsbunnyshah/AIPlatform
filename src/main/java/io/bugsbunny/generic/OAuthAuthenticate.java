@@ -1,7 +1,9 @@
-package io.bugsbunny.endpoint;
+package io.bugsbunny.generic;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.preprocess.SecurityToken;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.restClient.OAuthClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

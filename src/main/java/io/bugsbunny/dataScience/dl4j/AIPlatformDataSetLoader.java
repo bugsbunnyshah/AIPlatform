@@ -5,8 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import io.bugsbunny.endpoint.SecurityToken;
-import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.preprocess.SecurityToken;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 
 import org.nd4j.common.loader.Loader;

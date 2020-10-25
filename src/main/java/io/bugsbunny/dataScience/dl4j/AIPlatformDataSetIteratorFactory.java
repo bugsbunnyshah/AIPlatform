@@ -1,8 +1,8 @@
 package io.bugsbunny.dataScience.dl4j;
 
 import com.google.gson.JsonArray;
-import io.bugsbunny.endpoint.SecurityToken;
-import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.preprocess.SecurityToken;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import org.deeplearning4j.datasets.iterator.loader.DataSetLoaderIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 

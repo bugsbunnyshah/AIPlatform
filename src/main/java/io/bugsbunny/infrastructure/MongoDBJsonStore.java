@@ -6,7 +6,7 @@ import com.google.gson.JsonParser;
 
 import com.mongodb.client.*;
 
-import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;

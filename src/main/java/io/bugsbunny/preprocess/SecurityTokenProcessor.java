@@ -1,8 +1,6 @@
-package io.bugsbunny.endpoint;
+package io.bugsbunny.preprocess;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +10,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 @Priority(0)
 @Provider

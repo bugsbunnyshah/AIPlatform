@@ -1,14 +1,12 @@
 package io.bugsbunny.dataScience.endpoint;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.bugsbunny.data.history.service.PayloadReplayService;
-import io.bugsbunny.dataScience.service.AIModelService;
 import io.bugsbunny.dataScience.service.PackagingService;
-import io.bugsbunny.endpoint.AITrafficAgent;
+import io.bugsbunny.preprocess.AITrafficAgent;
 
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
@@ -20,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;

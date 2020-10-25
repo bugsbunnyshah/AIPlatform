@@ -8,8 +8,8 @@ import com.google.gson.JsonParser;
 
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.dataScience.service.ModelDataSetService;
-import io.bugsbunny.endpoint.SecurityToken;
-import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.preprocess.SecurityToken;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.restClient.OAuthClient;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;

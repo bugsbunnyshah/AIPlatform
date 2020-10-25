@@ -1,4 +1,4 @@
-package io.bugsbunny.endpoint;
+package io.bugsbunny.preprocess;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -22,7 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 @Priority(2)
@@ -193,13 +192,13 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         this.tokenToResponseChainId.put(token, responseChainId);
     }
 
-    String findRequestChainId(String token)
+    public String findRequestChainId(String token)
     {
         String requestChainId = this.tokenToRequestChainId.get(token);
         return requestChainId;
     }
 
-    String findResponseChainId(String token)
+    public String findResponseChainId(String token)
     {
         String responseChainId = this.tokenToResponseChainId.get(token);
         return responseChainId;

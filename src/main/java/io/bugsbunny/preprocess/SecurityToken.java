@@ -1,4 +1,4 @@
-package io.bugsbunny.endpoint;
+package io.bugsbunny.preprocess;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

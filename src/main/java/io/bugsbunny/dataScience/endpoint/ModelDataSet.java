@@ -3,7 +3,7 @@ package io.bugsbunny.dataScience.endpoint;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.ModelDataSetService;
-import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

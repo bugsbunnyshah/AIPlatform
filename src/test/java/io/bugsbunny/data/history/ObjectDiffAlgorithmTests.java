@@ -3,15 +3,10 @@ package io.bugsbunny.data.history;
 import com.github.wnameless.json.flattener.JsonFlattener;
 import com.github.wnameless.json.unflattener.JsonUnflattener;
 
-import com.google.common.hash.HashCode;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.bugsbunny.data.history.service.PayloadReplayService;
-import io.bugsbunny.endpoint.SecurityToken;
-import io.bugsbunny.endpoint.SecurityTokenContainer;
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;

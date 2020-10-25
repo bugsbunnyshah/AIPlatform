@@ -1,7 +1,7 @@
 package io.bugsbunny.showcase.aviation.service;
 
 import io.bugsbunny.dataScience.service.ModelDataSetService;
-import io.bugsbunny.endpoint.SecurityTokenContainer;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.restClient.OAuthClient;
 
 import org.slf4j.Logger;
