@@ -37,7 +37,7 @@ release.properties
 appgal_foodrunner_app/google_maps_integration/build/app
 /.gradle/
 /build/
-/mlruns/
+/infrastructure/mlruns/
 src/main/resources/META-INF/resources/
 /src/test/resources/dataScience/mnistTest.bin
 /src/test/resources/dataScience/mnistTrain.bin
