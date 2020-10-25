@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.bugsbunny.data.history.ObjectDiffAlgorithm;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

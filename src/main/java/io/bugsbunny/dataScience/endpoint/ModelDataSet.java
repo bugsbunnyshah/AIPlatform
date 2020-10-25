@@ -2,10 +2,9 @@ package io.bugsbunny.dataScience.endpoint;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.dataScience.service.AIModelService;
 import io.bugsbunny.dataScience.service.ModelDataSetService;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;

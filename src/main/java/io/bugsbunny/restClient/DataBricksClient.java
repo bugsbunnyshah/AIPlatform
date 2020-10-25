@@ -1,11 +1,10 @@
 package io.bugsbunny.restClient;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.model.DataBricksProcessException;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +14,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Instant;
 
 @ApplicationScoped
 public class DataBricksClient

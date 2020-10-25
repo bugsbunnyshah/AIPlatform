@@ -1,7 +1,6 @@
 package io.bugsbunny.dataScience.service;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import io.bugsbunny.dataScience.endpoint.ModelIsLive;
@@ -23,14 +22,12 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
 
 @ApplicationScoped
 public class AIModelService

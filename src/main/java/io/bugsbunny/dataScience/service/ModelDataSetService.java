@@ -1,8 +1,7 @@
 package io.bugsbunny.dataScience.service;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

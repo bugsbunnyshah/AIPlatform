@@ -7,7 +7,7 @@ import com.google.gson.JsonParser;
 
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
 
 import org.nd4j.common.loader.Loader;
 import org.nd4j.common.loader.Source;

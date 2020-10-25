@@ -8,7 +8,7 @@ import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetLoader;
 import io.bugsbunny.endpoint.SecurityToken;
 import io.bugsbunny.endpoint.SecurityTokenContainer;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.restClient.OAuthClient;
 
 import org.deeplearning4j.util.ModelSerializer;

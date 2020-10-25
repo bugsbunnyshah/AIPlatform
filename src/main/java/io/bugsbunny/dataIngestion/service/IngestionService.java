@@ -1,13 +1,12 @@
 package io.bugsbunny.dataIngestion.service;
 
 import com.google.gson.JsonObject;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.UUID;
 
 @ApplicationScoped
 public class IngestionService {

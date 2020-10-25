@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
-import io.bugsbunny.persistence.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.test.components.BaseTest;
 
 import io.quarkus.test.junit.QuarkusTest;

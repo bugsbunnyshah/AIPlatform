@@ -1,4 +1,4 @@
-package io.bugsbunny.persistence;
+package io.bugsbunny.infrastructure;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
