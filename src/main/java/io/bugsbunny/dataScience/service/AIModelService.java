@@ -1,6 +1,7 @@
 package io.bugsbunny.dataScience.service;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import io.bugsbunny.dataScience.endpoint.ModelIsLive;
@@ -25,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
@@ -303,5 +305,31 @@ public class AIModelService
             output = interp.getValue("output", String.class);
         }
         return output;
+    }
+
+    public JsonArray rollOverToTraningDataSets(long modelId) throws ModelNotFoundException,ModelIsNotLive
+    {
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        if(modelPackage == null)
+        {
+            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
+        }
+        if(!modelPackage.get("live").getAsBoolean())
+        {
+            throw new ModelIsNotLive("MODEL_IS_NOT_LIVE_YET:"+modelId);
+        }
+
+        JsonObject rollback = this.mongoDBJsonStore.rollOverToTraningDataSets(modelId);
+
+        JsonArray rollbackDataSetIds = rollback.getAsJsonArray("rolledOverDataSetIds");
+        if(rollbackDataSetIds == null)
+        {
+            return new JsonArray();
+        }
+
+        //Also undeploy the model
+        this.activeModels.remove(modelId);
+
+        return rollbackDataSetIds;
     }
 }

@@ -181,4 +181,57 @@ public class LiveModelTests extends BaseTest {
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
     }
+
+    @Test
+    public void testRetrain() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject input = this.packagingService.performPackaging(modelPackage);
+        long modelId = input.get("modelId").getAsLong();
+
+        String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonArray dataSetIdArray = new JsonArray();
+        for(int i=0; i<3; i++)
+        {
+            input = new JsonObject();
+            input.addProperty("modelId", modelId);
+            input.addProperty("format", "csv");
+            input.addProperty("data", data);
+            Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
+            logger.info("************************");
+            logger.info(response.statusLine());
+            response.body().prettyPrint();
+            logger.info("************************");
+            assertEquals(200, response.getStatusCode());
+            JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+            long dataSetId = returnValue.get("dataSetId").getAsLong();
+            dataSetIdArray.add(dataSetId);
+        }
+
+
+        input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.add("dataSetIds", dataSetIdArray);
+
+        //Deploy the model
+        JsonObject deployModel = new JsonObject();
+        deployModel.addProperty("modelId", modelId);
+        given().body(deployModel.toString()).when().post("/liveModel/deployJavaModel").andReturn();
+
+        Response response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+
+        response = given().body(input.toString()).when().post("/liveModel/retrain").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+    }
 }

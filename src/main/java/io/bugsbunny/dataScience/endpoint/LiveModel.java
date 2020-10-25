@@ -235,4 +235,41 @@ public class LiveModel
             return Response.status(500).entity(error.toString()).build();
         }
     }
+
+    @Path("retrain")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response retrain(@RequestBody String input)
+    {
+        try {
+            JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
+            long modelId = jsonInput.get("modelId").getAsLong();
+
+            JsonArray rollback = this.aiModelService.rollOverToTraningDataSets(modelId);
+
+            Response response = Response.ok(rollback.toString()).build();
+            return response;
+        }
+        catch(ModelNotFoundException modelNotFoundException)
+        {
+            logger.error(modelNotFoundException.getMessage(), modelNotFoundException);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", modelNotFoundException.getMessage());
+            return Response.status(404).entity(error.toString()).build();
+        }
+        catch(ModelIsNotLive modelIsNotLive)
+        {
+            logger.error(modelIsNotLive.getMessage(), modelIsNotLive);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", modelIsNotLive.getMessage());
+            return Response.status(422).entity(error.toString()).build();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
+    }
 }
