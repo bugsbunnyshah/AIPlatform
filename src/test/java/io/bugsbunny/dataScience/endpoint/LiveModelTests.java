@@ -224,6 +224,7 @@ public class LiveModelTests extends BaseTest {
         Response response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
+        response.body().prettyPrint();
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
 

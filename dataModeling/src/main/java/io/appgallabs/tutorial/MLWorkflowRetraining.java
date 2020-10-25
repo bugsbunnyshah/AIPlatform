@@ -132,11 +132,28 @@ public class MLWorkflowRetraining {
         logger.info(response.toString());
 
         //Bring down a Live Model for Training
-        
+        JsonObject undeploy = new JsonObject();
+        undeploy.addProperty("modelId", modelId);
+        logger.info(liveInput.toString());
+        JsonArray undeployResponse = undeployLiveModel(undeploy.toString());
+        logger.info(undeployResponse.toString());
+
+        //Train the Newly Undeployed Model
+        logger.info(trainingInput.toString());
+        response = trainModelInCloud(trainingInput.toString());
+        logger.info(response.toString());
 
         //Deploy the newly Trained Model
+        response = deployLiveModelInCloud(deploy.toString());
+        logger.info("DEPLOY_RESPONSE: "+response.toString());
 
         //Verify we are back online
+        JsonObject newLiveInput = new JsonObject();
+        newLiveInput.addProperty("modelId", modelId);
+        newLiveInput.add("dataSetIds", undeployResponse);
+        logger.info(newLiveInput.toString());
+        response = evaluateLiveModelInCloud(newLiveInput.toString());
+        logger.info(response.toString());
     }
 
     private static JsonObject saveModelToCloud(String payload) throws Exception
@@ -257,5 +274,25 @@ public class MLWorkflowRetraining {
         String responseJson = httpResponse.body();
 
         return JsonParser.parseString(responseJson).getAsJsonObject();
+    }
+
+    private static JsonArray undeployLiveModel(String payload) throws Exception
+    {
+        //Create the Experiment
+        HttpClient httpClient = HttpClient.newBuilder().build();
+        String restUrl = "http://localhost:8080/liveModel/retrain/";
+
+        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
+        HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
+                .header("Content-Type", "application/json")
+                .header("Principal", principal)
+                .header("Bearer","")
+                .POST(HttpRequest.BodyPublishers.ofString(payload))
+                .build();
+
+        HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        String responseJson = httpResponse.body();
+
+        return JsonParser.parseString(responseJson).getAsJsonArray();
     }
 }
