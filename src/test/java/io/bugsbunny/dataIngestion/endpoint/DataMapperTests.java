@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
@@ -135,6 +136,78 @@ public class DataMapperTests extends BaseTest
         int statusCode = response.getStatusCode();
         assertEquals(200, statusCode);
         assertEquals(5, array.size());
+    }
+
+    @Test
+    public void testMapCsvSourceDataWithoutHeaderForMLModel() throws Exception
+    {
+        String spaceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "dataScience/saturn_data_train.csv"),
+                StandardCharsets.UTF_8);
+        JsonObject input = new JsonObject();
+        input.addProperty("sourceSchema", "");
+        input.addProperty("destinationSchema", "");
+        input.addProperty("sourceData", spaceData);
+        input.addProperty("hasHeader", false);
+        Response response = given().body(input.toString()).when().post("/dataMapper/mapCsv")
+                .andReturn();
+
+        String jsonResponse = response.getBody().prettyPrint();
+        logger.info("****");
+        logger.info(response.getStatusLine());
+        logger.info(jsonResponse);
+        logger.info("****");
+        assertEquals(200, response.getStatusCode());
+
+        //assert the body
+        JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+        assertNotNull(ingestedData.get("dataLakeId"));
+        JsonArray array = JsonParser.parseString(ingestedData.get("data").getAsString()).getAsJsonArray();
+        int statusCode = response.getStatusCode();
+        assertEquals(200, statusCode);
+        assertEquals(500, array.size());
+
+        JsonObject top = array.get(0).getAsJsonObject();
+        Set<String> fields = top.keySet();
+        assertTrue(fields.contains("col1"));
+        assertTrue(fields.contains("col2"));
+        assertTrue(fields.contains("col3"));
+    }
+
+    @Test
+    public void testMapCsvSourceDataWithHeaderForMLModel() throws Exception
+    {
+        String spaceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "dataScience/saturn_data_train_with_header.csv"),
+                StandardCharsets.UTF_8);
+        JsonObject input = new JsonObject();
+        input.addProperty("sourceSchema", "");
+        input.addProperty("destinationSchema", "");
+        input.addProperty("sourceData", spaceData);
+        input.addProperty("hasHeader", true);
+        Response response = given().body(input.toString()).when().post("/dataMapper/mapCsv")
+                .andReturn();
+
+        String jsonResponse = response.getBody().prettyPrint();
+        logger.info("****");
+        logger.info(response.getStatusLine());
+        logger.info(jsonResponse);
+        logger.info("****");
+        assertEquals(200, response.getStatusCode());
+
+        //assert the body
+        JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+        assertNotNull(ingestedData.get("dataLakeId"));
+        JsonArray array = JsonParser.parseString(ingestedData.get("data").getAsString()).getAsJsonArray();
+        int statusCode = response.getStatusCode();
+        assertEquals(200, statusCode);
+        assertEquals(500, array.size());
+
+        JsonObject top = array.get(0).getAsJsonObject();
+        Set<String> fields = top.keySet();
+        assertTrue(fields.contains("c1"));
+        assertTrue(fields.contains("c2"));
+        assertTrue(fields.contains("c3"));
     }
 
     @Test

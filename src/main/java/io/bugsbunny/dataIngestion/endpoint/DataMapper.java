@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.dataIngestion.service.IngestionService;
 import io.bugsbunny.dataIngestion.service.MapperService;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.json.XML;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.text.NumberFormat;
 import java.util.Iterator;
 
 @Path("dataMapper")
@@ -105,13 +107,30 @@ public class DataMapper {
             String sourceSchema = jsonObject.get("sourceSchema").getAsString();
             String destinationSchema = jsonObject.get("destinationSchema").getAsString();
             String sourceData = jsonObject.get("sourceData").getAsString();
+            boolean hasHeader = jsonObject.get("hasHeader").getAsBoolean();
 
             String[] lines = sourceData.split("\n");
-            String header = lines[0];
-            String[] columns = header.split(",");
+            String[] columns = null;
+            int head = 0;
+            if(hasHeader) {
+                head = 1;
+                String header = lines[0];
+                columns = header.split(",");
+            }
+            else
+            {
+                String top = lines[0];
+                int columnCount = top.split(",").length;
+                columns = new String[columnCount];
+                for (int i = 0; i < columns.length; i++) {
+                    columns[i] = "col" + (i+1);
+                }
+            }
             JsonArray array = new JsonArray();
             int length = lines.length;
-            for(int i=1; i<length; i++)
+
+
+            for(int i=head; i<length; i++)
             {
                 String line = lines[i];
                 String[] data = line.split(",");
