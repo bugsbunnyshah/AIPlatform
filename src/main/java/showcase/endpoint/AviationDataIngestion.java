@@ -1,18 +1,13 @@
-package io.bugsbunny.showcase.aviation.endpoint;
+package showcase.endpoint;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import io.bugsbunny.dataScience.service.AIModelService;
-import io.bugsbunny.showcase.aviation.service.AviationDataIngestionService;
-import jep.JepException;
-import jep.MainInterpreter;
+import showcase.service.AviationDataIngestionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;

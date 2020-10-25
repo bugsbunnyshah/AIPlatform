@@ -1,4 +1,4 @@
-package io.bugsbunny.showcase.aviation.service;
+package showcase.service;
 
 import io.bugsbunny.dataScience.service.ModelDataSetService;
 import io.bugsbunny.preprocess.SecurityTokenContainer;

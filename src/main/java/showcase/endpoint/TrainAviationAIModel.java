@@ -1,10 +1,10 @@
-package io.bugsbunny.showcase.aviation.endpoint;
+package showcase.endpoint;
 
 import com.google.gson.JsonObject;
 
 import io.bugsbunny.dataScience.service.AIModelService;
 import io.bugsbunny.dataScience.service.PackagingService;
-import io.bugsbunny.showcase.aviation.service.AviationDataIngestionService;
+import showcase.service.AviationDataIngestionService;
 
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;

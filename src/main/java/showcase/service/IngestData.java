@@ -1,4 +1,4 @@
-package io.bugsbunny.showcase.aviation.service;
+package showcase.service;
 
 
 import com.google.gson.JsonArray;
