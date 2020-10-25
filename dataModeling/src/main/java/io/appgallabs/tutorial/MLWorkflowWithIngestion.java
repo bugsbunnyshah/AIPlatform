@@ -92,13 +92,13 @@ public class MLWorkflowWithIngestion {
         response = ingestDataIntoDataLake(input.toString());
         logger.info(response.toString());
 
-        /*
+
         //Launch training in the Cloud
         JsonObject trainingInput = new JsonObject();
-        JsonArray trainingDataSetIds = new JsonArray();
-        trainingDataSetIds.add(response.get("dataSetId").getAsString());
+        JsonArray trainingDataLakeIds = new JsonArray();
+        trainingDataLakeIds.add(response.get("dataLakeId").getAsString());
         trainingInput.addProperty("modelId", modelId);
-        trainingInput.add("dataSetIds", trainingDataSetIds);
+        trainingInput.add("dataLakeIds", trainingDataLakeIds);
         logger.info(trainingInput.toString());
         response = trainModelInCloud(trainingInput.toString());
         logger.info(response.toString());
@@ -117,22 +117,23 @@ public class MLWorkflowWithIngestion {
                 StandardCharsets.UTF_8
         );
         input = new JsonObject();
-        input.addProperty("modelId", modelId);
-        input.addProperty("format", "csv");
-        input.addProperty("data", data);
+        input.addProperty("sourceSchema", "sourceSchema");
+        input.addProperty("destinationSchema", "destinationSchema");
+        input.addProperty("sourceData", data);
+        input.addProperty("hasHeader", false);
         logger.info(input.toString());
-        response = saveLiveDataSet(input.toString());
+        response = ingestDataIntoDataLake(input.toString());
         logger.info(response.toString());
 
         //Evaluate the Live Model in the Cloud
         JsonObject liveInput = new JsonObject();
         JsonArray liveDataSetIds = new JsonArray();
-        liveDataSetIds.add(response.get("dataSetId").getAsString());
+        liveDataSetIds.add(response.get("dataLakeId").getAsString());
         liveInput.addProperty("modelId", modelId);
-        liveInput.add("dataSetIds", liveDataSetIds);
+        liveInput.add("dataLakeIds", liveDataSetIds);
         logger.info(liveInput.toString());
         response = evaluateLiveModelInCloud(liveInput.toString());
-        logger.info(response.toString());*/
+        logger.info(response.toString());
 
     }
 
@@ -176,31 +177,11 @@ public class MLWorkflowWithIngestion {
         return JsonParser.parseString(responseJson).getAsJsonObject();
     }
 
-    private static JsonObject saveLiveDataSet(String payload) throws Exception
-    {
-        //Create the Experiment
-        HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://localhost:8080/dataset/storeEvalDataSet/";
-
-        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
-        HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
-                .header("Content-Type", "application/json")
-                .header("Principal", principal)
-                .header("Bearer","")
-                .POST(HttpRequest.BodyPublishers.ofString(payload))
-                .build();
-
-        HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        String responseJson = httpResponse.body();
-
-        return JsonParser.parseString(responseJson).getAsJsonObject();
-    }
-
     private static JsonObject trainModelInCloud(String payload) throws Exception
     {
         //Create the Experiment
         HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://localhost:8080/trainModel/trainJava/";
+        String restUrl = "http://localhost:8080/trainModel/trainJavaFromDataLake/";
 
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
         HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
@@ -240,7 +221,7 @@ public class MLWorkflowWithIngestion {
     {
         //Create the Experiment
         HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://localhost:8080/liveModel/evalJava/";
+        String restUrl = "http://localhost:8080/liveModel/evalJavaFromDataLake/";
 
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
         HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
