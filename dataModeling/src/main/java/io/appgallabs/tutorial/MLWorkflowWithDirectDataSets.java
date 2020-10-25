@@ -30,8 +30,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.UUID;
 
-public class TrainingWorkflow {
-    private static Logger logger = LoggerFactory.getLogger(TrainingWorkflow.class);
+public class MLWorkflowWithDirectDataSets {
+    private static Logger logger = LoggerFactory.getLogger(MLWorkflowWithDirectDataSets.class);
 
     private static String principal = "PAlDekAoo0XWjAicU9SQDKgy7B0y2p2t";
     private static String token = "";
