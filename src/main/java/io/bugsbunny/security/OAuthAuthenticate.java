@@ -1,4 +1,4 @@
-package io.bugsbunny.generic;
+package io.bugsbunny.security;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
