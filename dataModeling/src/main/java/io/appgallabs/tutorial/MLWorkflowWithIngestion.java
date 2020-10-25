@@ -87,6 +87,7 @@ public class MLWorkflowWithIngestion {
         input.addProperty("sourceSchema", "sourceSchema");
         input.addProperty("destinationSchema", "destinationSchema");
         input.addProperty("sourceData", data);
+        input.addProperty("hasHeader", false);
         logger.info(input.toString());
         response = ingestDataIntoDataLake(input.toString());
         logger.info(response.toString());

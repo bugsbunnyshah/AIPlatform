@@ -119,6 +119,7 @@ public class DataMapperTests extends BaseTest
         input.addProperty("sourceSchema", "");
         input.addProperty("destinationSchema", "");
         input.addProperty("sourceData", spaceData);
+        input.addProperty("hasHeader", true);
         Response response = given().body(input.toString()).when().post("/dataMapper/mapCsv")
                 .andReturn();
 
