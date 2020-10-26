@@ -44,12 +44,6 @@ public class MongoDBJsonStoreTests extends BaseTest {
     }
 
     @Test
-    public void testAIModelStorageLifeCycle() throws Exception
-    {
-
-    }
-
-    @Test
     public void testStoreDataSetRealDataForEval() throws Exception
     {
         String csv = IOUtils.toString(

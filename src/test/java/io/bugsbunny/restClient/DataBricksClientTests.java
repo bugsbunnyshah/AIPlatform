@@ -1,11 +1,20 @@
 package io.bugsbunny.restClient;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import io.bugsbunny.dataScience.model.DataBricksProcessException;
+import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -15,6 +24,9 @@ public class DataBricksClientTests extends BaseTest {
 
     @Inject
     private DataBricksClient dataBricksClient;
+
+    @Inject
+    private PackagingService packagingService;
 
     /*@Test
     public void testCreateDevExperiment() throws Exception
@@ -119,10 +131,16 @@ public class DataBricksClientTests extends BaseTest {
         }
     }*/
 
-    //TODO: Re-activate Later...Redundant
-    //@Test
-    /*public void testInvokeDatabricksModel() throws Exception
+    @Test
+    public void testInvokeDatabricksModel() throws Exception
     {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-remote-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject deploymentResponse = this.packagingService.performPackaging(modelPackage);
+        long modelId = deploymentResponse.get("modelId").getAsLong();
+        logger.info("modelId: " + modelId);
+
         JsonObject jsonObject = new JsonObject();
         JsonArray columns = new JsonArray();
         columns.add("x");
@@ -135,11 +153,24 @@ public class DataBricksClientTests extends BaseTest {
         data.add(second);
         jsonObject.add("columns", columns);
         jsonObject.add("data", data);
-        JsonElement response = this.dataBricksClient.invokeDatabricksModel(jsonObject);
-        logger.info("****************");
-        logger.info(response.toString());
-        logger.info("****************");
 
-        //TODO: ASSERT
-    }*/
+        try {
+            JsonElement response = this.dataBricksClient.invokeDatabricksModel(jsonObject,
+                    this.packagingService.getModelPackage(modelId));
+            logger.info("****************");
+            logger.info(response.toString());
+            logger.info("****************");
+        }
+        catch(DataBricksProcessException ex)
+        {
+            if(ex.getMessage().contains("Connection refused"))
+            {
+                return;
+            }
+            else
+            {
+                throw ex;
+            }
+        }
+    }
 }

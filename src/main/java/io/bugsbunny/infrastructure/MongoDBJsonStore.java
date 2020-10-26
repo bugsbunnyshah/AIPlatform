@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 
 import com.mongodb.client.*;
 
+import io.bugsbunny.configuration.AIPlatformConfig;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 
 import org.bson.Document;
@@ -26,15 +27,34 @@ public class MongoDBJsonStore
 {
     private static Logger logger = LoggerFactory.getLogger(MongoDBJsonStore.class);
 
-    private MongoClient mongoClient = MongoClients.create();
-
     @Inject
     private SecurityTokenContainer securityTokenContainer;
+
+    @Inject
+    private AIPlatformConfig aiPlatformConfig;
+
+    private MongoClient mongoClient;
 
     @PostConstruct
     public void start()
     {
-        this.mongoClient = MongoClients.create();
+        JsonObject config = this.aiPlatformConfig.getConfiguration();
+
+        //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
+        StringBuilder connectStringBuilder = new StringBuilder();
+        connectStringBuilder.append("mongodb://");
+
+        String mongodbHost = config.get("mongodbHost").getAsString();
+        long mongodbPort = config.get("mongodbPort").getAsLong();
+        if(config.has("mongodbUser") && config.has("mongodbPassword"))
+        {
+            connectStringBuilder.append(config.get("mongodbUser").getAsString()
+            +":"+config.get("mongodbPassword").getAsString()+"@");
+        }
+        connectStringBuilder.append(mongodbHost+":"+mongodbPort);
+
+        String connectionString = connectStringBuilder.toString();
+        this.mongoClient = MongoClients.create(connectionString);
     }
 
     @PreDestroy

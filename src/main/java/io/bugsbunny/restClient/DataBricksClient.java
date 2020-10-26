@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.model.DataBricksProcessException;
+import io.bugsbunny.infrastructure.Http;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,9 @@ public class DataBricksClient
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
+
+    @Inject
+    private Http http;
 
     /*public String createDevExperiment(String experiment) throws DataBricksProcessException
     {
@@ -174,7 +178,7 @@ public class DataBricksClient
         try
         {
             //Create the Experiment
-            HttpClient httpClient = HttpClient.newBuilder().build();
+            HttpClient httpClient = http.getHttpClient();
             String url = modelPackage.get("url").getAsString();
             String restUrl = url;
 

@@ -3,10 +3,12 @@ package io.bugsbunny.restClient;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import io.bugsbunny.infrastructure.Http;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -21,6 +23,9 @@ public class OAuthClient
 {
     private static Logger logger = LoggerFactory.getLogger(OAuthClient.class);
 
+    @Inject
+    private Http http;
+
     public JsonObject getAccessToken(String clientId, String clientSecret)
             throws NetworkException,OAuthException
     {
@@ -28,7 +33,7 @@ public class OAuthClient
         try
         {
             //Create the Experiment
-            HttpClient httpClient = HttpClient.newBuilder().build();
+            HttpClient httpClient = http.getHttpClient();
 
             JsonObject payload = new JsonObject();
             payload.addProperty("client_id", clientId);
