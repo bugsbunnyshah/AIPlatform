@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import java.io.ByteArrayInputStream;
 import java.util.Base64;
@@ -29,7 +30,7 @@ import java.util.Map;
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 
-@ApplicationScoped
+@Singleton
 public class AIModelService
 {
     private static Logger logger = LoggerFactory.getLogger(AIModelService.class);

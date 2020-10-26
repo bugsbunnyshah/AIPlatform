@@ -9,11 +9,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 
-@ApplicationScoped
+@Singleton
 public class AIPlatformConfig {
     private static Logger logger = LoggerFactory.getLogger(AIPlatformConfig.class);
 

@@ -18,11 +18,12 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 
 //TODO: DISTINGUISH_BETWEEN_DEV_AND_LIVE_MODELS
 
-@ApplicationScoped
+@Singleton
 public class MongoDBJsonStore
 {
     private static Logger logger = LoggerFactory.getLogger(MongoDBJsonStore.class);
@@ -34,6 +35,13 @@ public class MongoDBJsonStore
     private AIPlatformConfig aiPlatformConfig;
 
     private MongoClient mongoClient;
+
+    private Map<String,MongoDatabase> databaseMap;
+
+    public MongoDBJsonStore()
+    {
+        this.databaseMap = new HashMap<>();
+    }
 
     @PostConstruct
     public void start()
