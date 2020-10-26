@@ -1,18 +1,14 @@
 package io.bugsbunny.configuration;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.jcodec.common.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
-import java.io.File;
-import java.io.FileInputStream;
-import java.nio.charset.StandardCharsets;
 
 @Singleton
 public class AIPlatformConfig {
@@ -23,14 +19,24 @@ public class AIPlatformConfig {
     @PostConstruct
     public void start()
     {
-        try {
-            logger.info(System.getenv("LANGUAGE"));
-            logger.info(System.getenv("mongodbHost"));
+        try
+        {
+            String mongoDBHost = System.getenv("MONGODBHOST");
+            String mongoDBPort = System.getenv("MONGODBPORT");
+            String mongoDBUser = System.getenv("MONGODBUSER");
+            String mongoDBPassword = System.getenv("MONGODBPASSWORD");
 
-
-            File aiPlatformConfig = FileUtils.getFile("/deployments/aiplatform.json");
-            String configJson = IOUtils.toString(new FileInputStream(aiPlatformConfig), StandardCharsets.UTF_8);
-            this.configuration = JsonParser.parseString(configJson).getAsJsonObject();
+            this.configuration = new JsonObject();
+            this.configuration.addProperty("mongodbHost", mongoDBHost);
+            this.configuration.addProperty("mongodbPort", mongoDBPort);
+            if(!StringUtils.isEmpty(mongoDBUser))
+            {
+                this.configuration.addProperty("mongodbUser", mongoDBUser);
+            }
+            if(!StringUtils.isEmpty(mongoDBPassword))
+            {
+                this.configuration.addProperty("mongodbPassword", mongoDBPassword);
+            }
         }
         catch(Exception e)
         {
