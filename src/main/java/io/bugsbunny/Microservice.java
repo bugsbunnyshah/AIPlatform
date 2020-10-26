@@ -29,35 +29,15 @@ public class Microservice
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public String microservice(@RequestBody String json)
-    {
-        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
-        logger.info(jsonObject.toString());
-
-        jsonObject.addProperty("oid", UUID.randomUUID().toString());
-        jsonObject.addProperty("message", "HELLO_TO_HUMANITY");
-
-        return jsonObject.toString();
-    }
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public String microserviceGet()
-    {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("oid", UUID.randomUUID().toString());
-        jsonObject.addProperty("message", "HELLO_TO_HUMANITY");
-
-        return jsonObject.toString();
-    }
-
-    /*@Path("config")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response microserviceConfig()
+    public Response microservice(@RequestBody String json)
     {
         try {
-            JsonObject jsonObject = this.aiPlatformConfig.getConfiguration();
+            JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+            logger.info(jsonObject.toString());
+
+            jsonObject.addProperty("oid", UUID.randomUUID().toString());
+            jsonObject.addProperty("message", "HELLO_TO_HUMANITY");
+
             return Response.ok(jsonObject.toString()).build();
         }
         catch(Exception e)
@@ -67,5 +47,25 @@ public class Microservice
             error.addProperty("exception", e.getMessage());
             return Response.status(500).entity(error.toString()).build();
         }
-    }*/
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response microserviceGet()
+    {
+        try {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("oid", UUID.randomUUID().toString());
+            jsonObject.addProperty("message", "HELLO_TO_HUMANITY");
+
+            return Response.ok(jsonObject.toString()).build();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
+    }
 }

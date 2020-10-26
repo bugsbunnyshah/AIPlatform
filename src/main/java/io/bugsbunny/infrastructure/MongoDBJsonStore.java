@@ -46,23 +46,28 @@ public class MongoDBJsonStore
     @PostConstruct
     public void start()
     {
-        JsonObject config = this.aiPlatformConfig.getConfiguration();
+        try {
+            JsonObject config = this.aiPlatformConfig.getConfiguration();
 
-        //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-        StringBuilder connectStringBuilder = new StringBuilder();
-        connectStringBuilder.append("mongodb://");
+            //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
+            StringBuilder connectStringBuilder = new StringBuilder();
+            connectStringBuilder.append("mongodb://");
 
-        String mongodbHost = config.get("mongodbHost").getAsString();
-        long mongodbPort = config.get("mongodbPort").getAsLong();
-        if(config.has("mongodbUser") && config.has("mongodbPassword"))
-        {
-            connectStringBuilder.append(config.get("mongodbUser").getAsString()
-            +":"+config.get("mongodbPassword").getAsString()+"@");
+            String mongodbHost = config.get("mongodbHost").getAsString();
+            long mongodbPort = config.get("mongodbPort").getAsLong();
+            if (config.has("mongodbUser") && config.has("mongodbPassword")) {
+                connectStringBuilder.append(config.get("mongodbUser").getAsString()
+                        + ":" + config.get("mongodbPassword").getAsString() + "@");
+            }
+            connectStringBuilder.append(mongodbHost + ":" + mongodbPort);
+
+            String connectionString = connectStringBuilder.toString();
+            this.mongoClient = MongoClients.create(connectionString);
         }
-        connectStringBuilder.append(mongodbHost+":"+mongodbPort);
-
-        String connectionString = connectStringBuilder.toString();
-        this.mongoClient = MongoClients.create(connectionString);
+        catch(Exception e)
+        {
+            this.mongoClient = null;
+        }
     }
 
     @PreDestroy

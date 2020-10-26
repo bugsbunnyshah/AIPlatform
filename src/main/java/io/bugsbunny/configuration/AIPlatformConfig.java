@@ -24,14 +24,17 @@ public class AIPlatformConfig {
     public void start()
     {
         try {
-            File aiPlatformConfig = FileUtils.getFile("aiplatform.json");
+            logger.info(System.getenv("LANGUAGE"));
+            logger.info(System.getenv("mongodbHost"));
+
+
+            File aiPlatformConfig = FileUtils.getFile("/deployments/aiplatform.json");
             String configJson = IOUtils.toString(new FileInputStream(aiPlatformConfig), StandardCharsets.UTF_8);
             this.configuration = JsonParser.parseString(configJson).getAsJsonObject();
         }
         catch(Exception e)
         {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            this.configuration = null;
         }
     }
 
