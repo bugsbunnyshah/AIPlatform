@@ -3,6 +3,7 @@ package io.bugsbunny.configuration;
 import com.google.gson.JsonObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jcodec.common.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,19 +17,25 @@ public class AIPlatformConfig {
 
     private JsonObject configuration;
 
+    @ConfigProperty(name = "mongodbHost")
+    private String mongoDBHost;
+
+    @ConfigProperty(name = "mongodbPort")
+    private String mongoDBPort;
+
     @PostConstruct
     public void start()
     {
         try
         {
-            String mongoDBHost = System.getenv("MONGODBHOST");
-            String mongoDBPort = System.getenv("MONGODBPORT");
+            //String mongoDBHost = System.getenv("MONGODBHOST");
+            //String mongoDBPort = System.getenv("MONGODBPORT");
             String mongoDBUser = System.getenv("MONGODBUSER");
             String mongoDBPassword = System.getenv("MONGODBPASSWORD");
 
             this.configuration = new JsonObject();
-            this.configuration.addProperty("mongodbHost", mongoDBHost);
-            this.configuration.addProperty("mongodbPort", mongoDBPort);
+            this.configuration.addProperty("mongodbHost", this.mongoDBHost);
+            this.configuration.addProperty("mongodbPort", this.mongoDBPort);
             if(!StringUtils.isEmpty(mongoDBUser))
             {
                 this.configuration.addProperty("mongodbUser", mongoDBUser);
