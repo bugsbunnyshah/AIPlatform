@@ -357,4 +357,4 @@ public class MLWorkflowRetraining {
 == What's next?
 
 This guide covered the creation of a Data Ingestion Application using Braineous.
-link:remotemodel.html[Remote AI Model Support].
+link:datascience.html[Data Science Application].
