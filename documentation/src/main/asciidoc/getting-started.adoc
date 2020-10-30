@@ -1,7 +1,7 @@
 ////
-This guide is maintained in the main Quarkus repository
+This guide is maintained in the main Braineous repository
 and pull requests should be submitted there:
-https://github.com/quarkusio/quarkus/tree/master/docs/src/main/asciidoc
+https://github.com/bugsbunnyshah/AIPlatform/tree/master/documentation/src/main/asciidoc
 ////
 = Braineous, AI Platform - Getting Started
 
@@ -30,42 +30,15 @@ To complete this guide, you need:
 * less than 15 minutes
 * an IDE
 * JDK 8 or 11+ installed with `JAVA_HOME` configured appropriately
-* Apache Maven {maven-version}
 
-[TIP]
-.Verify Maven is using the Java you expect
-====
-If you have multiple JDK's installed it is not certain Maven will pick up the expected java
-and you could end up with unexpected results.
-You can verify which JDK Maven uses by running `mvn --version`. 
-====
-
-
-== Architecture
-
-In this guide, we create a straightforward application serving a `hello` endpoint. To demonstrate
-dependency injection, this endpoint uses a `greeting` bean.
-
-image::getting-started-architecture.png[alt=Architecture]
-
-This guide also covers the testing of the endpoint.
 
 == Running the Platform as a Microservice
 [source,bash,subs=attributes+]
 ----
-java -jar aiplatform-1.0-SNAPSHOT-runner.jar
+java -jar aiplatform-secretariat-GA-runner.jar
 ----
 
 == What's next?
 
-This guide covered the creation of an application using Quarkus.
-However, there is much more.
-We recommend continuing the journey with the link:building-native-image[building a native executable guide], where you learn about creating a native executable and packaging it in a container.
-If you are interested in reactive, we recommend the link:getting-started-reactive[Getting started with reactive guide], where you can see how to implement reactive applications with Quarkus.
-
-In addition, the link:tooling[tooling guide] document explains how to:
-
-* scaffold a project in a single command line
-* enable the _development mode_ (hot reload)
-* import the project in your favorite IDE
-* and more
+This guide covered the creation of a Data Ingestion Application using Braineous.
+link:dataingestion.html[Data Ingestion Application].
