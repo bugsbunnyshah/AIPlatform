@@ -3,7 +3,7 @@ This guide is maintained in the main Quarkus repository
 and pull requests should be submitted there:
 https://github.com/quarkusio/quarkus/tree/master/docs/src/main/asciidoc
 ////
-= Braineous, AI Platform - Data Ingestion
+= Braineous, AI Platform - Data Science
 
 include::./attributes.adoc[]
 
@@ -18,11 +18,11 @@ include::./attributes.adoc[]
 :sectnumlevels: 4
 
 
-Braineous, AI Platform - Data Ingestion
+Braineous, AI Platform - Data Science
 This guide covers:
 
 * Running the Platform as a Microservice
-* Designing and Developing a Data Ingestion App
+* Designing and Developing a Data Science App
 
 == Prerequisites
 
@@ -57,7 +57,7 @@ This guide also covers the testing of the endpoint.
 java -jar aiplatform-1.0-SNAPSHOT-runner.jar
 ----
 
-== Designing and Developing a Data Ingestion App
+== Designing and Developing a DataScience App
 
 [source,java]
 ----
@@ -68,9 +68,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import org.apache.commons.io.IOUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -84,6 +81,9 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -93,8 +93,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.UUID;
 
-public class MLWorkflowWithIngestion {
-    private static Logger logger = LoggerFactory.getLogger(MLWorkflowWithIngestion.class);
+public class MLWorkflowWithDirectDataSets {
+    private static Logger logger = LoggerFactory.getLogger(MLWorkflowWithDirectDataSets.class);
 
     private static String principal = "PAlDekAoo0XWjAicU9SQDKgy7B0y2p2t";
     private static String token = "";
@@ -142,29 +142,26 @@ public class MLWorkflowWithIngestion {
         logger.info(response.toString());
         long modelId = response.get("modelId").getAsLong();
 
-        //Ingest the data into the dataLake that can be used for ML components,
-        //And available for building Applications
+        //Ingest the data that will train the model
         String data = IOUtils.toString(Thread.currentThread().
                         getContextClassLoader().
                         getResourceAsStream("dataScience/saturn_data_train.csv"),
                 StandardCharsets.UTF_8
                 );
         JsonObject input = new JsonObject();
-        input.addProperty("sourceSchema", "sourceSchema");
-        input.addProperty("destinationSchema", "destinationSchema");
-        input.addProperty("sourceData", data);
-        input.addProperty("hasHeader", false);
+        input.addProperty("modelId", modelId);
+        input.addProperty("format", "csv");
+        input.addProperty("data", data);
         logger.info(input.toString());
-        response = ingestDataIntoDataLake(input.toString());
+        response = saveTrainingDataSet(input.toString());
         logger.info(response.toString());
-
 
         //Launch training in the Cloud
         JsonObject trainingInput = new JsonObject();
-        JsonArray trainingDataLakeIds = new JsonArray();
-        trainingDataLakeIds.add(response.get("dataLakeId").getAsString());
+        JsonArray trainingDataSetIds = new JsonArray();
+        trainingDataSetIds.add(response.get("dataSetId").getAsString());
         trainingInput.addProperty("modelId", modelId);
-        trainingInput.add("dataLakeIds", trainingDataLakeIds);
+        trainingInput.add("dataSetIds", trainingDataSetIds);
         logger.info(trainingInput.toString());
         response = trainModelInCloud(trainingInput.toString());
         logger.info(response.toString());
@@ -183,20 +180,19 @@ public class MLWorkflowWithIngestion {
                 StandardCharsets.UTF_8
         );
         input = new JsonObject();
-        input.addProperty("sourceSchema", "sourceSchema");
-        input.addProperty("destinationSchema", "destinationSchema");
-        input.addProperty("sourceData", data);
-        input.addProperty("hasHeader", false);
+        input.addProperty("modelId", modelId);
+        input.addProperty("format", "csv");
+        input.addProperty("data", data);
         logger.info(input.toString());
-        response = ingestDataIntoDataLake(input.toString());
+        response = saveLiveDataSet(input.toString());
         logger.info(response.toString());
 
         //Evaluate the Live Model in the Cloud
         JsonObject liveInput = new JsonObject();
         JsonArray liveDataSetIds = new JsonArray();
-        liveDataSetIds.add(response.get("dataLakeId").getAsString());
+        liveDataSetIds.add(response.get("dataSetId").getAsString());
         liveInput.addProperty("modelId", modelId);
-        liveInput.add("dataLakeIds", liveDataSetIds);
+        liveInput.add("dataSetIds", liveDataSetIds);
         logger.info(liveInput.toString());
         response = evaluateLiveModelInCloud(liveInput.toString());
         logger.info(response.toString());
@@ -223,11 +219,31 @@ public class MLWorkflowWithIngestion {
         return JsonParser.parseString(responseJson).getAsJsonObject();
     }
 
-    private static JsonObject ingestDataIntoDataLake(String payload) throws Exception
+    private static JsonObject saveTrainingDataSet(String payload) throws Exception
     {
         //Create the Experiment
         HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://localhost:8080/dataMapper/mapCsv/";
+        String restUrl = "http://localhost:8080/dataset/storeTrainingDataSet/";
+
+        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
+        HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
+                .header("Content-Type", "application/json")
+                .header("Principal", principal)
+                .header("Bearer","")
+                .POST(HttpRequest.BodyPublishers.ofString(payload))
+                .build();
+
+        HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        String responseJson = httpResponse.body();
+
+        return JsonParser.parseString(responseJson).getAsJsonObject();
+    }
+
+    private static JsonObject saveLiveDataSet(String payload) throws Exception
+    {
+        //Create the Experiment
+        HttpClient httpClient = HttpClient.newBuilder().build();
+        String restUrl = "http://localhost:8080/dataset/storeEvalDataSet/";
 
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
         HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
@@ -247,7 +263,7 @@ public class MLWorkflowWithIngestion {
     {
         //Create the Experiment
         HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://localhost:8080/trainModel/trainJavaFromDataLake/";
+        String restUrl = "http://localhost:8080/trainModel/trainJava/";
 
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
         HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
@@ -287,7 +303,7 @@ public class MLWorkflowWithIngestion {
     {
         //Create the Experiment
         HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://localhost:8080/liveModel/evalJavaFromDataLake/";
+        String restUrl = "http://localhost:8080/liveModel/evalJava/";
 
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
         HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
@@ -305,16 +321,12 @@ public class MLWorkflowWithIngestion {
 }
 ----
 
-== Data Ingestion Explained
+== Data Science Support Explained
 
-Any Artificial Intelligence Product needs real data to learn.
-One of the bigger challenges is integrating with Customer Data.
-ETL has been in use for years, but the cost of doing those integrations are quite high.
-Hence, we took a different approach. We use smart schema mappers in the Cloud to provision your data in a way that fits
-your AI model.
-link:http://openii.sourceforge.net/index.php?act=tools&page=harmony[OpenII Harmony Framework, window="_blank"] is very effective for this. Braineous supports data ingestion in three formats — Json, XML, and CSV.
-Upon ingestion the data is added to your private and secure DataLake backed by MongoDB.
-Later you can use this data to produce datasets to train your AI models.
+Braineous provides and end-to-end pipeline for developing, training, and deploying AI models.
+It mitigates the slighly expensive DevOps process all the while supporting Docker and Kubernetes containers.
+These containers can then be easily deployed to public clouds like Azure, Amazon, and Google Cloud.
+It also facilitates a reverse deployment process where a live model can be deactivated, and re-trained using historical and new datasets.
 
 == What's next?
 
