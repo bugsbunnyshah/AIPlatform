@@ -1,0 +1,636 @@
+name: Quarkus CI
+
+on:
+  push:
+    branches-ignore:
+      - 'dependabot/**'
+    paths-ignore:
+      - '.gitignore'
+      - '.dockerignore'
+      - '*.md'
+      - '*.adoc'
+      - '*.txt'
+      - 'docs/src/main/asciidoc/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/*.yml'
+      - '.github/*.java'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - '.gitignore'
+      - '.dockerignore'
+      - '*.md'
+      - '*.adoc'
+      - '*.txt'
+      - 'docs/src/main/asciidoc/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/*.yml'
+      - '.github/*.java'
+
+env:
+  # Workaround testsuite locale issue
+  LANG: en_US.UTF-8
+  NATIVE_TEST_MAVEN_OPTS: "-B --settings .github/mvn-settings.xml --fail-at-end -Dquarkus.native.container-build=true -Dtest-postgresql -Dtest-elasticsearch -Delasticsearch.hosts='localhost:9200' -Dtest-keycloak -Dtest-amazon-services -Dtest-db2 -Dtest-mysql -Dtest-mariadb -Dmariadb.base_url='jdbc:mariadb://localhost:3308' -Dmariadb.url='jdbc:mariadb://localhost:3308/hibernate_orm_test'  -Dtest-mssql -Dtest-vault -Dtest-neo4j -Dtest-kafka -Dtest-redis -Dtest-mailer -Dnative-image.xmx=5g -Dnative -Dnative.surefire.skip -Dformat.skip -Dno-descriptor-tests install -DskipDocs"
+  JVM_TEST_MAVEN_OPTS: "-e -B --settings .github/mvn-settings.xml -Dtest-postgresql -Dtest-elasticsearch -Delasticsearch.hosts='localhost:9200' -Dtest-db2 -Dtest-mysql -Dtest-mariadb -Dmariadb.base_url='jdbc:mariadb://localhost:3308' -Dmariadb.url='jdbc:mariadb://localhost:3308/hibernate_orm_test'  -Dtest-mssql -Dtest-amazon-services -Dtest-vault -Dtest-neo4j -Dtest-kafka -Dtest-mailer -Dtest-keycloak -Dtest-redis -Dformat.skip -DskipDocs -Ddocker"
+  DB_USER: hibernate_orm_test
+  DB_PASSWORD: hibernate_orm_test
+  DB_NAME: hibernate_orm_test
+jobs:
+  ci-sanity-check:
+    name: "CI Sanity Check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        run: sleep 30
+  build-jdk11:
+    name: "Initial JDK 11 Build"
+    runs-on: ubuntu-latest
+    # Skip draft PRs and those with WIP in the subject, rerun as soon as its removed
+    if: "github.event_name != 'pull_request' || ( \
+           github.event.pull_request.draft == false && \
+           github.event.pull_request.state != 'closed' && \
+           contains(github.event.pull_request.title, 'wip ') == false && \
+           contains(github.event.pull_request.title, '[wip]') == false && \
+           (
+             github.event.action != 'edited' || \
+             contains(github.event.changes.title.from, 'wip ') || \
+             contains(github.event.changes.title.from, '[wip]') \
+           ) \
+         )"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: n1hility/cancel-previous-runs@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Reclaim Disk Space
+        run: .github/ci-prerequisites.sh
+      - name: Set up JDK 11
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
+        with:
+          java-version: 11
+      - name: Get Date
+        id: get-date
+        run: |
+          echo "::set-output name=date::$(/bin/date -u "+%Y-%m")"
+        shell: bash
+      - name: Cache Maven Repository
+        id: cache-maven
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          # refresh cache every month to avoid unlimited growth
+          key: q2maven-${{ steps.get-date.outputs.date }}
+      - name: Build
+        run: |
+          mvn -e -B -DskipTests -DskipITs -Dno-format clean install
+      - name: Tar Maven Repo
+        shell: bash
+        run: tar -czf maven-repo.tgz -C ~ .m2/repository
+      - name: Persist Maven Repo
+        uses: actions/upload-artifact@v1
+        with:
+          name: maven-repo
+          path: maven-repo.tgz
+      - name: Delete Local Artifacts From Cache
+        shell: bash
+        run: rm -r ~/.m2/repository/io/quarkus
+
+  linux-jvm-tests:
+    name: JVM Tests - JDK ${{matrix.java.name}}
+    runs-on: ubuntu-latest
+    needs: build-jdk11
+    timeout-minutes: 240
+    env:
+      MAVEN_OPTS: -Xmx2048m -XX:MaxMetaspaceSize=1000m
+    strategy:
+      fail-fast: false
+      matrix:
+        java :
+          - { name: "8",
+              java-version: 8,
+              maven_args: "-pl !integration-tests/kubernetes/quarkus-standard-way"
+          }
+          - {
+            name: "11",
+            java-version: 11,
+            maven_args: ""
+          }
+          - {
+            name: "15",
+            java-version: 15,
+            maven_args: "-pl !integration-tests/kubernetes/quarkus-standard-way"
+          }
+
+    steps:
+      - name: Stop mysql
+        shell: bash
+        run: |
+          netstat -ln
+          sudo service mysql stop || true
+
+      - uses: actions/checkout@v2
+
+      - name: apt clean
+        shell: bash
+        run: sudo apt-get clean
+
+      - name: Reclaim Disk Space
+        run: .github/ci-prerequisites.sh
+
+      - name: Set up JDK ${{ matrix.java.name }}
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
+        with:
+          java-version: ${{ matrix.java.java-version }}
+          release: ${{ matrix.java.release }}
+
+      - name: Download Maven Repo
+        uses: actions/download-artifact@v1
+        with:
+          name: maven-repo
+          path: .
+      - name: Extract Maven Repo
+        shell: bash
+        run: tar -xzf maven-repo.tgz -C ~
+      - name: Build with Maven
+        run: eval mvn $JVM_TEST_MAVEN_OPTS install -pl !integration-tests/gradle -pl !integration-tests/maven -pl !integration-tests/devtools ${{ matrix.java.maven_args}}
+      - name: Prepare failure archive (if maven failed)
+        if: failure()
+        shell: bash
+        run: find . -name '*-reports' -type d | tar -czf test-reports.tgz -T -
+      - name: Upload failure Archive (if maven failed)
+        uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: test-reports-linux-jvm${{matrix.java.name}}
+          path: 'test-reports.tgz'
+
+  windows-jdk11-jvm-tests:
+    name: JVM Tests - JDK 11 Windows
+    needs: build-jdk11
+    runs-on: windows-latest
+    timeout-minutes: 180
+    env:
+      MAVEN_OPTS: -Xmx1408m  -XX:MaxMetaspaceSize=1000m
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
+        with:
+          java-version: 11
+      - name: Download Maven Repo
+        uses: actions/download-artifact@v1
+        with:
+          name: maven-repo
+          path: .
+      - name: Extract Maven Repo
+        shell: bash
+        run: tar -xzf maven-repo.tgz -C ~
+      - name: Build with Maven
+        shell: bash
+        run: mvn -B --settings .github/mvn-settings.xml -DskipDocs -Dno-native -Dformat.skip -pl !integration-tests/gradle -pl !integration-tests/maven -pl !integration-tests/devtools install
+      - name: Prepare failure archive (if maven failed)
+        if: failure()
+        shell: bash
+        run: |
+          # Disambiguate windows find from cygwin find
+          /usr/bin/find . -name '*-reports' -type d | tar -czf test-reports.tgz -T -
+      - name: Upload failure Archive (if maven failed)
+        uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: test-reports-windows-jdk11-jvm
+          path: 'test-reports.tgz'
+
+  linux-jvm-maven-tests:
+    name: Maven Tests - JDK ${{matrix.java.name}}
+    runs-on: ubuntu-latest
+    needs: build-jdk11
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        java:
+          - {
+            name: "11",
+            java-version: 11
+          }
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download Maven Repo
+        uses: actions/download-artifact@v1
+        with:
+          name: maven-repo
+          path: .
+      - name: Extract Maven Repo
+        shell: bash
+        run: tar -xzf maven-repo.tgz -C ~
+      - name: Set up JDK ${{ matrix.java.name }}
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
+        with:
+          java-version: ${{ matrix.java.java-version }}
+      - name: Run Maven integration tests
+        run: eval mvn $JVM_TEST_MAVEN_OPTS install -pl 'integration-tests/maven'
+      - name: Prepare failure archive (if maven failed)
+        if: failure()
+        shell: bash
+        run: find . -name '*-reports' -type d | tar -czf test-reports.tgz -T -
+      - name: Upload failure Archive (if maven failed)
+        uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: test-reports-linux-maven-java${{matrix.java.name}}
+          path: 'test-reports.tgz'
+
+  windows-jdk11-jvm-maven-tests:
+    name: Maven Tests - JDK 11 Windows
+    runs-on: windows-latest
+    needs: build-jdk11
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download Maven Repo
+        uses: actions/download-artifact@v1
+        with:
+          name: maven-repo
+          path: .
+      - name: Extract Maven Repo
+        shell: bash
+        run: tar -xzf maven-repo.tgz -C ~
+      - name: Set up JDK 11
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
+        with:
+          java-version: 11
+      - name: Run Maven integration tests
+        shell: bash
+        run: mvn $JVM_TEST_MAVEN_OPTS install -pl 'integration-tests/maven'
+      - name: Prepare failure archive (if maven failed)
+        if: failure()
+        shell: bash
+        run: find . -name '*-reports' -type d | tar -czf test-reports.tgz -T -
+      - name: Upload failure Archive (if maven failed)
+        uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: test-reports-windows-maven-java11
+          path: 'test-reports.tgz'
+
+  linux-jvm-gradle-tests:
+    name: Gradle Tests - JDK ${{matrix.java.name}}
+    runs-on: ubuntu-latest
+    needs: build-jdk11
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        java:
+         - {
+            name: "11",
+            java-version: 11
+          }
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download Maven Repo
+        uses: actions/download-artifact@v1
+        with:
+          name: maven-repo
+          path: .
+      - name: Extract Maven Repo
+        shell: bash
+        run: tar -xzf maven-repo.tgz -C ~
+      - name: Set up JDK ${{ matrix.java.name }}
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
+        with:
+          java-version: ${{ matrix.java.java-version }}
+      - name: Build with Gradle
+        uses: eskatos/gradle-command-action@v1
+        env:
+          GRADLE_OPTS: -Xmx1408m
+        with:
+          gradle-version: wrapper
+          wrapper-directory: integration-tests/gradle
+          build-root-directory: integration-tests/gradle
+          arguments: clean test -i -S --stacktrace --no-daemon
+
+  windows-jdk11-jvm-gradle-tests:
+    name: Gradle Tests - JDK 11 Windows
+    needs: build-jdk11
+    runs-on: windows-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
+        with:
+          java-version: 11
+      - name: Download Maven Repo
+        uses: actions/download-artifact@v1
+        with:
+          name: maven-repo
+          path: .
+      - name: Extract Maven Repo
+        shell: bash
+        run: tar -xzf maven-repo.tgz -C ~
+      - name: Build with Gradle
+        uses: eskatos/gradle-command-action@v1
+        timeout-minutes: 60
+        env:
+          GRADLE_OPTS: -Xmx1408m
+        with:
+          gradle-version: wrapper
+          wrapper-directory: integration-tests/gradle
+          build-root-directory: integration-tests/gradle
+          arguments: clean test -i -S --stacktrace --no-daemon
+
+  linux-jvm-devtools-tests:
+    name: Devtools Tests - JDK ${{matrix.java.name}}
+    runs-on: ubuntu-latest
+    needs: build-jdk11
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        java:
+          - {
+            name: "11",
+            java-version: 11
+          }
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download Maven Repo
+        uses: actions/download-artifact@v1
+        with:
+          name: maven-repo
+          path: .
+      - name: Extract Maven Repo
+        shell: bash
+        run: tar -xzf maven-repo.tgz -C ~
+      - name: Set up JDK ${{ matrix.java.name }}
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
+        with:
+          java-version: ${{ matrix.java.java-version }}
+      - name: Run Devtools integration tests
+        run: eval mvn $JVM_TEST_MAVEN_OPTS install -pl 'integration-tests/devtools'
+      - name: Prepare failure archive (if maven failed)
+        if: failure()
+        shell: bash
+        run: find . -name '*-reports' -type d | tar -czf test-reports.tgz -T -
+      - name: Upload failure Archive (if maven failed)
+        uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: test-reports-linux-devtools-java${{matrix.java.name}}
+          path: 'test-reports.tgz'
+
+  windows-jdk11-jvm-devtools-tests:
+    name: Devtools Tests - JDK 11 Windows
+    runs-on: windows-latest
+    needs: build-jdk11
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download Maven Repo
+        uses: actions/download-artifact@v1
+        with:
+          name: maven-repo
+          path: .
+      - name: Extract Maven Repo
+        shell: bash
+        run: tar -xzf maven-repo.tgz -C ~
+      - name: Set up JDK 11
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
+        with:
+          java-version: 11
+      - name: Run Devtools integration tests
+        shell: bash
+        run: mvn $JVM_TEST_MAVEN_OPTS install -pl 'integration-tests/devtools'
+      - name: Prepare failure archive (if maven failed)
+        if: failure()
+        shell: bash
+        run: find . -name '*-reports' -type d | tar -czf test-reports.tgz -T -
+      - name: Upload failure Archive (if maven failed)
+        uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: test-reports-windows-devtools-java11
+          path: 'test-reports.tgz'
+
+  tcks-test:
+    name: MicroProfile TCKs Tests
+    needs: build-jdk11
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Reclaim Disk Space
+        run: .github/ci-prerequisites.sh
+      - name: Set up JDK 11
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
+        with:
+          java-version: 11
+      - name: Download Maven Repo
+        uses: actions/download-artifact@v1
+        with:
+          name: maven-repo
+          path: .
+      - name: Extract Maven Repo
+        shell: bash
+        run: tar -xzf maven-repo.tgz -C ~
+      - name: Build with Maven
+        run: mvn -B --settings .github/mvn-settings.xml -Dno-native -Dno-format -DskipTests -Dtcks install
+      - name: Verify with Maven
+        run: mvn -B --settings .github/mvn-settings.xml -f tcks/pom.xml verify
+      - name: Prepare failure archive (if maven failed)
+        if: failure()
+        shell: bash
+        run: find . -name '*-reports' -type d | tar -czf test-reports.tgz -T -
+      - name: Upload failure Archive (if maven failed)
+        uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: test-reports-tcks
+          path: 'test-reports.tgz'
+
+  native-tests:
+    name: Native Tests - ${{matrix.category}}
+    needs: build-jdk11
+    runs-on: ubuntu-latest
+    # Ignore the following YAML Schema error
+    timeout-minutes: ${{matrix.timeout}}
+    strategy:
+      max-parallel: 8
+      fail-fast: false
+      matrix:
+        category: [IT-Main, IT-Data1, IT-Data2, IT-Data3, IT-Data4, IT-Data5, IT-Data6, IT-Security1, IT-Security2, IT-Security3, IT-Amazon, IT-Messaging, IT-Cache, IT-HTTP, IT-Misc1, IT-Misc2, IT-Misc3, IT-Misc4, IT-Spring, IT-gRPC]
+        include:
+          - category: IT-Main
+            postgres: "true"
+            timeout: 40
+          - category: IT-Data1
+            mariadb: "true"
+            mssql: "true"
+            timeout: 65
+          - category: IT-Data2
+            db2: "true"
+            mysql: "true"
+            mariadb: "true"
+            timeout: 65
+          - category: IT-Data3
+            postgres: "true"
+            timeout: 70
+          - category: IT-Data4
+            neo4j: "true"
+            redis: "true"
+            timeout: 55
+          - category: IT-Data5
+            postgres: "true"
+            timeout: 65
+          - category: IT-Data6
+            postgres: "true"
+            elasticsearch: "true"
+            timeout: 40
+          - category: IT-Amazon
+            amazonServices: "true"
+            timeout: 45
+          - category: IT-Messaging
+            timeout: 85
+          - category: IT-Security1
+            timeout: 50
+            keycloak: "true"
+          - category: IT-Security2
+            timeout: 70
+            keycloak: "true"
+          - category: IT-Security3
+            timeout: 50
+          - category: IT-Cache
+            timeout: 55
+          - category: IT-HTTP
+            timeout: 60
+          - category: IT-Misc1
+            timeout: 65
+          - category: IT-Misc2
+            timeout: 65
+          # kubernetes-client alone takes 30mn+
+          - category: IT-Misc3
+            timeout: 65
+          - category: IT-Misc4
+            timeout: 65
+          - category: IT-Spring
+            timeout: 50
+          - category: IT-gRPC
+            timeout: 65
+    steps:
+      # These should be services, but services do not (yet) allow conditional execution
+      - name: Postgres Service
+        run: |
+          docker run --rm --publish 5432:5432 --name build-postgres \
+          -e POSTGRES_USER=$DB_USER -e POSTGRES_PASSWORD=$DB_PASSWORD -e POSTGRES_DB=$DB_NAME \
+          -d postgres:10.5
+        if: matrix.postgres
+      - name: MySQL Service
+        run: |
+          sudo service mysql stop || true
+          docker run --rm --publish 3306:3306 --name build-mysql  \
+            -e MYSQL_USER=$DB_USER -e MYSQL_PASSWORD=$DB_PASSWORD -e MYSQL_DATABASE=$DB_NAME -e MYSQL_RANDOM_ROOT_PASSWORD=true \
+            -d mysql:5 --skip-ssl
+        if: matrix.mysql
+      - name: DB2 Service
+        run: |
+          docker run --rm --publish 50000:50000 --name build-db2 --privileged=true \
+            -e DB2INSTANCE=hreact -e DB2INST1_PASSWORD=hreact -e DBNAME=hreact -e LICENSE=accept -e AUTOCONFIG=false -e ARCHIVE_LOGS=false \
+            -d ibmcom/db2:11.5.0.0a
+        if: matrix.db2
+      - name: Maria DB Service
+        run: |
+          docker run --rm --publish 3308:3306 --name build-mariadb \
+            -e MYSQL_USER=$DB_USER -e MYSQL_PASSWORD=$DB_PASSWORD -e MYSQL_DATABASE=$DB_NAME -e MYSQL_ROOT_PASSWORD=secret \
+            -d mariadb:10.4
+        if: matrix.mariadb
+      - name: MS-SQL Service
+        run: |
+          docker run --rm --publish 1433:1433 --name build-mssql \
+            -e ACCEPT_EULA=Y -e SA_PASSWORD=ActuallyRequired11Complexity \
+            -d microsoft/mssql-server-linux:2017-CU13
+        if: matrix.mssql
+      - name: Amazon Services
+        run: |
+          docker run --rm --publish 8000:4569 --publish 8008:4572 --publish 8009:4575 --publish 8010:4576 --publish 8011:4599 --publish 8012:4566 --name build-amazon-service-clients -e SERVICES=s3,dynamodb,sns,sqs,kms,ses -e START_WEB=0 \
+            -d localstack/localstack:0.11.1
+        if: matrix.amazonServices
+      - name: Neo4j Service
+        run: |
+          docker run --rm --publish 7687:7687 --name build-neo4j \
+            -e NEO4J_AUTH=neo4j/secret -e NEO4J_dbms_memory_pagecache_size=10M -e NEO4J_dbms_memory_heap_initial__size=10M \
+            -d neo4j/neo4j-experimental:4.0.0-rc01
+        if: matrix.neo4j
+      - name: Redis Service
+        run: docker run --rm --publish 6379:6379 --name build-redis -d redis:5.0.8-alpine
+        if: matrix.redis
+      - name: Keycloak Service
+        run: |
+          docker run --rm --publish 8180:8080 --publish 8543:8443 --name build-keycloak \
+            -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e JAVA_OPTS=" \
+              -server -Xms64m -Xmx512m -XX:MetaspaceSize=96M \
+              -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true \
+              -Dkeycloak.profile.feature.upload_scripts=enabled" \
+            -d quay.io/keycloak/keycloak:11.0.2
+        if: matrix.keycloak
+      - name: Elasticsearch Service
+        run: |
+          docker run --rm --publish 9200:9200 --name build-elasticsearch \
+          -e discovery.type=single-node \
+          -d docker.elastic.co/elasticsearch/elasticsearch-oss:7.9.0
+        if: matrix.elasticsearch
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
+        with:
+          java-version: 11
+      - name: Reclaim Disk Space
+        run: .github/ci-prerequisites.sh
+      - name: Download Maven Repo
+        uses: actions/download-artifact@v1
+        with:
+          name: maven-repo
+          path: .
+      - name: Extract Maven Repo
+        shell: bash
+        run: tar -xzf maven-repo.tgz -C ~
+      - name: Build with Maven
+        env:
+          CATEGORY: ${{matrix.category}}
+        run: |
+          IFS=,
+          eval mvn -pl integration-tests -amd -P$CATEGORY $NATIVE_TEST_MAVEN_OPTS
+          # add the 'simple with spaces' project to the run of 'Misc1' by executing it explicitly
+          # done because there is no good way to pass strings with empty values to the previous command
+          # so this hack is as good as any
+          if [ "$CATEGORY" == "IT-Misc1" ]; then
+            mvn -Dnative -Dquarkus.native.container-build=true -B --settings .github/mvn-settings.xml -f 'integration-tests/simple with space/' verify
+          fi
+      - name: Prepare failure archive (if maven failed)
+        if: failure()
+        shell: bash
+        run: find . -type d -name '*-reports' -o -wholename '*/build/reports/tests/functionalTest' | tar -czf test-reports.tgz -T -
+      - name: Upload failure Archive (if maven failed)
+        uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: test-reports-native-${{matrix.category}}
+          path: 'test-reports.tgz'

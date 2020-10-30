@@ -81,7 +81,17 @@ public class ModelDataSet
     {
         try {
             JsonObject jsonInput = this.modelDataSetService.readDataSet(dataSetId);
-            Response response = Response.ok(jsonInput.toString()).build();
+
+            Response response = null;
+            if(jsonInput != null) {
+                response = Response.ok(jsonInput.toString()).build();
+            }
+            else
+            {
+                JsonObject error = new JsonObject();
+                error.addProperty("dataSetId", dataSetId+": NOT_FOUND");
+                response = Response.status(404).entity(error.toString()).build();
+            }
             return response;
         }
         catch(Exception e)
