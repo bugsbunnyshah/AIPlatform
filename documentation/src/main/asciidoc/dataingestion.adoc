@@ -3,7 +3,7 @@ This guide is maintained in the main Quarkus repository
 and pull requests should be submitted there:
 https://github.com/quarkusio/quarkus/tree/master/docs/src/main/asciidoc
 ////
-= Braineous, AI Platform - Getting Started
+= Braineous, AI Platform - Data Ingestion
 
 include::./attributes.adoc[]
 
@@ -22,6 +22,7 @@ Braineous, AI Platform - Getting Started
 This guide covers:
 
 * Running the Platform as a Microservice
+* Designing and Developing a Data Ingestion App
 
 == Prerequisites
 
@@ -55,6 +56,17 @@ This guide also covers the testing of the endpoint.
 ----
 java -jar aiplatform-1.0-SNAPSHOT-runner.jar
 ----
+
+== Data Ingestion Explained
+
+Any Artificial Intelligence Product needs real data to learn.
+One of the bigger challenges is integrating with Customer Data.
+ETL has been in use for years, but the cost of doing those integrations are quite high.
+Hence, we took a different approach. We use smart schema mappers in the Cloud to provision your data in a way that fits
+your AI model.
+link:http://openii.sourceforge.net/index.php?act=tools&page=harmony[OpenII Harmony Framework, window="_blank"] is very effective for this. Braineous supports data ingestion in three formats — Json, XML, and CSV.
+Upon ingestion the data is added to your private and secure DataLake backed by MongoDB.
+Later you can use this data to produce datasets to train your AI models.
 
 == What's next?
 
