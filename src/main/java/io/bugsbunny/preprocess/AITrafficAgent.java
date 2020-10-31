@@ -36,6 +36,9 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     @Inject
     private SecurityTokenContainer securityTokenContainer;
 
+    @Inject
+    private AITrafficContainer aiTrafficContainer;
+
     private Map<String, String> tokenToRequestChainId = new HashMap<>();
 
     private Map<String, String> tokenToResponseChainId = new HashMap<>();
@@ -43,9 +46,9 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     @Override
     public void filter(ContainerRequestContext context) throws IOException
     {
-        if(!context.getUriInfo().getRequestUri().getPath().contains("liveModel/eval") &&
-                !context.getUriInfo().getRequestUri().getPath().contains("/dataset/store") &&
-                !context.getUriInfo().getRequestUri().getPath().contains("/remoteModel/")
+        if(!context.getUriInfo().getRequestUri().getPath().contains("liveModel/") &&
+                !context.getUriInfo().getRequestUri().getPath().contains("trainModel/") &&
+                !context.getUriInfo().getRequestUri().getPath().contains("remoteModel/")
         )
         {
             return;
@@ -96,15 +99,17 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
             }
         }
 
+        this.aiTrafficContainer.setChainId(requestChainId);
+
         context.setEntityStream(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));
     }
 
     @Override
-    public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws IOException
+    public void filter(ContainerRequestContext context, ContainerResponseContext containerResponseContext) throws IOException
     {
-        if(!containerRequestContext.getUriInfo().getRequestUri().getPath().contains("liveModel/eval") &&
-                !containerRequestContext.getUriInfo().getRequestUri().getPath().contains("/dataset/store") &&
-                !containerRequestContext.getUriInfo().getRequestUri().getPath().contains("/remoteModel/")
+        if(!context.getUriInfo().getRequestUri().getPath().contains("liveModel/") &&
+                !context.getUriInfo().getRequestUri().getPath().contains("trainModel/") &&
+                !context.getUriInfo().getRequestUri().getPath().contains("remoteModel/")
         )
         {
             return;
@@ -164,6 +169,8 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
                 this.payloadReplayService.addToDiffChain(requestChainId, responseChainId, outputArray);
             }
         }
+
+        //this.aiTrafficContainer.setChainId(requestChainId);
     }
 
     private String getRequestChainId()

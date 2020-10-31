@@ -74,53 +74,10 @@ public class LiveModelTests extends BaseTest {
         response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
-        logger.info("************************");
-        assertEquals(200, response.getStatusCode());
-    }
-
-    @Test
-    public void testEvalPython() throws Exception
-    {
-        String pythonScript = IOUtils.resourceToString("dataScience/train.py", StandardCharsets.UTF_8,
-                Thread.currentThread().getContextClassLoader());
-
-        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-python-model.json", StandardCharsets.UTF_8,
-                Thread.currentThread().getContextClassLoader());
-        JsonObject modelPackageJson = JsonParser.parseString(modelPackage).getAsJsonObject();
-        modelPackageJson.addProperty("script", pythonScript);
-
-        JsonObject modelDeployedJson = this.packagingService.performPackaging(modelPackageJson.toString());
-        long modelId = modelDeployedJson.get("modelId").getAsLong();
-
-        String data = IOUtils.resourceToString("dataScience/numpyTest.csv", StandardCharsets.UTF_8,
-                Thread.currentThread().getContextClassLoader());
-        JsonObject input = new JsonObject();
-        input.addProperty("modelId", modelId);
-        input.addProperty("format", "csv");
-        input.addProperty("data", data);
-
-        Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
-        logger.info("************************");
-        logger.info(response.statusLine());
-        response.body().prettyPrint();
-        logger.info("modelId: "+modelId);
-        logger.info("************************");
-        assertEquals(200, response.getStatusCode());
-
-        long dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsLong();
-        input = new JsonObject();
-        input.addProperty("modelId", modelId);
-        input.addProperty("dataSetId", dataSetId);
-        response = given().body(input.toString()).when().post("/liveModel/evalPython/").andReturn();
-        logger.info("************************");
-        logger.info(response.statusLine());
         response.body().prettyPrint();
         logger.info("************************");
-        //assertEquals(200, response.getStatusCode());
-
-        //Assert
-        //String output = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("output").getAsString();
-        //assertNotNull(output);
+        assertEquals(200, response.getStatusCode());
+        assertNotNull(JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId"));
     }
 
     @Test
@@ -175,6 +132,7 @@ public class LiveModelTests extends BaseTest {
         response.body().prettyPrint();
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
+        assertNotNull(JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId"));
     }
 
     @Test
@@ -222,6 +180,7 @@ public class LiveModelTests extends BaseTest {
         response.body().prettyPrint();
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
+        assertNotNull(JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId"));
 
         response = given().body(input.toString()).when().post("/liveModel/retrain").andReturn();
         logger.info("************************");
@@ -244,5 +203,46 @@ public class LiveModelTests extends BaseTest {
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
         response.body().prettyPrint();
+        assertNotNull(JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId"));
+    }
+
+    @Test
+    public void testEvalPython() throws Exception
+    {
+        String pythonScript = IOUtils.resourceToString("dataScience/train.py", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-python-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonObject modelPackageJson = JsonParser.parseString(modelPackage).getAsJsonObject();
+        modelPackageJson.addProperty("script", pythonScript);
+
+        JsonObject modelDeployedJson = this.packagingService.performPackaging(modelPackageJson.toString());
+        long modelId = modelDeployedJson.get("modelId").getAsLong();
+
+        String data = IOUtils.resourceToString("dataScience/numpyTest.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonObject input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("format", "csv");
+        input.addProperty("data", data);
+
+        Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("modelId: "+modelId);
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+
+        long dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsLong();
+        input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("dataSetId", dataSetId);
+        response = given().body(input.toString()).when().post("/liveModel/evalPython/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
     }
 }

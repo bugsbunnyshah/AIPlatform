@@ -71,49 +71,10 @@ public class TrainModelTests extends BaseTest
         response = given().body(input.toString()).when().post("/trainModel/trainJava").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
-        logger.info("************************");
-        assertEquals(200, response.getStatusCode());
-    }
-
-    @Test
-    public void testEvalPython() throws Exception
-    {
-        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-python-model.json", StandardCharsets.UTF_8,
-                Thread.currentThread().getContextClassLoader());
-
-        JsonObject modelDeployedJson = this.packagingService.performPackaging(modelPackage);
-        long modelId = modelDeployedJson.get("modelId").getAsLong();
-
-        String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
-                Thread.currentThread().getContextClassLoader());
-        JsonObject input = new JsonObject();
-        input.addProperty("modelId", modelId);
-        input.addProperty("format", "csv");
-        input.addProperty("data", data);
-
-        Response response = given().body(input.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
-        logger.info("************************");
-        logger.info(response.statusLine());
-        response.body().prettyPrint();
-        logger.info("modelId: "+modelId);
-        logger.info("************************");
-        assertEquals(200, response.getStatusCode());
-
-        long dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsLong();
-        input = new JsonObject();
-        input.addProperty("modelId", modelId);
-        input.addProperty("dataSetId", dataSetId);
-        logger.info(input.toString());
-        response = given().body(input.toString()).when().post("/trainModel/trainPython/").andReturn();
-        logger.info("************************");
-        logger.info(response.statusLine());
         response.body().prettyPrint();
         logger.info("************************");
-        //assertEquals(200, response.getStatusCode());
-
-        //Assert
-        //String output = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("output").getAsString();
-        //assertNotNull(output);
+        assertEquals(200, response.getStatusCode());
+        assertNotNull(JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId"));
     }
 
     @Test
@@ -163,5 +124,42 @@ public class TrainModelTests extends BaseTest
         response.body().prettyPrint();
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
+        assertNotNull(JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId"));
+    }
+
+    @Test
+    public void testEvalPython() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-python-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject modelDeployedJson = this.packagingService.performPackaging(modelPackage);
+        long modelId = modelDeployedJson.get("modelId").getAsLong();
+
+        String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonObject input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("format", "csv");
+        input.addProperty("data", data);
+
+        Response response = given().body(input.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("modelId: "+modelId);
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+
+        long dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsLong();
+        input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("dataSetId", dataSetId);
+        logger.info(input.toString());
+        response = given().body(input.toString()).when().post("/trainModel/trainPython/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
     }
 }

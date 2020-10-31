@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.AIModelService;
+import io.bugsbunny.preprocess.AITrafficContainer;
 import jep.Interpreter;
 import jep.JepException;
 import jep.MainInterpreter;
@@ -29,6 +30,9 @@ public class TrainModel
     private static Logger logger = LoggerFactory.getLogger(TrainModel.class);
 
     private static boolean isPythonDetected = false;
+
+    @Inject
+    private AITrafficContainer aiTrafficContainer;
 
     static
     {
@@ -78,7 +82,12 @@ public class TrainModel
                 counter++;
             }
             String eval = this.trainingAIModelService.trainJava(modelId, dataSetIds);
-            Response response = Response.ok(eval).build();
+
+            JsonObject returnValue = new JsonObject();
+            returnValue.add("result", JsonParser.parseString(eval));
+            returnValue.addProperty("dataHistoryId", this.aiTrafficContainer.getChainId());
+
+            Response response = Response.ok(returnValue.toString()).build();
             return response;
         }
         catch(ModelNotFoundException modelNotFoundException)
@@ -122,7 +131,12 @@ public class TrainModel
                 counter++;
             }
             String eval = this.trainingAIModelService.trainJavaFromDataLake(modelId, dataLakeIds);
-            Response response = Response.ok(eval).build();
+
+            JsonObject returnValue = new JsonObject();
+            returnValue.add("result", JsonParser.parseString(eval));
+            returnValue.addProperty("dataHistoryId", this.aiTrafficContainer.getChainId());
+
+            Response response = Response.ok(returnValue.toString()).build();
             return response;
         }
         catch(ModelNotFoundException modelNotFoundException)
@@ -177,18 +191,28 @@ public class TrainModel
                 dataSetIds[counter] = iterator.next().getAsLong();
                 counter++;
             }
-            String output = this.trainingAIModelService.evalPython(modelId, dataSetIds);
+            String eval = this.trainingAIModelService.evalPython(modelId, dataSetIds);
 
+            JsonObject returnValue = new JsonObject();
+            returnValue.add("result", JsonParser.parseString(eval));
+            returnValue.addProperty("dataHistoryId", this.aiTrafficContainer.getChainId());
 
-            JsonObject result = new JsonObject();
-            result.addProperty("output", output);
-            Response response = Response.ok(result.toString()).build();
+            Response response = Response.ok(returnValue.toString()).build();
             return response;
         }
-        catch(JepException |UnsatisfiedLinkError jepError)
+        catch(JepException | UnsatisfiedLinkError pythonError)
         {
-            logger.error(jepError.getMessage(), jepError);
-            return Response.serverError().build();
+            logger.error(pythonError.getMessage(), pythonError);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", "PYTHON_RUNTIME_NOT_DETECTED");
+            return Response.status(500).entity(error.toString()).build();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
         }
     }
 }

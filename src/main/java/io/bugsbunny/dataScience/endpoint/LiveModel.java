@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.AIModelService;
 
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import io.bugsbunny.preprocess.AITrafficContainer;
 import jep.Interpreter;
 import jep.JepException;
 import jep.MainInterpreter;
@@ -32,6 +33,9 @@ public class LiveModel
     private static Logger logger = LoggerFactory.getLogger(LiveModel.class);
 
     private static boolean isPythonDetected = false;
+
+    @Inject
+    private AITrafficContainer aiTrafficContainer;
 
     static
     {
@@ -84,7 +88,12 @@ public class LiveModel
                 counter++;
             }
             String eval = this.aiModelService.evalJava(modelId, dataSetIds);
-            Response response = Response.ok(eval).build();
+
+            JsonObject returnValue = new JsonObject();
+            returnValue.add("result", JsonParser.parseString(eval));
+            returnValue.addProperty("dataHistoryId", this.aiTrafficContainer.getChainId());
+
+            Response response = Response.ok(returnValue.toString()).build();
             return response;
         }
         catch(ModelNotFoundException modelNotFoundException)
@@ -128,7 +137,12 @@ public class LiveModel
                 counter++;
             }
             String eval = this.aiModelService.evalJavaFromDataLake(modelId, dataLakeIds);
-            Response response = Response.ok(eval).build();
+
+            JsonObject returnValue = new JsonObject();
+            returnValue.add("result", JsonParser.parseString(eval));
+            returnValue.addProperty("dataHistoryId", this.aiTrafficContainer.getChainId());
+
+            Response response = Response.ok(returnValue.toString()).build();
             return response;
         }
         catch(ModelNotFoundException modelNotFoundException)
@@ -219,18 +233,27 @@ public class LiveModel
                 dataSetIds[counter] = iterator.next().getAsLong();
                 counter++;
             }
-            String output = this.aiModelService.evalPython(modelId, dataSetIds);
+            String eval = this.aiModelService.evalPython(modelId, dataSetIds);
 
-            JsonObject result = new JsonObject();
-            result.addProperty("output", output);
-            Response response = Response.ok(result.toString()).build();
+            JsonObject returnValue = new JsonObject();
+            returnValue.add("result", JsonParser.parseString(eval));
+            returnValue.addProperty("dataHistoryId", this.aiTrafficContainer.getChainId());
+
+            Response response = Response.ok(returnValue.toString()).build();
             return response;
         }
-        catch(JepException|UnsatisfiedLinkError jepError)
+        catch(JepException | UnsatisfiedLinkError pythonError)
         {
-            logger.error(jepError.getMessage(), jepError);
+            logger.error(pythonError.getMessage(), pythonError);
             JsonObject error = new JsonObject();
-            error.addProperty("exception", jepError.getMessage());
+            error.addProperty("exception", "PYTHON_RUNTIME_NOT_DETECTED");
+            return Response.status(500).entity(error.toString()).build();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
             return Response.status(500).entity(error.toString()).build();
         }
     }
