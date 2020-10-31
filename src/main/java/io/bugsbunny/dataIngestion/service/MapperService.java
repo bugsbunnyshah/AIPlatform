@@ -40,7 +40,7 @@ public class MapperService {
 
     private CSVDataUtil csvDataUtil = new CSVDataUtil();
 
-    public JsonArray map(String sourceSchema, String destinationSchema, JsonArray sourceData)
+    public JsonArray map(JsonArray sourceData)
     {
         //logger.info("**************************************************");
         //logger.info("SOURCE_DATA: "+sourceData.toString());
@@ -87,13 +87,13 @@ public class MapperService {
     }
 
 
-    public JsonArray mapXml(String sourceSchema, String destinationSchema, JsonObject sourceData)
+    public JsonArray mapXml(JsonObject sourceData)
     {
         JsonArray result = new JsonArray();
 
         this.traverse(sourceData, result);
 
-        result = this.map(sourceSchema, destinationSchema, result);
+        result = this.map(result);
         return result;
     }
     //---------------------------------------------------------------------------------------------------------------------

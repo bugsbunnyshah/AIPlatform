@@ -29,7 +29,7 @@ public class MapperServiceTests extends BaseTest {
                 "airlinesData.json"),
                 StandardCharsets.UTF_8);
         JsonArray jsonArray = JsonParser.parseString(sourceData).getAsJsonArray();
-        JsonArray array = this.mapperService.map("", "", jsonArray);
+        JsonArray array = this.mapperService.map(jsonArray);
         logger.info("*******");
         logger.info(array.toString());
         logger.info("*******");

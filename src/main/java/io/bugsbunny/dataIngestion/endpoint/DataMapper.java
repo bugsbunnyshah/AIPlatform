@@ -44,12 +44,10 @@ public class DataMapper {
         {
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
 
-            String sourceSchema = jsonObject.get("sourceSchema").getAsString();
-            String destinationSchema = jsonObject.get("destinationSchema").getAsString();
             String sourceData = jsonObject.get("sourceData").getAsString();
             JsonArray array = JsonParser.parseString(sourceData).getAsJsonArray();
 
-            JsonArray result = this.mapperService.map(sourceSchema, destinationSchema, array);
+            JsonArray result = this.mapperService.map(array);
             JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
 
             Response response = Response.ok(responseJson.toString()).build();
@@ -73,15 +71,13 @@ public class DataMapper {
         {
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
 
-            String sourceSchema = jsonObject.get("sourceSchema").getAsString();
-            String destinationSchema = jsonObject.get("destinationSchema").getAsString();
             String xml = jsonObject.get("sourceData").getAsString();
 
             JSONObject sourceJson = XML.toJSONObject(xml);
             String json = sourceJson.toString(4);
             JsonObject sourceJsonObject = JsonParser.parseString(json).getAsJsonObject();
 
-            JsonArray result = this.mapperService.mapXml(sourceSchema, destinationSchema, sourceJsonObject);
+            JsonArray result = this.mapperService.mapXml(sourceJsonObject);
             JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
 
             Response response = Response.ok(responseJson.toString()).build();
@@ -104,8 +100,6 @@ public class DataMapper {
         try
         {
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
-            String sourceSchema = jsonObject.get("sourceSchema").getAsString();
-            String destinationSchema = jsonObject.get("destinationSchema").getAsString();
             String sourceData = jsonObject.get("sourceData").getAsString();
             boolean hasHeader = jsonObject.get("hasHeader").getAsBoolean();
 
@@ -141,7 +135,7 @@ public class DataMapper {
                 }
                 array.add(row);
             }
-            JsonArray result = this.mapperService.map(sourceSchema,destinationSchema,array);
+            JsonArray result = this.mapperService.map(array);
             JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
 
             Response response = Response.ok(responseJson.toString()).build();

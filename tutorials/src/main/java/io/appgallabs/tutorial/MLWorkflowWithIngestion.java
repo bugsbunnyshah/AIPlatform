@@ -87,8 +87,6 @@ public class MLWorkflowWithIngestion {
                 StandardCharsets.UTF_8
                 );
         JsonObject input = new JsonObject();
-        input.addProperty("sourceSchema", "sourceSchema");
-        input.addProperty("destinationSchema", "destinationSchema");
         input.addProperty("sourceData", data);
         input.addProperty("hasHeader", false);
         logger.info(input.toString());
@@ -120,8 +118,6 @@ public class MLWorkflowWithIngestion {
                 StandardCharsets.UTF_8
         );
         input = new JsonObject();
-        input.addProperty("sourceSchema", "sourceSchema");
-        input.addProperty("destinationSchema", "destinationSchema");
         input.addProperty("sourceData", data);
         input.addProperty("hasHeader", false);
         logger.info(input.toString());
