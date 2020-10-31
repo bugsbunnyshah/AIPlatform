@@ -19,6 +19,7 @@ include::./attributes.adoc[]
 
 
 Braineous, AI Platform - Data Ingestion
+
 This guide covers:
 
 * Running the Platform as a Microservice

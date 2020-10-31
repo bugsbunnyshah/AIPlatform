@@ -19,6 +19,7 @@ include::./attributes.adoc[]
 
 
 Braineous, AI Platform - Model Retraining
+
 This guide covers:
 
 * Running the Platform as a Microservice
@@ -356,5 +357,5 @@ public class MLWorkflowRetraining {
 
 == What's next?
 
-This guide covered the creation of a Data Ingestion Application using Braineous.
+This guide covered using a third party AI Model using Braineous.
 link:datascience.html[Data Science Application].
