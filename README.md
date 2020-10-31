@@ -1,11 +1,27 @@
-Braineous - The AI PLatform by AppGal Labs
+Braineous, AI Platform
 
-Build without testsuite > mvn clean package -DskipTests
+Build From Source
 
-Build with testsuite > mvn clean package
+----
+git clone https://github.com/bugsbunnyshah/AIPlatform.git
+----
+----
+mvn clean package -DskipTests
+----
 
-Run > java -jar target/*-runner.jar
+Running the Platform as a Microservice
 
-Test it worked > curl http://localhost:8080/microservice
+Prerequisites
 
-Expected Output > {"oid":"745b492b-9ac1-481d-bcbe-887b3cb51ec5","message":"HELLO_TO_HUMANITY"}
+* an IDE
+* JDK 8 or 11+ installed with `JAVA_HOME` configured appropriately
+
+----
+java -jar braineous-SNAPSHOT-runner.jar
+----
+
+curl http://localhost:8080/microservice
+
+----
+{"oid":"b172f532-2fdd-431c-99dc-2a7df4ee85f0","message":"HELLO_TO_HUMANITY"}
+----
