@@ -1,11 +1,8 @@
 <b>Braineous, AI Platform</b>
 
-Build From Source
-
 ----
 git clone https://github.com/bugsbunnyshah/AIPlatform.git
-----
-----
+
 mvn clean package -DskipTests
 ----
 
