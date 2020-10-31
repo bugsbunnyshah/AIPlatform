@@ -1,4 +1,4 @@
-Braineous, AI Platform
+<b>Braineous, AI Platform</b>
 
 Build From Source
 
