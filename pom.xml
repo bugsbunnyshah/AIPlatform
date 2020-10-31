@@ -301,6 +301,7 @@
           </environmentVariables>
         </configuration>
       </plugin>
+      <!--
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
@@ -340,6 +341,7 @@
           <installDirectory>target</installDirectory>
         </configuration>
       </plugin>
+      -->
     </plugins>
   </build>
 </project>
