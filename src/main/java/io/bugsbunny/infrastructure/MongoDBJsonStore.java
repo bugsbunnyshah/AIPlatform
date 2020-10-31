@@ -11,12 +11,9 @@ import io.bugsbunny.preprocess.SecurityTokenContainer;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
@@ -26,8 +23,6 @@ import java.util.*;
 @Singleton
 public class MongoDBJsonStore
 {
-    private static Logger logger = LoggerFactory.getLogger(MongoDBJsonStore.class);
-
     @Inject
     private SecurityTokenContainer securityTokenContainer;
 
@@ -382,11 +377,6 @@ public class MongoDBJsonStore
             String documentJson = document.toJson();
             return JsonParser.parseString(documentJson).getAsJsonObject().get("model").getAsString();
         }
-
-        logger.info("***************************");
-        logger.info("Database: "+databaseName);
-        logger.info("MODEL_NOT_FOUND: "+modelId);
-        logger.info("***************************");
         return null;
     }
 

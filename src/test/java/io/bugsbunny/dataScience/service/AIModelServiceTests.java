@@ -2,9 +2,6 @@ package io.bugsbunny.dataScience.service;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.dataScience.endpoint.ModelIsLive;
-import io.bugsbunny.dataScience.endpoint.ModelIsNotLive;
-import io.bugsbunny.dataScience.endpoint.ModelNotFoundException;
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;

@@ -70,10 +70,8 @@ public class MLWorkflowDataHistory {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("name", UUID.randomUUID().toString());
         jsonObject.addProperty("model", modelString);
-        logger.info(jsonObject.toString());
 
         JsonObject response = saveModelToCloud(jsonObject.toString());
-        logger.info(response.toString());
         long modelId = response.get("modelId").getAsLong();
 
         //Ingest the data into the dataLake that can be used for ML components,
@@ -86,7 +84,6 @@ public class MLWorkflowDataHistory {
         JsonObject input = new JsonObject();
         input.addProperty("sourceData", data);
         input.addProperty("hasHeader", false);
-        logger.info(input.toString());
         response = ingestDataIntoDataLake(input.toString());
         String dataLakeId = response.getAsJsonObject().get("dataLakeId").getAsString();
         logger.info("DataLakeId: "+dataLakeId);
@@ -94,12 +91,16 @@ public class MLWorkflowDataHistory {
         //Launch training in the Cloud
         JsonObject trainingInput = new JsonObject();
         JsonArray trainingDataLakeIds = new JsonArray();
-        trainingDataLakeIds.add(response.get("dataLakeId").getAsString());
+        trainingDataLakeIds.add(dataLakeId);
         trainingInput.addProperty("modelId", modelId);
         trainingInput.add("dataLakeIds", trainingDataLakeIds);
-        logger.info(trainingInput.toString());
         response = trainModelInCloud(trainingInput.toString());
-        logger.info(response.toString());
+        logger.info(trainingInput.toString());
+        String dataHistoryId = response.get("dataHistoryId").getAsString();
+        logger.info("DataHistoryId: "+dataHistoryId);
+
+        //Get the data
+        logger.info(getDataHistory(dataHistoryId).toString());
     }
 
     private static JsonObject getDataHistory(String oid) throws Exception
@@ -118,6 +119,7 @@ public class MLWorkflowDataHistory {
 
         HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
         String responseJson = httpResponse.body();
+        logger.info(httpResponse.statusCode()+"");
 
         return JsonParser.parseString(responseJson).getAsJsonObject();
     }
@@ -167,46 +169,6 @@ public class MLWorkflowDataHistory {
         //Create the Experiment
         HttpClient httpClient = HttpClient.newBuilder().build();
         String restUrl = "http://localhost:8080/trainModel/trainJavaFromDataLake/";
-
-        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
-        HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
-                .header("Content-Type", "application/json")
-                .header("Principal", principal)
-                .header("Bearer","")
-                .POST(HttpRequest.BodyPublishers.ofString(payload))
-                .build();
-
-        HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        String responseJson = httpResponse.body();
-
-        return JsonParser.parseString(responseJson).getAsJsonObject();
-    }
-
-    private static JsonObject deployLiveModelInCloud(String payload) throws Exception
-    {
-        //Create the Experiment
-        HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://localhost:8080/liveModel/deployJavaModel/";
-
-        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
-        HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
-                .header("Content-Type", "application/json")
-                .header("Principal", principal)
-                .header("Bearer","")
-                .POST(HttpRequest.BodyPublishers.ofString(payload))
-                .build();
-
-        HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        String responseJson = httpResponse.body();
-
-        return JsonParser.parseString(responseJson).getAsJsonObject();
-    }
-
-    private static JsonObject evaluateLiveModelInCloud(String payload) throws Exception
-    {
-        //Create the Experiment
-        HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://localhost:8080/liveModel/evalJavaFromDataLake/";
 
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
         HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))

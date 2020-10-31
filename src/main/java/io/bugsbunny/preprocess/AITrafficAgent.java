@@ -127,9 +127,6 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
             return;
         }
 
-        /*logger.info("**********DEBUG_RESPONSE************");
-        logger.info(entityString);
-        logger.info("***************************");*/
         JsonElement output;
         try
         {
@@ -169,8 +166,6 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
                 this.payloadReplayService.addToDiffChain(requestChainId, responseChainId, outputArray);
             }
         }
-
-        //this.aiTrafficContainer.setChainId(requestChainId);
     }
 
     private String getRequestChainId()

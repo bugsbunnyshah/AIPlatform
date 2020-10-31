@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.bugsbunny.data.history.ObjectDiffAlgorithm;
+import io.bugsbunny.dataIngestion.service.ChainNotFoundException;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +15,6 @@ import java.util.*;
 
 @ApplicationScoped
 public class PayloadReplayService {
-    private static Logger logger = LoggerFactory.getLogger(PayloadReplayService.class);
-
     @Inject
     private ObjectDiffAlgorithm objectDiffAlgorithm;
 
@@ -38,9 +37,6 @@ public class PayloadReplayService {
 
         JsonElement top = payload.get(0);
         String chainId = null;
-        /*logger.info("**********DEBUG************");
-        logger.info(top.toString());
-        logger.info("***************************");*/
         if(top.isJsonObject())
         {
             chainId = this.generateDiffChain(top.getAsJsonObject());
@@ -242,12 +238,16 @@ public class PayloadReplayService {
         this.mongoDBJsonStore.addToDiff(requestChainId, chainId, objectDiff);
     }
 
-    public List<JsonObject> replayDiffChain(String chainId)
+    public List<JsonObject> replayDiffChain(String chainId) throws ChainNotFoundException
     {
         java.util.List<JsonObject> replayChain = new ArrayList<>();
 
         List<JsonObject> diffChain = this.mongoDBJsonStore.readDiffChain(chainId);
         List<JsonObject> objectDiffs = this.mongoDBJsonStore.readDiffs(chainId);
+        if (diffChain.size() == 0)
+        {
+            throw new ChainNotFoundException(chainId);
+        }
 
         replayChain.add(diffChain.get(0).getAsJsonObject("payload"));
         int length = objectDiffs.size();

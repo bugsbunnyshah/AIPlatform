@@ -1,4 +1,4 @@
-package io.bugsbunny.dataScience.endpoint;
+package io.bugsbunny.dataScience.service;
 
 public class ModelNotFoundException extends Exception
 {

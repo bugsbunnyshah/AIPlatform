@@ -7,6 +7,8 @@ import com.google.gson.JsonParser;
 
 import io.bugsbunny.dataScience.service.AIModelService;
 
+import io.bugsbunny.dataScience.service.ModelIsNotLive;
+import io.bugsbunny.dataScience.service.ModelNotFoundException;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.preprocess.AITrafficContainer;
 import jep.Interpreter;

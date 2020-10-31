@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.data.history.service.PayloadReplayService;
 
+import io.bugsbunny.dataIngestion.service.ChainNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -57,12 +58,18 @@ public class DataReplay {
             List<JsonObject> diffChain = this.payloadReplayService.replayDiffChain(oid);
             return Response.ok(diffChain.toString()).build();
         }
-        catch(Exception e)
+        catch (ChainNotFoundException cne)
+        {
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", cne.getMessage());
+            return Response.status(404).entity(error.toString()).build();
+        }
+        /*catch(Exception e)
         {
             logger.error(e.getMessage(), e);
             JsonObject error = new JsonObject();
             error.addProperty("exception", e.getMessage());
             return Response.status(500).entity(error.toString()).build();
-        }
+        }*/
     }
 }

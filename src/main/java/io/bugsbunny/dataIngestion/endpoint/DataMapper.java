@@ -1,9 +1,6 @@
 package io.bugsbunny.dataIngestion.endpoint;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import io.bugsbunny.dataIngestion.service.IngestionService;
 import io.bugsbunny.dataIngestion.service.MapperService;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
