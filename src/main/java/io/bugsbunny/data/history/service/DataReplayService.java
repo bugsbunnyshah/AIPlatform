@@ -15,6 +15,8 @@ import java.util.*;
 
 @ApplicationScoped
 public class DataReplayService {
+    private static Logger logger = LoggerFactory.getLogger(DataReplayService.class);
+
     @Inject
     private ObjectDiffAlgorithm objectDiffAlgorithm;
 
@@ -254,8 +256,9 @@ public class DataReplayService {
         for(int i=0; i<length; i++)
         {
             JsonObject objectDiff = objectDiffs.get(i).getAsJsonObject("objectDiff");
-            JsonObject payload = diffChain.get(i+1).getAsJsonObject("payload");;
-            replayChain.add(this.objectDiffAlgorithm.merge(payload, objectDiff));
+            JsonObject payload = diffChain.get(i+1).getAsJsonObject("payload");
+            JsonObject merge = this.objectDiffAlgorithm.merge(payload, objectDiff);
+            replayChain.add(merge);
         }
 
         return replayChain;
