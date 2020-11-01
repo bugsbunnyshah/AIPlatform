@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import org.mitre.harmony.matchers.ElementPair;
@@ -36,7 +36,7 @@ public class MapperService {
     private MongoDBJsonStore mongoDBJsonStore;
 
     @Inject
-    private PayloadReplayService payloadReplayService;
+    private DataReplayService dataReplayService;
 
     private CSVDataUtil csvDataUtil = new CSVDataUtil();
 
@@ -75,7 +75,7 @@ public class MapperService {
                 result.add(local);
             }
 
-            this.payloadReplayService.generateDiffChain(sourceData);
+            this.dataReplayService.generateDiffChain(sourceData);
 
             return result;
         }

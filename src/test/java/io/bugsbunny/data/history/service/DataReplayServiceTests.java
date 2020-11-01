@@ -20,12 +20,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-public class PayloadReplayServiceTests extends BaseTest
+public class DataReplayServiceTests extends BaseTest
 {
-    private static Logger logger = LoggerFactory.getLogger(PayloadReplayServiceTests.class);
+    private static Logger logger = LoggerFactory.getLogger(DataReplayServiceTests.class);
 
     @Inject
-    private PayloadReplayService payloadReplayService;
+    private DataReplayService dataReplayService;
 
     @Test
     public void testDiffChainProcess() throws Exception
@@ -51,12 +51,12 @@ public class PayloadReplayServiceTests extends BaseTest
         jsonArray.add(middle);
         jsonArray.add(next);
 
-        String chainId = this.payloadReplayService.generateDiffChain(jsonArray);
+        String chainId = this.dataReplayService.generateDiffChain(jsonArray);
         logger.info("************************");
         logger.info("ChainId: "+chainId);
 
         //Assert
-        List<JsonObject> diffChain = this.payloadReplayService.replayDiffChain(chainId);
+        List<JsonObject> diffChain = this.dataReplayService.replayDiffChain(chainId);
         logger.info("********REPLAY_CHAIN****************");
         logger.info(diffChain.toString());
         logger.info("************************");
@@ -91,13 +91,13 @@ public class PayloadReplayServiceTests extends BaseTest
             array.add(jsonObject);
         }
 
-        String chainId = this.payloadReplayService.generateDiffChain(array);
+        String chainId = this.dataReplayService.generateDiffChain(array);
         logger.info("************************");
         logger.info("ChainId: "+chainId);
         logger.info("************************");
 
         //Assert
-        List<JsonObject> diffChain = this.payloadReplayService.replayDiffChain(chainId);
+        List<JsonObject> diffChain = this.dataReplayService.replayDiffChain(chainId);
         assertNotNull(diffChain);
         logger.info("************************");
         logger.info(diffChain.toString());

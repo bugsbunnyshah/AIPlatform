@@ -3,7 +3,7 @@ package io.bugsbunny.endpoint;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.preprocess.AITrafficAgent;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
@@ -30,7 +30,7 @@ public class SecurityTokenMockComponentTests extends BaseTest {
     private static Logger logger = LoggerFactory.getLogger(SecurityTokenMockComponentTests.class);
 
     @Inject
-    private PayloadReplayService payloadReplayService;
+    private DataReplayService dataReplayService;
 
     @Inject
     private AITrafficAgent aiTrafficAgent;
@@ -89,13 +89,13 @@ public class SecurityTokenMockComponentTests extends BaseTest {
         String token = this.securityTokenContainer.getSecurityToken().getToken();
 
         String requestChainId = this.aiTrafficAgent.findRequestChainId(token);
-        List<JsonObject> traffic = this.payloadReplayService.replayDiffChain(requestChainId);
+        List<JsonObject> traffic = this.dataReplayService.replayDiffChain(requestChainId);
         logger.info(traffic.toString());
 
         String responseChainId = this.aiTrafficAgent.findResponseChainId(token);
         assertNotNull(responseChainId);
         logger.info("ResponseChainId: "+responseChainId);
-        //traffic = this.payloadReplayService.replayDiffChain(responseChainId);
+        //traffic = this.dataReplayService.replayDiffChain(responseChainId);
         //logger.info(traffic.toString());
     }
 }

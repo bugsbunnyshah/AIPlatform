@@ -14,7 +14,7 @@ import javax.inject.Inject;
 import java.util.*;
 
 @ApplicationScoped
-public class PayloadReplayService {
+public class DataReplayService {
     @Inject
     private ObjectDiffAlgorithm objectDiffAlgorithm;
 

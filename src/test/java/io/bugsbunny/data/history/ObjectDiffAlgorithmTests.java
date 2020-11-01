@@ -6,7 +6,7 @@ import com.github.wnameless.json.unflattener.JsonUnflattener;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
@@ -31,7 +31,7 @@ public class ObjectDiffAlgorithmTests extends BaseTest {
     private ObjectDiffAlgorithm objectDiffAlgorithm;
 
     @Inject
-    private PayloadReplayService payloadReplayService;
+    private DataReplayService dataReplayService;
 
     @Test
     public void testFlattening() throws Exception
@@ -203,11 +203,11 @@ public class ObjectDiffAlgorithmTests extends BaseTest {
         JsonObject middle = JsonParser.parseString(email1).getAsJsonObject();
         JsonObject next = JsonParser.parseString(email2).getAsJsonObject();
 
-        String chainId = this.payloadReplayService.generateDiffChain(top);
-        this.payloadReplayService.addToDiffChain(chainId, middle);
-        this.payloadReplayService.addToDiffChain(chainId, next);
+        String chainId = this.dataReplayService.generateDiffChain(top);
+        this.dataReplayService.addToDiffChain(chainId, middle);
+        this.dataReplayService.addToDiffChain(chainId, next);
 
-        List<JsonObject> diffChain = this.payloadReplayService.replayDiffChain(chainId);
+        List<JsonObject> diffChain = this.dataReplayService.replayDiffChain(chainId);
         logger.info("****************************");
         logger.info("ChainId: "+ chainId);
         logger.info("ChainId: "+ diffChain.toString());

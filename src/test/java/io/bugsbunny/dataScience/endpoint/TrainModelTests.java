@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.preprocess.AITrafficAgent;
 
@@ -29,7 +29,7 @@ public class TrainModelTests extends BaseTest
     private static Logger logger = LoggerFactory.getLogger(TrainModelTests.class);
 
     @Inject
-    private PayloadReplayService payloadReplayService;
+    private DataReplayService dataReplayService;
 
     @Inject
     private AITrafficAgent aiTrafficAgent;

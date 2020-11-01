@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.data.history.service.DataReplayService;
 import org.apache.commons.io.IOUtils;
 
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     private static Logger logger = LoggerFactory.getLogger(AITrafficAgent.class);
 
     @Inject
-    private PayloadReplayService payloadReplayService;
+    private DataReplayService dataReplayService;
 
     @Inject
     private SecurityTokenContainer securityTokenContainer;
@@ -79,11 +79,11 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         {
             if(input.isJsonObject())
             {
-                requestChainId = this.payloadReplayService.generateDiffChain(input.getAsJsonObject());
+                requestChainId = this.dataReplayService.generateDiffChain(input.getAsJsonObject());
             }
             else
             {
-                requestChainId = this.payloadReplayService.generateDiffChain(input.getAsJsonArray());
+                requestChainId = this.dataReplayService.generateDiffChain(input.getAsJsonArray());
             }
             this.setRequestChainId(requestChainId);
         }
@@ -91,11 +91,11 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         {
             if(input.isJsonObject())
             {
-                this.payloadReplayService.addToDiffChain(requestChainId, input.getAsJsonObject());
+                this.dataReplayService.addToDiffChain(requestChainId, input.getAsJsonObject());
             }
             else
             {
-                this.payloadReplayService.addToDiffChain(requestChainId, input.getAsJsonArray());
+                this.dataReplayService.addToDiffChain(requestChainId, input.getAsJsonArray());
             }
         }
 
@@ -145,11 +145,11 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         if(responseChainId == null)
         {
             if(output.isJsonObject()) {
-                responseChainId = this.payloadReplayService.generateDiffChain(output.getAsJsonObject());
+                responseChainId = this.dataReplayService.generateDiffChain(output.getAsJsonObject());
             }
             else
             {
-                responseChainId = this.payloadReplayService.generateDiffChain(output.getAsJsonArray());
+                responseChainId = this.dataReplayService.generateDiffChain(output.getAsJsonArray());
             }
             this.setResponseChainId(responseChainId);
         }
@@ -158,12 +158,12 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
             String requestChainId = this.getRequestChainId();
             if(output.isJsonObject()) {
                 JsonObject outputJson = output.getAsJsonObject();
-                this.payloadReplayService.addToDiffChain(requestChainId, responseChainId, outputJson);
+                this.dataReplayService.addToDiffChain(requestChainId, responseChainId, outputJson);
             }
             else
             {
                 JsonArray outputArray = output.getAsJsonArray();
-                this.payloadReplayService.addToDiffChain(requestChainId, responseChainId, outputArray);
+                this.dataReplayService.addToDiffChain(requestChainId, responseChainId, outputArray);
             }
         }
     }

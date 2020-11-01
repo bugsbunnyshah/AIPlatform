@@ -3,7 +3,7 @@ package io.bugsbunny.dataScience.endpoint;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.preprocess.AITrafficAgent;
 import io.bugsbunny.test.components.BaseTest;
@@ -28,7 +28,7 @@ public class LiveModelTests extends BaseTest {
     private static Logger logger = LoggerFactory.getLogger(LiveModelTests.class);
 
     @Inject
-    private PayloadReplayService payloadReplayService;
+    private DataReplayService dataReplayService;
 
     @Inject
     private AITrafficAgent aiTrafficAgent;

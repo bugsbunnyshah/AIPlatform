@@ -150,7 +150,7 @@ public class MongoDBJsonStore
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        MongoCollection<Document> collection = database.getCollection("diffChain");
+        MongoCollection<Document> collection = database.getCollection("diffchain");
 
         String chainId = UUID.randomUUID().toString();
         JsonObject jsonObject = new JsonObject();
@@ -169,7 +169,7 @@ public class MongoDBJsonStore
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        MongoCollection<Document> collection = database.getCollection("diffChain");
+        MongoCollection<Document> collection = database.getCollection("diffchain");
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("chainId", chainId);
@@ -185,7 +185,7 @@ public class MongoDBJsonStore
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        MongoCollection<Document> collection = database.getCollection("diffChain");
+        MongoCollection<Document> collection = database.getCollection("diffchain");
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("chainId", chainId);
@@ -203,7 +203,7 @@ public class MongoDBJsonStore
         String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
-        MongoCollection<Document> collection = database.getCollection("diffChain");
+        MongoCollection<Document> collection = database.getCollection("diffchain");
 
         String queryJson = "{\"chainId\":\""+chainId+"\"}";
         Bson bson = Document.parse(queryJson);
@@ -223,37 +223,6 @@ public class MongoDBJsonStore
         return lastPayload;
     }
 
-    public void addToDiff(String chainId, JsonObject objectDiff)
-    {
-        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
-        String databaseName = principal + "_" + "aiplatform";
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-        MongoCollection<Document> collection = database.getCollection("objectDiff");
-
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("chainId", chainId);
-        jsonObject.add("objectDiff", objectDiff);
-
-        Document doc = Document.parse(jsonObject.toString());
-        collection.insertOne(doc);
-    }
-
-    public void addToDiff(String requestChainId, String chainId, JsonObject objectDiff)
-    {
-        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
-        String databaseName = principal + "_" + "aiplatform";
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-        MongoCollection<Document> collection = database.getCollection("objectDiff");
-
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("chainId", chainId);
-        jsonObject.addProperty("requestChainId", requestChainId);
-        jsonObject.add("objectDiff", objectDiff);
-
-        Document doc = Document.parse(jsonObject.toString());
-        collection.insertOne(doc);
-    }
-
     public List<JsonObject> readDiffChain(String chainId)
     {
         List<JsonObject> chain = new LinkedList<>();
@@ -262,7 +231,7 @@ public class MongoDBJsonStore
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        MongoCollection<Document> collection = database.getCollection("diffChain");
+        MongoCollection<Document> collection = database.getCollection("diffchain");
 
         String queryJson = "{\"chainId\":\""+chainId+"\"}";
         Bson bson = Document.parse(queryJson);
@@ -278,6 +247,37 @@ public class MongoDBJsonStore
         return chain;
     }
 
+    public void addToDiff(String chainId, JsonObject objectDiff)
+    {
+        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
+        String databaseName = principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+        MongoCollection<Document> collection = database.getCollection("diff");
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("chainId", chainId);
+        jsonObject.add("objectDiff", objectDiff);
+
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
+    }
+
+    public void addToDiff(String requestChainId, String chainId, JsonObject objectDiff)
+    {
+        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
+        String databaseName = principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+        MongoCollection<Document> collection = database.getCollection("diff");
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("chainId", chainId);
+        jsonObject.addProperty("requestChainId", requestChainId);
+        jsonObject.add("objectDiff", objectDiff);
+
+        Document doc = Document.parse(jsonObject.toString());
+        collection.insertOne(doc);
+    }
+
     public List<JsonObject> readDiffs(String chainId)
     {
         List<JsonObject> diffs = new LinkedList<>();
@@ -286,7 +286,7 @@ public class MongoDBJsonStore
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        MongoCollection<Document> collection = database.getCollection("objectDiff");
+        MongoCollection<Document> collection = database.getCollection("diff");
 
         String queryJson = "{\"chainId\":\""+chainId+"\"}";
         Bson bson = Document.parse(queryJson);

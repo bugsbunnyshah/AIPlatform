@@ -1,7 +1,7 @@
 package io.bugsbunny.dashboard.service;
 
 import com.google.gson.JsonObject;
-import io.bugsbunny.data.history.service.PayloadReplayService;
+import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.preprocess.SecurityToken;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ public class ModelTrafficService
     private static Logger logger = LoggerFactory.getLogger(ModelTrafficService.class);
 
     @Inject
-    private PayloadReplayService payloadReplayService;
+    private DataReplayService dataReplayService;
 
     @Inject
     private SecurityTokenContainer securityTokenContainer;
