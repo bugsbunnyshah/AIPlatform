@@ -103,4 +103,22 @@ public class MongoDBJsonStoreTests extends BaseTest {
         }
         assertTrue(dataSetIds.contains(dataSetId));
     }
+
+    @Test
+    public void testIngestion() throws Exception
+    {
+        String csv = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("dataScience/saturn_data_eval.csv"),
+                StandardCharsets.UTF_8);
+        //logger.info(csv);
+
+        JsonObject dataSetJson = new JsonObject();
+        dataSetJson.addProperty("data", csv);
+        long dataLakeId = this.mongoDBJsonStore.storeIngestion(dataSetJson);
+        logger.info("Lookup DataLakeId: "+dataLakeId);
+
+        JsonObject data = this.mongoDBJsonStore.getIngestion(dataLakeId);
+        logger.info(data.toString());
+        logger.info(data.get("dataLakeId").getAsString());
+    }
 }

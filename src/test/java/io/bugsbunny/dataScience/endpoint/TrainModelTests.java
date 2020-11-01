@@ -1,6 +1,7 @@
 package io.bugsbunny.dataScience.endpoint;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -150,11 +152,13 @@ public class TrainModelTests extends BaseTest
         assertEquals(200, response.getStatusCode());
 
         long dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsLong();
-        input = new JsonObject();
-        input.addProperty("modelId", modelId);
-        input.addProperty("dataSetId", dataSetId);
+        JsonObject training = new JsonObject();
+        JsonArray dataSetIdArray = new JsonArray();
+        dataSetIdArray.add(dataSetId);
+        training.addProperty("modelId", modelId);
+        training.add("dataSetIds", dataSetIdArray);
         logger.info(input.toString());
-        response = given().body(input.toString()).when().post("/trainModel/trainPython/").andReturn();
+        response = given().body(training.toString()).when().post("/trainModel/trainPython/").andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
         response.body().prettyPrint();
@@ -167,7 +171,6 @@ public class TrainModelTests extends BaseTest
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject input = this.packagingService.performPackaging(modelPackage);
         JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
         long modelId = liveModelDeployedJson.get("modelId").getAsLong();
 
@@ -177,9 +180,9 @@ public class TrainModelTests extends BaseTest
         ingestion.addProperty("sourceData", data);
         ingestion.addProperty("hasHeader", false);
 
-        long[] dataIds = new long[5];
+        long[] dataIds = new long[3];
         String dataHistoryId=null;
-        for(int i=0; i<5; i++) {
+        for(int i=0; i<dataIds.length; i++) {
             Response response = given().body(ingestion.toString()).when().post("/dataMapper/mapCsv/").andReturn();
             logger.info("************************");
             logger.info(response.statusLine());
@@ -188,7 +191,7 @@ public class TrainModelTests extends BaseTest
 
             JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
             long dataLakeId = returnValue.get("dataLakeId").getAsLong();
-            input = new JsonObject();
+            JsonObject input = new JsonObject();
             JsonArray dataLakeIdArray = new JsonArray();
             dataLakeIdArray.add(dataLakeId);
             input.addProperty("modelId", modelId);
@@ -207,12 +210,36 @@ public class TrainModelTests extends BaseTest
             dataIds[i] = dataLakeId;
         }
 
+        logger.info("*******");
+        logger.info("DATA_HISTORY_ID: " + dataHistoryId);
+        logger.info("*******");
         String dataHistoryUrl = "/replay/chain/?oid=" + dataHistoryId;
         Response response = given().when().get(dataHistoryUrl).andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
         response.prettyPrint();
         assertEquals(200, response.getStatusCode());
+
+        JsonArray dataArray = JsonParser.parseString(response.body().asString()).getAsJsonArray();
+        Iterator<JsonElement> itr = dataArray.iterator();
+        while(itr.hasNext())
+        {
+            JsonObject object = itr.next().getAsJsonObject();
+            JsonArray dataLakeIds = object.getAsJsonArray("dataLakeIds");
+            Iterator<JsonElement> cour = dataLakeIds.iterator();
+            while(cour.hasNext())
+            {
+                long dataLakeId = cour.next().getAsLong();
+
+                logger.info(""+dataLakeId);
+                response = given().when().get("/dataMapper/readDataLakeObject/?dataLakeId="+dataLakeId).andReturn();
+                logger.info(response.statusLine());
+                JsonObject result = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+                String storedData = result.get("data").getAsString();
+                logger.info(storedData);
+                assertNotNull(storedData);
+            }
+        }
     }
 
     @Test
@@ -221,20 +248,19 @@ public class TrainModelTests extends BaseTest
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject input = this.packagingService.performPackaging(modelPackage);
         JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
         long modelId = liveModelDeployedJson.get("modelId").getAsLong();
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
-        input = new JsonObject();
+        JsonObject input = new JsonObject();
         input.addProperty("modelId", modelId);
         input.addProperty("format", "csv");
         input.addProperty("data", data);
 
-        long[] dataIds = new long[5];
+        long[] dataIds = new long[3];
         String dataHistoryId=null;
-        for(int i=0; i<5; i++) {
+        for(int i=0; i<dataIds.length; i++) {
             Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
             logger.info("************************");
             logger.info(response.statusLine());
@@ -261,11 +287,39 @@ public class TrainModelTests extends BaseTest
             dataIds[i] = dataSetId;
         }
 
+        logger.info("*******");
+        logger.info("DATA_HISTORY_ID: " + dataHistoryId);
+        logger.info("*******");
         String dataHistoryUrl = "/replay/chain/?oid=" + dataHistoryId;
         Response response = given().when().get(dataHistoryUrl).andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
         response.prettyPrint();
         assertEquals(200, response.getStatusCode());
+
+        JsonArray dataArray = JsonParser.parseString(response.body().asString()).getAsJsonArray();
+        Iterator<JsonElement> itr = dataArray.iterator();
+        while(itr.hasNext())
+        {
+            JsonObject object = itr.next().getAsJsonObject();
+            JsonArray dataSetIds = object.getAsJsonArray("dataSetIds");
+            if(dataSetIds == null)
+            {
+                continue;
+            }
+            Iterator<JsonElement> cour = dataSetIds.iterator();
+            while(cour.hasNext())
+            {
+                long dataSetId = cour.next().getAsLong();
+
+                logger.info(""+dataSetId);
+                response = given().when().get("/dataset/readDataSet/?dataSetId="+dataSetId).andReturn();
+                logger.info(response.statusLine());
+                JsonObject result = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+                String storedData = result.get("data").getAsString();
+                logger.info(storedData);
+                assertNotNull(storedData);
+            }
+        }
     }
 }

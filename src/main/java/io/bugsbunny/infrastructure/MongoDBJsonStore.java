@@ -97,7 +97,7 @@ public class MongoDBJsonStore
 
     public JsonObject getIngestion(long dataLakeId)
     {
-        JsonObject ingestion = new JsonObject();
+        JsonObject ingestion = null;
 
         String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
         String databaseName = principal + "_" + "aiplatform";

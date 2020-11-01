@@ -24,4 +24,10 @@ public class IngestionService {
 
         return jsonObject;
     }
+
+    public JsonObject readDataLakeData(long dataLakeId)
+    {
+        JsonObject ingestion = this.mongoDBJsonStore.getIngestion(dataLakeId);
+        return ingestion;
+    }
 }
