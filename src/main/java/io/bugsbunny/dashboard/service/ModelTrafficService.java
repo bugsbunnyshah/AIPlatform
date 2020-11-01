@@ -26,6 +26,6 @@ public class ModelTrafficService
     public Map<String,List<JsonObject>> getModelTraffic()
     {
         SecurityToken securityToken = this.securityTokenContainer.getSecurityToken();
-        return this.payloadReplayService.replayDiffChainByPrincipal(securityToken.getPrincipal());
+        return null;
     }
 }

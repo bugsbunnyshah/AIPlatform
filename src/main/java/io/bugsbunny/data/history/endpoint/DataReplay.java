@@ -24,31 +24,6 @@ public class DataReplay {
     @Inject
     private PayloadReplayService payloadReplayService;
 
-    @Path("map")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response map(@RequestBody String input)
-    {
-        try {
-            JsonArray array = JsonParser.parseString(input).getAsJsonArray();
-
-            String chainId = this.payloadReplayService.generateDiffChain(array);
-
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("oid", chainId);
-
-            Response response = Response.ok(jsonObject.toString()).build();
-            return response;
-        }
-        catch(Exception e)
-        {
-            logger.error(e.getMessage(), e);
-            JsonObject error = new JsonObject();
-            error.addProperty("exception", e.getMessage());
-            return Response.status(500).entity(error.toString()).build();
-        }
-    }
-
     @Path("chain")
     @GET
     @Produces(MediaType.APPLICATION_JSON)

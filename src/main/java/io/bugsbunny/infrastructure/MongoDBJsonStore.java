@@ -301,48 +301,6 @@ public class MongoDBJsonStore
 
         return diffs;
     }
-
-    public List<JsonObject> readDiffChain(String region, String principal)
-    {
-        List<JsonObject> chain = new LinkedList<>();
-
-        String databaseName = principal + "_" + "aiplatform";
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-
-        MongoCollection<Document> collection = database.getCollection("diffChain");
-
-        FindIterable<Document> iterable = collection.find();
-        MongoCursor<Document> cursor = iterable.cursor();
-        while(cursor.hasNext()) {
-            Document document = cursor.next();
-            String documentJson = document.toJson();
-            JsonObject objectDiff = JsonParser.parseString(documentJson).getAsJsonObject();
-            chain.add(objectDiff);
-        }
-
-        return chain;
-    }
-
-    public List<JsonObject> readDiffs(String region, String principal)
-    {
-        List<JsonObject> diffs = new LinkedList<>();
-
-        String databaseName = principal + "_" + "aiplatform";
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-
-        MongoCollection<Document> collection = database.getCollection("objectDiff");
-
-        FindIterable<Document> iterable = collection.find();
-        MongoCursor<Document> cursor = iterable.cursor();
-        while(cursor.hasNext()) {
-            Document document = cursor.next();
-            String documentJson = document.toJson();
-            JsonObject objectDiff = JsonParser.parseString(documentJson).getAsJsonObject();
-            diffs.add(objectDiff);
-        }
-
-        return diffs;
-    }
     //-----------------------------------------------------------------------------
     public long storeModel(JsonObject modelPackage)
     {

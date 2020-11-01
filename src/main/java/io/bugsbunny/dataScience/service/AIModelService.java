@@ -185,6 +185,54 @@ public class AIModelService
         }
     }
 
+    public String evalPython(long modelId, long[] dataSetIds) throws JepException
+    {
+        String output;
+        JsonObject modelPackage = this.packagingService.getModelPackage(modelId);
+        String pythonScript = modelPackage.get("script").getAsString();
+        try (Interpreter interp = new SharedInterpreter())
+        {
+            JsonArray dataSetIdArray = new JsonArray();
+            for(long dataSetId:dataSetIds)
+            {
+                dataSetIdArray.add(dataSetId);
+            }
+            interp.set("dataSetId", dataSetIdArray.toString());
+            interp.set("modelId", modelId);
+            interp.exec(pythonScript);
+            output = interp.getValue("output", String.class);
+        }
+        return output;
+    }
+
+    public JsonArray rollOverToTraningDataSets(long modelId) throws ModelNotFoundException,ModelIsNotLive
+    {
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        if(modelPackage == null)
+        {
+            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
+        }
+        if(!modelPackage.get("live").getAsBoolean())
+        {
+            throw new ModelIsNotLive("MODEL_IS_NOT_LIVE_YET:"+modelId);
+        }
+
+        JsonObject rollback = this.mongoDBJsonStore.rollOverToTraningDataSets(modelId);
+
+        JsonArray rollbackDataSetIds = rollback.getAsJsonArray("rolledOverDataSetIds");
+        if(rollbackDataSetIds == null)
+        {
+            return new JsonArray();
+        }
+
+        //Also undeploy the model
+        this.mongoDBJsonStore.undeployModel(modelId);
+        this.activeModels.remove(modelId);
+
+        return rollbackDataSetIds;
+    }
+
+    //PRODUCTION_MODEL_RELATED**************************************************************************************************************************************************************************************************************************************************************************************************
     public String evalJava(long modelId, long[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
@@ -279,52 +327,5 @@ public class AIModelService
             logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
-    }
-
-    public String evalPython(long modelId, long[] dataSetIds) throws JepException
-    {
-        String output;
-        JsonObject modelPackage = this.packagingService.getModelPackage(modelId);
-        String pythonScript = modelPackage.get("script").getAsString();
-        try (Interpreter interp = new SharedInterpreter())
-        {
-            JsonArray dataSetIdArray = new JsonArray();
-            for(long dataSetId:dataSetIds)
-            {
-                dataSetIdArray.add(dataSetId);
-            }
-            interp.set("dataSetId", dataSetIdArray.toString());
-            interp.set("modelId", modelId);
-            interp.exec(pythonScript);
-            output = interp.getValue("output", String.class);
-        }
-        return output;
-    }
-
-    public JsonArray rollOverToTraningDataSets(long modelId) throws ModelNotFoundException,ModelIsNotLive
-    {
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
-        if(modelPackage == null)
-        {
-            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
-        }
-        if(!modelPackage.get("live").getAsBoolean())
-        {
-            throw new ModelIsNotLive("MODEL_IS_NOT_LIVE_YET:"+modelId);
-        }
-
-        JsonObject rollback = this.mongoDBJsonStore.rollOverToTraningDataSets(modelId);
-
-        JsonArray rollbackDataSetIds = rollback.getAsJsonArray("rolledOverDataSetIds");
-        if(rollbackDataSetIds == null)
-        {
-            return new JsonArray();
-        }
-
-        //Also undeploy the model
-        this.mongoDBJsonStore.undeployModel(modelId);
-        this.activeModels.remove(modelId);
-
-        return rollbackDataSetIds;
     }
 }

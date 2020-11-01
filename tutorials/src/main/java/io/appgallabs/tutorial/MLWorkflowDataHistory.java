@@ -35,10 +35,8 @@ public class MLWorkflowDataHistory {
 
     public static void main(String[] args) throws Exception
     {
-        int batchSize = 50;
         int seed = 123;
         double learningRate = 0.005;
-        int nEpochs = 30;
 
         int numInputs = 2;
         int numOutputs = 2;
@@ -100,7 +98,8 @@ public class MLWorkflowDataHistory {
         logger.info("DataHistoryId: "+dataHistoryId);
 
         //Get the data
-        logger.info(getDataHistory(dataHistoryId).toString());
+        response = getDataHistory(dataHistoryId);
+        logger.info(response.toString());
     }
 
     private static JsonObject getDataHistory(String oid) throws Exception

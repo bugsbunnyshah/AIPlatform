@@ -260,44 +260,4 @@ public class PayloadReplayService {
 
         return replayChain;
     }
-
-    public Map<String,List<JsonObject>> replayDiffChainByPrincipal(String principal)
-    {
-        Map<String, List<JsonObject>> replayChainMap = new HashMap<>();
-
-        List<JsonObject> diffChain = this.mongoDBJsonStore.readDiffChain(principal);
-        List<JsonObject> objectDiffs = this.mongoDBJsonStore.readDiffs(principal);
-
-        if(diffChain == null || diffChain.isEmpty())
-        {
-            return replayChainMap;
-        }
-
-
-        List<JsonObject> replayChain = new ArrayList<>();
-        JsonObject top = diffChain.get(0).getAsJsonObject("payload");
-        String chainId = diffChain.get(0).get("chainId").getAsString();
-        replayChain.add(top);
-        replayChainMap.put(chainId, replayChain);
-        int length = objectDiffs.size();
-        for(int i=0; i<length; i++)
-        {
-            JsonObject objectDiff = objectDiffs.get(i).getAsJsonObject("objectDiff");
-            JsonObject payload = diffChain.get(i+1).getAsJsonObject("payload");
-            String currentChainId = diffChain.get(i+1).get("chainId").getAsString();
-            if(!chainId.equals(currentChainId))
-            {
-                chainId = currentChainId;
-                replayChain = new ArrayList<>();
-                replayChainMap.put(chainId, replayChain);
-                replayChain.add(payload);
-            }
-            else
-            {
-                replayChain.add(this.objectDiffAlgorithm.merge(payload, objectDiff));
-            }
-        }
-
-        return replayChainMap;
-    }
 }
