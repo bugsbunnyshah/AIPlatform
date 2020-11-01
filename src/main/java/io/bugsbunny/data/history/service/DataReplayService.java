@@ -246,7 +246,7 @@ public class DataReplayService {
         List<JsonObject> objectDiffs = this.mongoDBJsonStore.readDiffs(chainId);
         if (diffChain.size() == 0)
         {
-            throw new ChainNotFoundException(chainId);
+            throw new ChainNotFoundException("CHAIN_NOT_FOUND: "+chainId);
         }
 
         replayChain.add(diffChain.get(0).getAsJsonObject("payload"));

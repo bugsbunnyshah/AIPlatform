@@ -92,8 +92,6 @@ public class TrainModelTests extends BaseTest
                 StandardCharsets.UTF_8);
 
         input = new JsonObject();
-        input.addProperty("sourceSchema", xml);
-        input.addProperty("destinationSchema", xml);
         input.addProperty("sourceData", xml);
 
 
@@ -161,5 +159,102 @@ public class TrainModelTests extends BaseTest
         logger.info(response.statusLine());
         response.body().prettyPrint();
         logger.info("************************");
+    }
+
+    @Test
+    public void testDataHistoryFromDataLake() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject input = this.packagingService.performPackaging(modelPackage);
+        JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+        long modelId = liveModelDeployedJson.get("modelId").getAsLong();
+
+        String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        input = new JsonObject();
+        input = new JsonObject();
+        input.addProperty("sourceData", data);
+        input.addProperty("hasHeader", false);
+
+        Response response = given().body(input.toString()).when().post("/dataMapper/mapCsv/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+        JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+        long dataLakeId = returnValue.get("dataLakeId").getAsLong();
+        input = new JsonObject();
+        JsonArray dataLakeIdArray = new JsonArray();
+        dataLakeIdArray.add(dataLakeId);
+        input.addProperty("modelId", modelId);
+        input.add("dataLakeIds", dataLakeIdArray);
+
+        response = given().body(input.toString()).when().post("/trainModel/trainJavaFromDataLake").andReturn();
+        String dataHistoryId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId").getAsString();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("DATA_HISTORY_ID: "+dataHistoryId);
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+        assertNotNull(dataHistoryId);
+
+        String dataHistoryUrl = "/replay/chain/?oid="+dataHistoryId;
+        response =  given().when().get(dataHistoryUrl).andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void testDataHistoryFromDataSet() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject input = this.packagingService.performPackaging(modelPackage);
+        JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+        long modelId = liveModelDeployedJson.get("modelId").getAsLong();
+
+        String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("format", "csv");
+        input.addProperty("data", data);
+        Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+        JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+        long dataSetId = returnValue.get("dataSetId").getAsLong();
+        input = new JsonObject();
+        JsonArray dataSetIdArray = new JsonArray();
+        dataSetIdArray.add(dataSetId);
+        input.addProperty("modelId", modelId);
+        input.add("dataSetIds", dataSetIdArray);
+
+        response = given().body(input.toString()).when().post("/trainModel/trainJava").andReturn();
+        String dataHistoryId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId").getAsString();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("DATA_HISTORY_ID: "+dataHistoryId);
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+        assertNotNull(dataHistoryId);
+
+        String dataHistoryUrl = "/replay/chain/?oid="+dataHistoryId;
+        response =  given().when().get(dataHistoryUrl).andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        assertEquals(200, response.getStatusCode());
     }
 }

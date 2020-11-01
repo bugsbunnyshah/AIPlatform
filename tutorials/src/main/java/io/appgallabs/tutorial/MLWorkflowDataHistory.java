@@ -98,15 +98,15 @@ public class MLWorkflowDataHistory {
         logger.info("DataHistoryId: "+dataHistoryId);
 
         //Get the data
-        response = getDataHistory(dataHistoryId);
-        logger.info(response.toString());
+        JsonArray history = getDataHistory(dataHistoryId);
+        logger.info(history.toString());
     }
 
-    private static JsonObject getDataHistory(String oid) throws Exception
+    private static JsonArray getDataHistory(String oid) throws Exception
     {
         //Create the Experiment
         HttpClient httpClient = HttpClient.newBuilder().build();
-        String restUrl = "http://localhost:8080/replay/chain/?oid"+oid;
+        String restUrl = "http://localhost:8080/replay/chain/?oid="+oid;
 
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
         HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
@@ -120,7 +120,7 @@ public class MLWorkflowDataHistory {
         String responseJson = httpResponse.body();
         logger.info(httpResponse.statusCode()+"");
 
-        return JsonParser.parseString(responseJson).getAsJsonObject();
+        return JsonParser.parseString(responseJson).getAsJsonArray();
     }
 
     private static JsonObject saveModelToCloud(String payload) throws Exception
