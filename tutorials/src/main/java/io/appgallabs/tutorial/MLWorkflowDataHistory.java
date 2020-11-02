@@ -119,7 +119,6 @@ public class MLWorkflowDataHistory {
             {
                 long oid = cour.next().getAsLong();
                 JsonObject content = readDataLakeObject(oid);
-                content.remove("data");
                 logger.info(content.toString());
             }
         }

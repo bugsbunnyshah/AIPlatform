@@ -39,6 +39,12 @@ To complete this guide, you need:
 java -jar aiplatform-secretariat-GA-runner.jar
 ----
 
+curl http://localhost:8080/microservice
+
+----
+{"oid":"b172f532-2fdd-431c-99dc-2a7df4ee85f0","message":"HELLO_TO_HUMANITY"}
+----
+
 == What's next?
 
 This guide covered using this platform as a Microservice.

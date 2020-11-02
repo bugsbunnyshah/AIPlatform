@@ -355,6 +355,14 @@ public class MLWorkflowRetraining {
 }
 ----
 
+== Output
+
+----
+20-11-01 22:49:29:879  INFO main tutorial.ThirdPartyModelSupport:45 - modelId: -7900997485786011280
+20-11-01 22:49:29:885  INFO main tutorial.ThirdPartyModelSupport:65 - {"modelId":-7900997485786011280,"payload":{"columns":["x"],"data":[[1],[-1]]}}
+20-11-01 22:49:29:916  INFO main tutorial.ThirdPartyModelSupport:67 - [1,0]
+----
+
 == What's next?
 
 This guide covered using a third party AI Model using Braineous.
