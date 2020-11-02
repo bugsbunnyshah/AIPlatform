@@ -1,6 +1,7 @@
 package io.appgallabs.tutorial;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
@@ -25,6 +26,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Iterator;
 import java.util.UUID;
 
 public class MLWorkflowDataHistory {
@@ -82,13 +84,14 @@ public class MLWorkflowDataHistory {
         JsonObject input = new JsonObject();
         input.addProperty("sourceData", data);
         input.addProperty("hasHeader", false);
-        response = ingestDataIntoDataLake(input.toString());
-        String dataLakeId = response.getAsJsonObject().get("dataLakeId").getAsString();
-        logger.info("DataLakeId: "+dataLakeId);
 
         //Launch training in the Cloud
         String dataHistoryId=null;
         for(int i=0; i<3; i++) {
+            JsonObject ingestion = ingestDataIntoDataLake(input.toString());
+            String dataLakeId = ingestion.getAsJsonObject().get("dataLakeId").getAsString();
+            logger.info("DataLakeId: "+dataLakeId);
+
             JsonObject trainingInput = new JsonObject();
             JsonArray trainingDataLakeIds = new JsonArray();
             trainingDataLakeIds.add(dataLakeId);
@@ -99,9 +102,27 @@ public class MLWorkflowDataHistory {
             dataHistoryId = response.get("dataHistoryId").getAsString();
             logger.info("DataHistoryId: " + dataHistoryId);
         }
+
         //Get the data
         JsonArray history = getDataHistory(dataHistoryId);
-        logger.info(history.toString());
+        Iterator<JsonElement> itr = history.iterator();
+        while(itr.hasNext())
+        {
+            JsonObject object = itr.next().getAsJsonObject();
+            JsonArray dataLakeIds = object.getAsJsonArray("dataLakeIds");
+            if(dataLakeIds == null)
+            {
+                continue;
+            }
+            Iterator<JsonElement> cour = dataLakeIds.iterator();
+            while(cour.hasNext())
+            {
+                long oid = cour.next().getAsLong();
+                JsonObject content = readDataLakeObject(oid);
+                content.remove("data");
+                logger.info(content.toString());
+            }
+        }
     }
 
     private static JsonArray getDataHistory(String oid) throws Exception
@@ -181,6 +202,27 @@ public class MLWorkflowDataHistory {
 
         HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
         String responseJson = httpResponse.body();
+
+        return JsonParser.parseString(responseJson).getAsJsonObject();
+    }
+
+    private static JsonObject readDataLakeObject(long dataLakeId) throws Exception
+    {
+        //Create the Experiment
+        HttpClient httpClient = HttpClient.newBuilder().build();
+        String restUrl = "http://localhost:8080/dataMapper/readDataLakeObject/?dataLakeId="+dataLakeId;
+
+        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
+        HttpRequest httpRequest = httpRequestBuilder.uri(new URI(restUrl))
+                .header("Content-Type", "application/json")
+                .header("Principal", principal)
+                .header("Bearer","")
+                .GET()
+                .build();
+
+        HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        String responseJson = httpResponse.body();
+        logger.info(httpResponse.statusCode()+"");
 
         return JsonParser.parseString(responseJson).getAsJsonObject();
     }
