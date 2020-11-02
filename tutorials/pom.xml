@@ -6,7 +6,7 @@
 
   <groupId>io.appgallabs.aiplatform.braineous</groupId>
   <artifactId>tutorials</artifactId>
-  <version>SNAPSHOT</version>
+  <version>secretariat</version>
 
   <name>tutorials</name>
 
@@ -33,7 +33,7 @@
     <dependency>
       <groupId>io.appgallabs.aiplatform</groupId>
       <artifactId>braineous</artifactId>
-      <version>SNAPSHOT</version>
+      <version>secretariat</version>
     </dependency>
     <dependency>
       <groupId>org.nd4j</groupId>
