@@ -1,5 +1,0 @@
-Local MLFlow Server
------------------------
-
-cd /Users/babyboy/training/databricks/github/mlflow/examples
-mlflow models serve -m runs:/35aa6376cc63430d9535505741b2919e/model
