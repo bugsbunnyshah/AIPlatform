@@ -363,6 +363,13 @@ public class MLWorkflowRetraining {
 20-11-01 22:49:29:916  INFO main tutorial.ThirdPartyModelSupport:67 - [1,0]
 ----
 
+== Run the Tutorial
+
+----
+cd tutorials
+ mvn clean package && java -cp target/tutorials-SNAPSHOT.jar io.appgallabs.tutorial.ThirdPartyModelSupport
+----
+
 == What's next?
 
 This guide covered using a third party AI Model using Braineous.

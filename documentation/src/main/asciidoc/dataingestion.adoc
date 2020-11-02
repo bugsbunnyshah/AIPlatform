@@ -321,6 +321,13 @@ public class MLWorkflowWithIngestion {
 20-11-01 22:43:38:482  INFO main tutorial.MLWorkflowWithIngestion:135 - {"result":{"@class":"org.deeplearning4j.eval.Evaluation","axis":1,"binaryPositiveClass":1,"topN":1,"topNCorrectCount":0,"topNTotalCount":0,"truePositives":{"map":{},"totalCount":0.0,"dirty":false,"empty":true},"falsePositives":{"map":{},"totalCount":0.0,"dirty":false,"empty":true},"trueNegatives":{"map":{},"totalCount":0.0,"dirty":false,"empty":true},"falseNegatives":{"map":{},"totalCount":0.0,"dirty":false,"empty":true},"confusion":null,"numRowCounter":0,"labelsList":null,"binaryDecisionThreshold":null,"costArray":null,"maxWarningClassesToPrint":16},"dataHistoryId":"/-2061008798/-365678124505424339"}
 ----
 
+== Run the Tutorial
+
+----
+cd tutorials
+mvn clean package && java -cp target/tutorials-SNAPSHOT.jar io.appgallabs.tutorial.MLWorkflowWithIngestion
+----
+
 == Data Ingestion Explained
 
 Any Artificial Intelligence Product needs real data to learn.

@@ -341,6 +341,13 @@ public class MLWorkflowWithDirectDataSets {
 20-11-01 22:45:59:792  INFO main tutorial.MLWorkflowWithDirectDataSets:135 - {"result":{"@class":"org.deeplearning4j.eval.Evaluation","axis":1,"binaryPositiveClass":1,"topN":1,"topNCorrectCount":0,"topNTotalCount":0,"tru
 ----
 
+== Run the Tutorial
+
+----
+cd tutorials
+ mvn clean package && java -cp target/tutorials-SNAPSHOT.jar io.appgallabs.tutorial.MLWorkflowWithDirectDataSets
+----
+
 == Data Science Support Explained
 
 Braineous provides and end-to-end pipeline for developing, training, and deploying AI models.

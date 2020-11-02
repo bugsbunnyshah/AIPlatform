@@ -316,6 +316,13 @@ public class MLWorkflowDataHistory {
 20-11-01 22:52:12:456  INFO main tutorial.MLWorkflowDataHistory:122 - {"_id":{"$oid":"5f9f907c41dbe91ce7d8155e"},"data":"[{\"col1\":\"1\",\"col2\":\"-7.1239700674365\",\"col3\":\"-5.05175898010314\"},{\"col1\":\"0\
 ----
 
+== Run the Tutorial
+
+----
+cd tutorials
+ mvn clean package && java -cp target/tutorials-SNAPSHOT.jar io.appgallabs.tutorial.MLWorkflowDataHistory
+----
+
 == What's next?
 
 This guide covered looking at your AI Model Data History using Braineous.

@@ -391,6 +391,13 @@ public class MLWorkflowRetraining {
 20-11-01 22:47:47:897  INFO main tutorial.MLWorkflowRetraining:159 - {"result":{"@class":"org.deeplearning4j.eval.Evaluation","axis":1,"binaryPositiveClass":1,"topN":1,"topNCorrectCount":0,"topNTotalCount":0,"tr
 ----
 
+== Run the Tutorial
+
+----
+cd tutorials
+ mvn clean package && java -cp target/tutorials-SNAPSHOT.jar io.appgallabs.tutorial.MLWorkflowRetraining
+----
+
 == What's next?
 
 This guide covered integration with a third party AI Model using Braineous.
