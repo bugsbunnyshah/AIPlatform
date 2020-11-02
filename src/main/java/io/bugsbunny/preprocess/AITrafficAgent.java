@@ -21,7 +21,9 @@ import javax.ws.rs.ext.Provider;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Priority(2)
@@ -39,16 +41,17 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
     @Inject
     private AITrafficContainer aiTrafficContainer;
 
-    private Map<String, String> tokenToRequestChainId = new HashMap<>();
-
-    private Map<String, String> tokenToResponseChainId = new HashMap<>();
+    private List<String> diffChains = new ArrayList<>();
 
     @Override
     public void filter(ContainerRequestContext context) throws IOException
     {
-        if(!context.getUriInfo().getRequestUri().getPath().contains("liveModel/") &&
-                !context.getUriInfo().getRequestUri().getPath().contains("trainModel/") &&
-                !context.getUriInfo().getRequestUri().getPath().contains("remoteModel/")
+        //logger.info("*****PATH**********");
+        //logger.info(context.getUriInfo().getRequestUri().getPath());
+        //logger.info("*****PATH**********");
+        if(!context.getUriInfo().getRequestUri().getPath().startsWith("/liveModel") &&
+                !context.getUriInfo().getRequestUri().getPath().startsWith("/trainModel") &&
+                !context.getUriInfo().getRequestUri().getPath().startsWith("/remoteModel")
         )
         {
             return;
@@ -74,42 +77,47 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
             return;
         }
 
-        String requestChainId = this.getRequestChainId();
-        if(requestChainId == null)
+        //logger.info("TRAFFIC***********************");
+        //logger.info(payload);
+        //logger.info("TRAFFIC***********************");
+
+        long modelId = JsonParser.parseString(payload).getAsJsonObject().get("modelId").getAsLong();
+        String key = "/"+this.securityTokenContainer.getSecurityToken().getPrincipal()+"/"+modelId;
+        if(!this.diffChains.contains(key))
         {
+            String diffChainId;
             if(input.isJsonObject())
             {
-                requestChainId = this.dataReplayService.generateDiffChain(input.getAsJsonObject());
+                diffChainId = this.dataReplayService.generateDiffChain(input.getAsJsonObject());
             }
             else
             {
-                requestChainId = this.dataReplayService.generateDiffChain(input.getAsJsonArray());
+                diffChainId = this.dataReplayService.generateDiffChain(input.getAsJsonArray());
             }
-            this.setRequestChainId(requestChainId);
+            this.diffChains.add(diffChainId);
         }
         else
         {
             if(input.isJsonObject())
             {
-                this.dataReplayService.addToDiffChain(requestChainId, input.getAsJsonObject());
+                this.dataReplayService.addToDiffChain(key, input.getAsJsonObject());
             }
             else
             {
-                this.dataReplayService.addToDiffChain(requestChainId, input.getAsJsonArray());
+                this.dataReplayService.addToDiffChain(key, input.getAsJsonArray());
             }
         }
 
-        this.aiTrafficContainer.setChainId(requestChainId);
-
+        this.aiTrafficContainer.setChainId(key);
         context.setEntityStream(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));
     }
 
     @Override
     public void filter(ContainerRequestContext context, ContainerResponseContext containerResponseContext) throws IOException
     {
-        if(!context.getUriInfo().getRequestUri().getPath().contains("liveModel/") &&
-                !context.getUriInfo().getRequestUri().getPath().contains("trainModel/") &&
-                !context.getUriInfo().getRequestUri().getPath().contains("remoteModel/")
+        /*if(!context.getUriInfo().getRequestUri().getPath().startsWith("/liveModel") &&
+                !context.getUriInfo().getRequestUri().getPath().startsWith("/trainModel") &&
+                !context.getUriInfo().getRequestUri().getPath().startsWith("/remoteModel")
         )
         {
             return;
@@ -165,44 +173,6 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
                 JsonArray outputArray = output.getAsJsonArray();
                 this.dataReplayService.addToDiffChain(requestChainId, responseChainId, outputArray);
             }
-        }
-    }
-
-    private String getRequestChainId()
-    {
-        String token = this.securityTokenContainer.getSecurityToken().getToken();
-        String requestChainId = this.tokenToRequestChainId.get(token);
-        return requestChainId;
-    }
-
-    private void setRequestChainId(String requestChainId)
-    {
-        String token = this.securityTokenContainer.getSecurityToken().getToken();
-        this.tokenToRequestChainId.put(token, requestChainId);
-    }
-
-    private String getResponseChainId()
-    {
-        String token = this.securityTokenContainer.getSecurityToken().getToken();
-        String responseChainId = this.tokenToResponseChainId.get(token);
-        return responseChainId;
-    }
-
-    private void setResponseChainId(String responseChainId)
-    {
-        String token = this.securityTokenContainer.getSecurityToken().getToken();
-        this.tokenToResponseChainId.put(token, responseChainId);
-    }
-
-    public String findRequestChainId(String token)
-    {
-        String requestChainId = this.tokenToRequestChainId.get(token);
-        return requestChainId;
-    }
-
-    public String findResponseChainId(String token)
-    {
-        String responseChainId = this.tokenToResponseChainId.get(token);
-        return responseChainId;
+        }*/
     }
 }

@@ -35,8 +35,8 @@ public class MapperService {
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
-    @Inject
-    private DataReplayService dataReplayService;
+    //@Inject
+    //private DataReplayService dataReplayService;
 
     private CSVDataUtil csvDataUtil = new CSVDataUtil();
 
@@ -75,7 +75,7 @@ public class MapperService {
                 result.add(local);
             }
 
-            this.dataReplayService.generateDiffChain(sourceData);
+            //this.dataReplayService.generateDiffChain(sourceData);
 
             return result;
         }

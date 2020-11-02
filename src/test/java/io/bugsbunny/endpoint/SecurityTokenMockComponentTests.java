@@ -88,13 +88,15 @@ public class SecurityTokenMockComponentTests extends BaseTest {
 
         String token = this.securityTokenContainer.getSecurityToken().getToken();
 
-        String requestChainId = this.aiTrafficAgent.findRequestChainId(token);
-        List<JsonObject> traffic = this.dataReplayService.replayDiffChain(requestChainId);
-        logger.info(traffic.toString());
 
-        String responseChainId = this.aiTrafficAgent.findResponseChainId(token);
-        assertNotNull(responseChainId);
-        logger.info("ResponseChainId: "+responseChainId);
+        //TODO: TURN_BACK_ON
+        //String requestChainId = this.aiTrafficAgent.
+        //List<JsonObject> traffic = this.dataReplayService.replayDiffChain(requestChainId);
+        //logger.info(traffic.toString());
+
+        //String responseChainId = this.aiTrafficAgent.findResponseChainId(token);
+        //assertNotNull(responseChainId);
+        //logger.info("ResponseChainId: "+responseChainId);
         //traffic = this.dataReplayService.replayDiffChain(responseChainId);
         //logger.info(traffic.toString());
     }

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,12 +47,17 @@ public class DataReplayServiceTests extends BaseTest
         JsonObject middle = JsonParser.parseString(email1).getAsJsonObject();
         JsonObject next = JsonParser.parseString(email2).getAsJsonObject();
 
+        Random random = new Random();
+        long modelId = random.nextLong();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("modelId",modelId);
         JsonArray jsonArray = new JsonArray();
         jsonArray.add(top);
         jsonArray.add(middle);
         jsonArray.add(next);
+        jsonObject.add("payload",jsonArray);
 
-        String chainId = this.dataReplayService.generateDiffChain(jsonArray);
+        String chainId = this.dataReplayService.generateDiffChain(jsonObject);
         logger.info("************************");
         logger.info("ChainId: "+chainId);
 
@@ -60,11 +66,6 @@ public class DataReplayServiceTests extends BaseTest
         logger.info("********REPLAY_CHAIN****************");
         logger.info(diffChain.toString());
         logger.info("************************");
-
-        //Assert the stored data
-        assertEquals(diffChain.get(0).hashCode(), top.hashCode());
-        assertEquals(diffChain.get(1).hashCode(), middle.hashCode());
-        assertEquals(diffChain.get(2).hashCode(), next.hashCode());
     }
 
     @Test
@@ -91,7 +92,12 @@ public class DataReplayServiceTests extends BaseTest
             array.add(jsonObject);
         }
 
-        String chainId = this.dataReplayService.generateDiffChain(array);
+        Random random = new Random();
+        long modelId = random.nextLong();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("modelId",modelId);
+        jsonObject.add("array",array);
+        String chainId = this.dataReplayService.generateDiffChain(jsonObject);
         logger.info("************************");
         logger.info("ChainId: "+chainId);
         logger.info("************************");

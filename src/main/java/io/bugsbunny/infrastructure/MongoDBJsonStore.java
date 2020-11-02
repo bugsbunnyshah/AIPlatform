@@ -11,6 +11,8 @@ import io.bugsbunny.preprocess.SecurityTokenContainer;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -18,11 +20,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 
-//TODO: DISTINGUISH_BETWEEN_DEV_AND_LIVE_MODELS
-
 @Singleton
 public class MongoDBJsonStore
 {
+    private static Logger logger = LoggerFactory.getLogger(MongoDBJsonStore.class);
+
     @Inject
     private SecurityTokenContainer securityTokenContainer;
 
@@ -152,7 +154,8 @@ public class MongoDBJsonStore
 
         MongoCollection<Document> collection = database.getCollection("diffchain");
 
-        String chainId = UUID.randomUUID().toString();
+        long modelId = payload.get("modelId").getAsLong();
+        String chainId = "/"+principal+"/"+modelId;
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("chainId", chainId);
         jsonObject.add("payload", payload);

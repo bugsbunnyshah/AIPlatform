@@ -22,7 +22,7 @@ public class IngestionServiceTests extends BaseTest {
     @Inject
     private IngestionService ingestionService;
 
-    @Test
+    //@Test
     public void testGetIngestion() throws Exception
     {
         //TODO: temp code for debugging

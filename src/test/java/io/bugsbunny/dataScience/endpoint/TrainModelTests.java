@@ -198,6 +198,7 @@ public class TrainModelTests extends BaseTest
             input.add("dataLakeIds", dataLakeIdArray);
 
             response = given().body(input.toString()).when().post("/trainModel/trainJavaFromDataLake").andReturn();
+            response.body().prettyPrint();
             dataHistoryId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId").getAsString();
             logger.info("************************");
             logger.info(response.statusLine());
@@ -226,6 +227,10 @@ public class TrainModelTests extends BaseTest
         {
             JsonObject object = itr.next().getAsJsonObject();
             JsonArray dataLakeIds = object.getAsJsonArray("dataLakeIds");
+            if(dataLakeIds == null)
+            {
+                continue;
+            }
             Iterator<JsonElement> cour = dataLakeIds.iterator();
             while(cour.hasNext())
             {

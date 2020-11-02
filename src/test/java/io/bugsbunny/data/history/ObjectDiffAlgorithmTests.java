@@ -199,9 +199,21 @@ public class ObjectDiffAlgorithmTests extends BaseTest {
                 Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/diffChain/email2.json"),
                 StandardCharsets.UTF_8);
 
-        JsonObject top = JsonParser.parseString(email0).getAsJsonObject();
-        JsonObject middle = JsonParser.parseString(email1).getAsJsonObject();
-        JsonObject next = JsonParser.parseString(email2).getAsJsonObject();
+        Random random = new Random();
+        long modelId = random.nextLong();
+
+        JsonObject top = new JsonObject();
+        top.addProperty("modelId",modelId);
+        top.add("payload", JsonParser.parseString(email0).getAsJsonObject());
+
+
+        JsonObject middle = new JsonObject();
+        middle.addProperty("modelId",modelId);
+        middle.add("payload", JsonParser.parseString(email1).getAsJsonObject());
+
+        JsonObject next = new JsonObject();
+        next.addProperty("modelId",modelId);
+        next.add("payload", JsonParser.parseString(email2).getAsJsonObject());
 
         String chainId = this.dataReplayService.generateDiffChain(top);
         this.dataReplayService.addToDiffChain(chainId, middle);

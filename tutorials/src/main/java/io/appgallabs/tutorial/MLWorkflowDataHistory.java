@@ -87,16 +87,18 @@ public class MLWorkflowDataHistory {
         logger.info("DataLakeId: "+dataLakeId);
 
         //Launch training in the Cloud
-        JsonObject trainingInput = new JsonObject();
-        JsonArray trainingDataLakeIds = new JsonArray();
-        trainingDataLakeIds.add(dataLakeId);
-        trainingInput.addProperty("modelId", modelId);
-        trainingInput.add("dataLakeIds", trainingDataLakeIds);
-        response = trainModelInCloud(trainingInput.toString());
-        logger.info(trainingInput.toString());
-        String dataHistoryId = response.get("dataHistoryId").getAsString();
-        logger.info("DataHistoryId: "+dataHistoryId);
-
+        String dataHistoryId=null;
+        for(int i=0; i<3; i++) {
+            JsonObject trainingInput = new JsonObject();
+            JsonArray trainingDataLakeIds = new JsonArray();
+            trainingDataLakeIds.add(dataLakeId);
+            trainingInput.addProperty("modelId", modelId);
+            trainingInput.add("dataLakeIds", trainingDataLakeIds);
+            response = trainModelInCloud(trainingInput.toString());
+            logger.info(trainingInput.toString());
+            dataHistoryId = response.get("dataHistoryId").getAsString();
+            logger.info("DataHistoryId: " + dataHistoryId);
+        }
         //Get the data
         JsonArray history = getDataHistory(dataHistoryId);
         logger.info(history.toString());
