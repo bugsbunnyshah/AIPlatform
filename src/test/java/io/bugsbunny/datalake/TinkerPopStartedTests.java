@@ -1,27 +1,7 @@
 package io.bugsbunny.datalake;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-//import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.process.traversal.*;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.io.IoCore;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.*;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.Gremlin;
-import java.io.IOException;
-import java.util.Map;
-
-import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
-
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class TinkerPopStartedTests {
-    private static Logger logger = LoggerFactory.getLogger(TinkerPopStartedTests.class);
+    /*private static Logger logger = LoggerFactory.getLogger(TinkerPopStartedTests.class);
 
     @Test
     public void testStart() throws Exception
@@ -65,5 +45,5 @@ public class TinkerPopStartedTests {
         logger.info(map.toString());
         //logger.info(blah.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age } ORDER BY ASC(?age)").getClass().getName());
         //logger.info(blah.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age } ORDER BY ASC(?age)").toString());
-    }
+    }*/
 }
