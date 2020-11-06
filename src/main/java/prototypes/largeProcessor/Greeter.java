@@ -1,4 +1,4 @@
-package io.bugsbunny.prototypes.largeProcessor;
+package prototypes.largeProcessor;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
