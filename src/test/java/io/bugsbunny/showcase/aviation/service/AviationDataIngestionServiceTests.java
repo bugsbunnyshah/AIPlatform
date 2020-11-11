@@ -12,7 +12,7 @@ import javax.inject.Inject;
 
 @QuarkusTest
 public class AviationDataIngestionServiceTests extends BaseTest {
-    private static Logger logger = LoggerFactory.getLogger(SimpleTests.class);
+    private static Logger logger = LoggerFactory.getLogger(AviationDataIngestionServiceTests.class);
 
     @Inject
     private AviationDataIngestionService aviationDataIngestionService;
