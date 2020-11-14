@@ -1,6 +1,5 @@
 package io.bugsbunny.dashboard.endpoint;
 
-import io.bugsbunny.dashboard.service.ModelTrafficService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,10 +10,10 @@ import javax.ws.rs.*;
 public class Dashboard {
     private static Logger logger = LoggerFactory.getLogger(Dashboard.class);
 
-    @Inject
+    /*@Inject
     private ModelTrafficService modelTrafficService;
 
-    /*@Path("modelTraffic")
+    @Path("modelTraffic")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response modelTraffic()
