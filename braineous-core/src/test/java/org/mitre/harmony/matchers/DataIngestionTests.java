@@ -39,7 +39,7 @@ public class DataIngestionTests {
 
         String json = IOUtils.toString(Thread.currentThread().getContextClassLoader().
                         getResourceAsStream("people.json"),
-                StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8.toString());
 
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
 
@@ -128,7 +128,7 @@ public class DataIngestionTests {
         ArrayList<SchemaElement> schemaElements = new ArrayList<>();
 
         String json = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream("airlinesData.json"),
-                StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8.toString());
 
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
 
