@@ -27,7 +27,7 @@ public class DataReplayTests extends BaseTest {
     @Inject
     private DataReplayService dataReplayService;
 
-    //@Test
+    @Test
     public void testChain() throws Exception
     {
         String json = "[{\"payload\" : { \"Id\" : 7777777, \"Rcvr\" : 77777, \"HasSig\" : true }},{\"payload\" : { \"Id\" : 7777777, \"Rcvr\" : 77777, \"HasSig\" : false }}]";
