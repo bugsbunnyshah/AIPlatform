@@ -25,14 +25,38 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+
+
+import org.datavec.api.records.reader.RecordReader;
+import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
+import org.datavec.api.split.FileSplit;
+import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
+import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.nd4j.evaluation.classification.Evaluation;
+import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.learning.config.Nesterovs;
+import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Example: training an embedding using the center loss model, on MNIST
@@ -52,7 +76,7 @@ public class FlightDelays {
 
     public static void main(String[] args) throws Exception {
         int outputNum = 10; // The number of possible outcomes
-        int batchSize = 64; // Test batch size
+        int batchSize = 10; // Test batch size
         int nEpochs = 2;   // Number of training epochs
         int seed = 123;
 
@@ -63,7 +87,13 @@ public class FlightDelays {
         //Alpha can be thought of as the learning rate for the centers for each class
         double alpha = 0.1;
 
-        logger.info("Load data....");
+        double learningRate = 0.01;
+
+        int numInputs = 3;
+        int numOutputs = 3;
+        int numHiddenNodes = 20;
+
+        /*logger.info("Load data....");
         String data = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream("aviation/flights0.json"),
             StandardCharsets.UTF_8);
 
@@ -106,7 +136,7 @@ public class FlightDelays {
         csv = header.toString() + "\n" + csv;
         FileUtils.write(new File("flightDelays.csv"), csv, StandardCharsets.UTF_8);
 
-        //logger.info(JsonFlattener.flattenAsMap(data).toString());
+        //logger.info(JsonFlattener.flattenAsMap(data).toString());*/
 
 
         /*String[] columns = data.split(",");
@@ -115,43 +145,97 @@ public class FlightDelays {
             logger.info(column);
         }*/
 
-        /*RecordReader rrTest = new CSVRecordReader();
-        File testFile = new File("tmp"+"/"+"flights.csv");
-        FileUtils.writeStringToFile(testFile, data);
+        String trainData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream("aviation/flight_delay_train.csv"),
+                StandardCharsets.UTF_8);
+        String[] dataRow = trainData.split("\n");
+        StringBuilder curatedTrainDataSet = new StringBuilder();
+        for(int j=0; j<dataRow.length; j++)
+        {
+            StringBuilder curatedRow = new StringBuilder();
+            String[] columns = dataRow[j].split(",");
+            for(int i=0; i<columns.length; i++)
+            {
+                String cour = columns[i];
+
+                OffsetDateTime offsetDateTime = OffsetDateTime.parse(cour);
+                long epochSecond = offsetDateTime.toEpochSecond();
+                curatedRow.append(epochSecond);
+                if(i < columns.length-1)
+                {
+                    curatedRow.append(",");
+                }
+            }
+            curatedTrainDataSet.append(curatedRow.toString());
+            if(j < dataRow.length-1)
+            {
+                curatedTrainDataSet.append("\n");
+            }
+        }
+        FileUtils.write(new File("curated_training_data.csv"), curatedTrainDataSet, StandardCharsets.UTF_8);
+
+        RecordReader rrTrain = new CSVRecordReader();
+        File trainFile = new File("/Users/babyboy/mamasboy/appgallabs/braineous/secretariat/AIPlatform/curated_training_data.csv");
+        rrTrain.initialize(new FileSplit(trainFile));
+        DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain, batchSize);
+        logger.info(trainIter.inputColumns()+"");
+
+        //Load the test/evaluation data:
+        RecordReader rrTest = new CSVRecordReader();
+        File testFile = new File("/Users/babyboy/mamasboy/appgallabs/braineous/secretariat/AIPlatform/curated_training_data.csv");
         rrTest.initialize(new FileSplit(testFile));
-        DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest, batchSize, 0, 2);
-        //logger.info(testIter.inputColumns()+"");
+        DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest, batchSize);
+        logger.info(testIter.inputColumns()+"");
 
         logger.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-            .seed(seed)
-            .l2(0.0005)
-            .activation(Activation.LEAKYRELU)
-            .weightInit(WeightInit.RELU)
-            .updater(new Adam(0.01))
-            .list()
-            .layer(new ConvolutionLayer.Builder(5, 5).stride(1, 1).nOut(32).activation(Activation.LEAKYRELU).build())
-            .layer(new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2).stride(2, 2).build())
-            .layer(new ConvolutionLayer.Builder(5, 5).stride(1, 1).nOut(64).build())
-            .layer(new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2).stride(2, 2).build())
-            .layer(new DenseLayer.Builder().nOut(256).build())
-            //Layer 5 is our embedding layer: 2 dimensions, just so we can plot it on X/Y grid. Usually use more in practice
-            .layer(new DenseLayer.Builder().activation(Activation.IDENTITY).weightInit(WeightInit.XAVIER).nOut(2)
-                //Larger L2 value on the embedding layer: can help to stop the embedding layer weights
-                // (and hence activations) from getting too large. This is especially problematic with small values of
-                // lambda such as 0.0
-                .l2(0.1).build())
-            .layer(new CenterLossOutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                .nIn(2).nOut(outputNum)
-                .weightInit(WeightInit.XAVIER).activation(Activation.SOFTMAX)
-                //Alpha and lambda hyperparameters are specific to center loss model: see comments above and paper
-                .alpha(alpha).lambda(lambda)
-                .build())
-            .setInputType(InputType.convolutionalFlat(28, 28, 1))
-            .build();
+                .seed(seed)
+                .weightInit(WeightInit.XAVIER)
+                .updater(new Nesterovs(learningRate, 0.9))
+                .list()
+                .layer(new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
+                        .activation(Activation.RELU)
+                        .build())
+                .layer(new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .activation(Activation.SOFTMAX)
+                        .nIn(numHiddenNodes).nOut(numOutputs).build())
+                .build();
+
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.fit(testIter, nEpochs);*/
+        model.setListeners(new ScoreIterationListener(10));  //Print score every 10 parameter updates
+        model.fit(trainIter, nEpochs);
+
+        System.out.println("Evaluate model....");
+        Evaluation eval = new Evaluation(numOutputs);
+        while (testIter.hasNext()) {
+            logger.info("TESTITR....");
+            DataSet t = testIter.next();
+            INDArray features = t.getFeatures();
+            INDArray labels = t.getLabels();
+            INDArray predicted = model.output(features, false);
+            eval.eval(labels, predicted);
+        }
+        //An alternate way to do the above loop
+        //Evaluation evalResults = model.evaluate(testIter);
+
+        //Print the evaluation statistics
+        System.out.println(eval.stats());
     }
+
+    /*public static void generateVisuals(MultiLayerNetwork model, DataSetIterator trainIter, DataSetIterator testIter) throws Exception {
+        double xMin = 0;
+        double xMax = 1.0;
+        double yMin = -0.2;
+        double yMax = 0.8;
+        int nPointsPerAxis = 100;
+
+        //Generate x,y points that span the whole range of features
+        INDArray allXYPoints = PlotUtil.generatePointsOnGraph(xMin, xMax, yMin, yMax, nPointsPerAxis);
+        //Get train data and plot with predictions
+        PlotUtil.plotTrainingData(model, trainIter, allXYPoints, nPointsPerAxis);
+        TimeUnit.SECONDS.sleep(3);
+        //Get test data, run the test data through the network to generate predictions, and plot those predictions:
+        PlotUtil.plotTestData(model, testIter, allXYPoints, nPointsPerAxis);
+    }*/
 }
