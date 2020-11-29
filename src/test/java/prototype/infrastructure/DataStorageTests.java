@@ -66,6 +66,7 @@ public class DataStorageTests extends BaseTest {
         MessageWindow messageWindow = new MessageWindow();
         messageWindow.setStart(start);
         messageWindow.setEnd(end);
+        Random random = new Random();
         for(int i=0; i<10; i++)
         {
             String sourceNotificationId = UUID.randomUUID().toString();
@@ -82,7 +83,18 @@ public class DataStorageTests extends BaseTest {
 
             JsonObject jsonObject = JsonParser.parseString(destinationNotification.toString()).getAsJsonObject();
 
-            logger.info(jsonObject.toString());
+            JsonObject modelChain = new JsonObject();
+            modelChain.addProperty("modelId", random.nextLong());
+            modelChain.add("payload", jsonObject);
+            String oid = this.dataReplayService.generateDiffChain(modelChain);
+            logger.info("ChainId: "+oid);
+
+            Response response = given().get("/replay/chain/?oid=" + oid).andReturn();
+            logger.info("************************");
+            logger.info(response.statusLine());
+            response.body().prettyPrint();
+            logger.info("************************");
+            assertEquals(200, response.getStatusCode());
         }
     }
 
@@ -94,7 +106,7 @@ public class DataStorageTests extends BaseTest {
         MessageWindow messageWindow = new MessageWindow();
         messageWindow.setStart(start);
         messageWindow.setEnd(end);
-        JsonArray jsonArray = new JsonArray();
+        Random random = new Random();
         for(int i=0; i<10; i++)
         {
             String sourceNotificationId = UUID.randomUUID().toString();
@@ -106,7 +118,18 @@ public class DataStorageTests extends BaseTest {
 
             JsonObject jsonObject = JsonParser.parseString(sourceNotification.toString()).getAsJsonObject();
 
-            logger.info(jsonObject.toString());
+            JsonObject modelChain = new JsonObject();
+            modelChain.addProperty("modelId", random.nextLong());
+            modelChain.add("payload", jsonObject);
+            String oid = this.dataReplayService.generateDiffChain(modelChain);
+            logger.info("ChainId: "+oid);
+
+            Response response = given().get("/replay/chain/?oid=" + oid).andReturn();
+            logger.info("************************");
+            logger.info(response.statusLine());
+            response.body().prettyPrint();
+            logger.info("************************");
+            assertEquals(200, response.getStatusCode());
         }
     }
 
@@ -137,6 +160,18 @@ public class DataStorageTests extends BaseTest {
         sourceNotification.setLatitude(latitude);
         sourceNotification.setLongitude(longitude);
 
-        logger.info(sourceNotification.toJson().toString());
+        Random random = new Random();
+        JsonObject modelChain = new JsonObject();
+        modelChain.addProperty("modelId", random.nextLong());
+        modelChain.add("payload", sourceNotification.toJson());
+        String oid = this.dataReplayService.generateDiffChain(modelChain);
+        logger.info("ChainId: "+oid);
+
+        Response response = given().get("/replay/chain/?oid=" + oid).andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
     }
 }
