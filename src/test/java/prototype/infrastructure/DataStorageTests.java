@@ -1,9 +1,10 @@
 package prototype.infrastructure;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import io.bugsbunny.data.history.service.DataReplayService;
+
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
@@ -29,34 +30,6 @@ public class DataStorageTests extends BaseTest {
 
     @Inject
     private DataReplayService dataReplayService;
-
-    @Test
-    public void testProduceData() throws Exception
-    {
-        try {
-            logger.info("***************");
-            System.out.println(this.dataReplayService);
-            String json = " {\"foodRunner\":{\"profile\":{\"id\":\"0e9f47c3-a447-496f-8162-0d62014d6975\",\"email\":\"bugs.bunny.shah@gmail.com\",\"mobile\":\"8675309\",\"photo\":\"\",\"password\":\"\",\"profileType\":\"FOOD_RUNNER\"},\"location\":{\"latitude\":30.25860595703125,\"longitude\":-97.74873352050781}},\"sourceOrg\":{\"orgId\":\"microsoft\",\"orgName\":\"Microsoft\",\"orgContactEmail\":\"melinda_gates@microsoft.com\",\"location\":{\"latitude\":0.0,\"longitude\":0.0}},\"location\":{\"latitude\":30.25860595703125,\"longitude\":-97.74873352050781}}";
-            JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
-            JsonObject modelChain = new JsonObject();
-            Random random = new Random();
-            modelChain.addProperty("modelId", random.nextLong());
-            modelChain.add("payload", jsonObject);
-            String oid = this.dataReplayService.generateDiffChain(modelChain);
-
-            Response response = given().get("/replay/chain/?oid=" + oid).andReturn();
-            logger.info("************************");
-            logger.info(response.statusLine());
-            response.body().prettyPrint();
-            logger.info("************************");
-            assertEquals(200, response.getStatusCode());
-        }
-        catch(Exception e)
-        {
-            logger.error(e.getMessage(), e);
-            throw e;
-        }
-    }
 
     @Test
     public void testAddingDestinationNotifications() throws InterruptedException {
