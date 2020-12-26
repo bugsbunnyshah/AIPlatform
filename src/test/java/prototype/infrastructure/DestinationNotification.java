@@ -13,6 +13,7 @@ public class DestinationNotification {
 
     private SourceNotification sourceNotification;
     private String destinationNotificationId;
+    private DropOffNotification dropOffNotification;
 
     public SourceNotification getSourceNotification() {
         return sourceNotification;
@@ -30,6 +31,14 @@ public class DestinationNotification {
         this.destinationNotificationId = destinationNotificationId;
     }
 
+    public DropOffNotification getDropOffNotification() {
+        return dropOffNotification;
+    }
+
+    public void setDropOffNotification(DropOffNotification dropOffNotification) {
+        this.dropOffNotification = dropOffNotification;
+    }
+
     @Override
     public String toString()
     {
@@ -37,6 +46,7 @@ public class DestinationNotification {
 
         jsonObject.add("sourceNotification", JsonParser.parseString(this.sourceNotification.toString()));
         jsonObject.addProperty("destinationNotificationId", this.destinationNotificationId);
+        jsonObject.add("dropOffNotification", this.dropOffNotification.toJson());
 
         return jsonObject.toString();
     }
