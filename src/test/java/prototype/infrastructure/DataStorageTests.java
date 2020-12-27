@@ -31,7 +31,7 @@ public class DataStorageTests extends BaseTest {
     @Inject
     private DataReplayService dataReplayService;
 
-    @Test
+    //@Test
     public void testAddingDestinationNotifications() throws InterruptedException {
         OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC);
         OffsetDateTime end = start.plusMinutes(Duration.ofMinutes(10).toMinutes());
@@ -78,7 +78,7 @@ public class DataStorageTests extends BaseTest {
         }
     }
 
-    @Test
+    //@Test
     public void testAddingSourceNotifications() throws InterruptedException {
         List<String> notificationIds = new ArrayList<>();
         OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC);
@@ -113,7 +113,7 @@ public class DataStorageTests extends BaseTest {
         }
     }
 
-    @Test
+    //@Test
     public void testProduceActiveFoodRunnerData() throws InterruptedException {
         ActiveFoodRunnerData activeFoodRunnerData = new ActiveFoodRunnerData(UUID.randomUUID().toString(),
                 "44.9441", "-93.0852");

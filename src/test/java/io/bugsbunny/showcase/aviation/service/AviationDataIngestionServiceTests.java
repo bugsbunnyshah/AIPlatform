@@ -17,7 +17,7 @@ public class AviationDataIngestionServiceTests extends BaseTest {
     @Inject
     private AviationDataIngestionService aviationDataIngestionService;
 
-    @Test
+    //@Test
     public void testStartIngestion() throws Exception
     {
         this.aviationDataIngestionService.startIngestion();
