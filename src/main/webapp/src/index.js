@@ -1,27 +1,27 @@
+import 'react-app-polyfill/ie11'; // For IE 11 support
+import 'react-app-polyfill/stable';
+import 'core-js';
+import './polyfill'
 import React from 'react';
 import ReactDOM from 'react-dom';
-//import Dashboard from './Dashboard';
 import App from './App';
+import * as serviceWorker from './serviceWorker';
 
+import { icons } from './assets/icons'
 
+import { Provider } from 'react-redux'
+import store from './store'
 
-/*function tick() {
-  const element = (
-  fetch(' http://localhost:8080/dashboard/modelTraffic')
-          .then(res => res.json())
-          .then((data) => {
-            //this.setState({ contacts: data })
-            console.log(data);
-          })
-          .catch(console.log)
-  );
-  ReactDOM.render(
-    element,
-    document.getElementById('root')
-  );
-}*/
+React.icons = icons
 
 ReactDOM.render(
-  <App />,
-  document.querySelector('#root'),
+  <Provider store={store}>
+    <App/>
+  </Provider>,
+  document.getElementById('root')
 );
+
+// If you want your app to work offline and load faster, you can change
+// unregister() to register() below. Note this comes with some pitfalls.
+// Learn more about service workers: http://bit.ly/CRA-PWA
+serviceWorker.unregister();

@@ -23,7 +23,7 @@ public class TrainAviationModelTests extends BaseTest
         Response response = given()
                 .get("/aviation/train")
                 .andReturn();
-        logger.info(response.body().asString());
+        response.body().prettyPrint();
         assertEquals(200, response.statusCode());
     }
 }

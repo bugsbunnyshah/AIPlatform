@@ -266,6 +266,11 @@
       <artifactId>jfreechart</artifactId>
       <version>1.0.13</version>
     </dependency>
+    <dependency>
+      <groupId>org.locationtech.spatial4j</groupId>
+      <artifactId>spatial4j</artifactId>
+      <version>0.7</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -301,7 +306,6 @@
           </environmentVariables>
         </configuration>
       </plugin>
-      <!--
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
@@ -341,7 +345,6 @@
           <installDirectory>target</installDirectory>
         </configuration>
       </plugin>
-      -->
     </plugins>
   </build>
 </project>

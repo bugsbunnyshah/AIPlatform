@@ -106,6 +106,7 @@ public class TrainAviationAIModel
 
             JsonObject result = new JsonObject();
             result.addProperty("result", trainingResult);
+            result.addProperty("modelId", modelId);
             Response response = Response.ok(result.toString()).build();
             return response;
         }
