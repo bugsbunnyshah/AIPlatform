@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.appgallabs.aiplatform</groupId>
   <artifactId>braineous</artifactId>
-  <version>SNAPSHOT</version>
+  <version>secretariat</version>
   <name>braineous</name>
   <url>http://maven.apache.org</url>
   <properties>
