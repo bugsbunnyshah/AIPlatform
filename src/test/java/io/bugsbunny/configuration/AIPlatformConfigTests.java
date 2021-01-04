@@ -15,7 +15,7 @@ public class AIPlatformConfigTests
     @Inject
     private AIPlatformConfig aiPlatformConfig;
 
-    @Test
+    //@Test
     public void testGetConfiguration() throws Exception
     {
         logger.info(this.aiPlatformConfig.getConfiguration().toString());
