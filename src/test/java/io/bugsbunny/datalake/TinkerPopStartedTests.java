@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -120,10 +122,10 @@ public class TinkerPopStartedTests {
                 addV("airport").property("code","LAX").as("lax").
                 addV("airport").property("code","JFK").as("jfk").
                 addV("airport").property("code","ATL").as("atl").
-                addE("route").from("aus").to("dfw").
-                addE("route").from("dfw").to("aus").
-                addE("route").from("dfw").to("jfk").
-                addE("route").from("jfk").to("lax");
+                addE("route").from("aus").to("dfw").property("routeKey","2").
+                addE("route").from("dfw").to("aus").property("routeKey","3").
+                addE("route").from("dfw").to("jfk").property("routeKey","0").
+                addE("route").from("jfk").to("lax").property("routeKey","1");
                 //addE("route").from("aus").to("atl").
                 //addE("route").from("atl").to("dfw").
                 //addE("route").from("atl").to("jfk").
@@ -162,8 +164,10 @@ public class TinkerPopStartedTests {
         //        by(label()).next()
         //logger.info(has.outE().next().toString());
         //logger.info(has.outE().groupCount().next().toString());
-        Object result = has.outE().groupCount().next();
+        Map<String, Long> result = (Map<String, Long>) has.outE().groupCount().by("routeKey").next();
+        //Object result = has.outE().groupCount().next();
         System.out.println(result);
+        System.out.println(result.getClass());
     }
 
     @Test
@@ -223,6 +227,7 @@ public class TinkerPopStartedTests {
         //        by(label()).next()
         //logger.info(has.outE().next().toString());
         //logger.info(has.outE().groupCount().next().toString());
+        //Object result = has.outE().groupCount().by("code").next();
         Object result = has.outE().groupCount().next();
         System.out.println(result);
     }
