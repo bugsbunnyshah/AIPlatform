@@ -20,7 +20,8 @@ public class IngestionService {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("data", data);
 
-        this.mongoDBJsonStore.storeIngestion(jsonObject);
+        long dataLakeId = this.mongoDBJsonStore.storeIngestion(jsonObject);
+        jsonObject.addProperty("dataLakeId", dataLakeId);
 
         return jsonObject;
     }
