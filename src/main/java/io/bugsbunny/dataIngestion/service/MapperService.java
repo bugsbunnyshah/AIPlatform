@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import io.bugsbunny.util.JsonUtil;
 import org.mitre.harmony.matchers.ElementPair;
 import org.mitre.harmony.matchers.MatcherManager;
 import org.mitre.harmony.matchers.MatcherScore;
@@ -42,9 +43,8 @@ public class MapperService {
 
     public JsonArray map(JsonArray sourceData)
     {
-        //logger.info("**************************************************");
-        //logger.info("SOURCE_DATA: "+sourceData.toString());
-        //logger.info("**************************************************");
+        //logger.info("********SOURCE_DATA************");
+        //JsonUtil.print(sourceData);
         JsonArray result = new JsonArray();
         try
         {
@@ -67,11 +67,15 @@ public class MapperService {
                 f1.addElements(sourceSchemaInfo.getElements(Entity.class));
                 FilteredSchemaInfo f2 = new FilteredSchemaInfo(destinationSchemaInfo);
                 f2.addElements(destinationSchemaInfo.getElements(Entity.class));
+
+                //Map<SchemaElement, Double> scores = new HashMap<>();
                 Map<SchemaElement, Double> scores = this.findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
                 //logger.info("*************************************");
                 //logger.info(scores.toString());
                 //logger.info("*************************************");
+
                 JsonObject local = this.performMapping(scores, root.toString());
+                //JsonObject local = root.getAsJsonObject();
                 result.add(local);
             }
 
@@ -209,7 +213,7 @@ public class MapperService {
     {
         Map<SchemaElement, Double> result = new HashMap<>();
         Matcher matcher = MatcherManager.getMatcher(
-                "org.mitre.harmony.matchers.matchers.EditDistanceMatcher");
+                "org.mitre.harmony.matchers.matchers.EntityMatcher");
         matcher.initialize(f1, f2);
 
         MatcherScores matcherScores = matcher.match();
@@ -228,6 +232,7 @@ public class MapperService {
                 }
             }
         }
+
         return result;
     }
 
