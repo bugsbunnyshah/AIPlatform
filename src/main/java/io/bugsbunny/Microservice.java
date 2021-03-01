@@ -35,6 +35,7 @@ public class Microservice
             JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
             logger.info(jsonObject.toString());
 
+            jsonObject.addProperty("product", "braineous");
             jsonObject.addProperty("oid", UUID.randomUUID().toString());
             jsonObject.addProperty("message", "HELLO_TO_HUMANITY");
 
@@ -55,6 +56,7 @@ public class Microservice
     {
         try {
             JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("product", "braineous");
             jsonObject.addProperty("oid", UUID.randomUUID().toString());
             jsonObject.addProperty("message", "HELLO_TO_HUMANITY");
 
