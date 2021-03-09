@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <name>braineous</name>
-  <version>master</version>
+  <version>arjunv1</version>
   <groupId>io.appgallabs.aiplatform</groupId>
   <artifactId>braineous</artifactId>
   <url>http://maven.apache.org</url>
@@ -242,16 +242,41 @@
       <artifactId>jfreechart</artifactId>
       <version>1.0.13</version>
     </dependency>
+
+
     <dependency>
       <groupId>org.apache.tinkerpop</groupId>
       <artifactId>tinkergraph-gremlin</artifactId>
-      <version>3.4.8</version>
+      <version>3.3.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tinkerpop</groupId>
-      <artifactId>sparql-gremlin</artifactId>
-      <version>3.4.8</version>
+      <artifactId>gremlin-server</artifactId>
+      <version>3.3.1</version>
+      <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.tinkerpop</groupId>
+      <artifactId>gremlin-driver</artifactId>
+      <version>3.3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.janusgraph</groupId>
+      <artifactId>janusgraph-core</artifactId>
+      <version>0.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.janusgraph</groupId>
+      <artifactId>janusgraph-inmemory</artifactId>
+      <version>0.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.karthicks</groupId>
+      <artifactId>gremlin-objects</artifactId>
+      <version>3.3.1-RC1</version>
+    </dependency>
+
+
 
     <dependency>
       <groupId>org.locationtech.spatial4j</groupId>

@@ -1,11 +1,11 @@
 package io.bugsbunny.datalake;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.TextP;
+//import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+//import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
+//import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import org.codehaus.plexus.util.dag.Vertex;
@@ -21,14 +21,15 @@ import java.util.function.Predicate;
 public class TinkerPopStartedTests {
     private static Logger logger = LoggerFactory.getLogger(TinkerPopStartedTests.class);
 
-    @Test
+    /*@Test
     public void testStart() throws Exception
     {
         TinkerGraph tg = TinkerGraph.open();
 
         //tinkerGraph.addVertex("0","1","3");
         // Create a Traversal source object
-        GraphTraversalSource g = tg.traversal();
+        SparqlTraversalSource g = (SparqlTraversalSource)
+                tg.traversal(SparqlTraversalSource.class);
 
         // Add some nodes and vertices - Note the use of "iterate".
         GraphTraversal traversal = g.addV("airport").property("code","AUS").as("aus").
@@ -51,16 +52,15 @@ public class TinkerPopStartedTests {
         logger.info(traversal.toString());
         logger.info("******************************");
 
-        TinkerGraph graph = TinkerFactory.createModern();
-        SparqlTraversalSource blah =
-                (SparqlTraversalSource)
-                        tg.traversal(SparqlTraversalSource.class);
-        //blah.sparql("""SELECT ?name ?age
+        //sparql("""SELECT ?name ?age
         //     WHERE { ?person v:name ?name . ?person v:age ?age }
         //    ORDER BY ASC(?age)""");
-        GraphTraversal gt = blah.sparql("SELECT ?airport WHERE { ?airportValue v:aus }");
+        GraphTraversal gt = g.sparql("SELECT ?airport WHERE { ?airportValue v:aus }");
         GraphTraversal map = gt.group();
         logger.info(map.toString());
+
+        //Map<String, Long> result = (Map<String, Long>) gt.outE().groupCount().by("routeKey").next();
+        //System.out.println(result);
         //logger.info(blah.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age } ORDER BY ASC(?age)").getClass().getName());
         //logger.info(blah.sparql("SELECT ?name ?age WHERE { ?person v:name ?name . ?person v:age ?age } ORDER BY ASC(?age)").toString());
     }
@@ -230,5 +230,5 @@ public class TinkerPopStartedTests {
         //Object result = has.outE().groupCount().by("code").next();
         Object result = has.outE().groupCount().next();
         System.out.println(result);
-    }
+    }*/
 }

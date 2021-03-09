@@ -237,4 +237,32 @@ public class DataMapperTests extends BaseTest
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
         assertNotNull(ingestedData.get("dataLakeId"));
     }
+
+    @Test
+    public void testEndToEndQueryByTraversal() throws Exception {
+        String json = IOUtils.toString(Thread.currentThread().getContextClassLoader()
+                        .getResourceAsStream("query/person.json"),
+                StandardCharsets.UTF_8);
+
+        JsonObject input = new JsonObject();
+        input.addProperty("sourceData", json);
+
+        logger.info(input.toString());
+
+
+        Response response = given().body(input.toString()).when().post("/dataMapper/map/")
+                .andReturn();
+
+        String jsonResponse = response.getBody().prettyPrint();
+        logger.info("****");
+        logger.info(response.getStatusLine());
+        logger.info(jsonResponse);
+        logger.info("****");
+        assertEquals(200, response.getStatusCode());
+
+        //assert the body
+        JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+        assertNotNull(ingestedData.get("dataLakeId"));
+        logger.info("DataLakeId: "+ingestedData.get("dataLakeId"));
+    }
 }

@@ -8,6 +8,10 @@ import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.util.JsonUtil;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.object.traversal.ObjectQuery;
 import org.mitre.harmony.matchers.ElementPair;
 import org.mitre.harmony.matchers.MatcherManager;
 import org.mitre.harmony.matchers.MatcherScore;
@@ -33,6 +37,11 @@ import java.util.*;
 public class MapperService {
     private static Logger logger = LoggerFactory.getLogger(MapperService.class);
 
+    private ObjectQuery query;
+    private TinkerGraph tg;
+    private GraphTraversalSource g;
+    private Vertex vertex;
+
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
@@ -43,8 +52,8 @@ public class MapperService {
 
     public JsonArray map(JsonArray sourceData)
     {
-        //logger.info("********SOURCE_DATA************");
-        //JsonUtil.print(sourceData);
+        logger.info("********SOURCE_DATA************");
+        JsonUtil.print(sourceData);
         JsonArray result = new JsonArray();
         try
         {
@@ -70,9 +79,9 @@ public class MapperService {
 
                 //Map<SchemaElement, Double> scores = new HashMap<>();
                 Map<SchemaElement, Double> scores = this.findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
-                //logger.info("*************************************");
-                //logger.info(scores.toString());
-                //logger.info("*************************************");
+                logger.info("*************SCORES************************");
+                logger.info(scores.toString());
+                logger.info("*************************************");
 
                 JsonObject local = this.performMapping(scores, root.toString());
                 //JsonObject local = root.getAsJsonObject();
@@ -213,7 +222,7 @@ public class MapperService {
     {
         Map<SchemaElement, Double> result = new HashMap<>();
         Matcher matcher = MatcherManager.getMatcher(
-                "org.mitre.harmony.matchers.matchers.EntityMatcher");
+                "org.mitre.harmony.matchers.matchers.EditDistanceMatcher");
         matcher.initialize(f1, f2);
 
         MatcherScores matcherScores = matcher.match();
