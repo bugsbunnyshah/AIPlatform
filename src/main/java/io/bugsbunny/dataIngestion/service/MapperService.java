@@ -1,17 +1,19 @@
 package io.bugsbunny.dataIngestion.service;
 
+import io.bugsbunny.dataIngestion.util.CSVDataUtil;
+import io.bugsbunny.util.JsonUtil;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.data.history.service.DataReplayService;
-import io.bugsbunny.dataIngestion.util.CSVDataUtil;
-import io.bugsbunny.infrastructure.MongoDBJsonStore;
-import io.bugsbunny.util.JsonUtil;
+
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.object.traversal.ObjectQuery;
+
 import org.mitre.harmony.matchers.ElementPair;
 import org.mitre.harmony.matchers.MatcherManager;
 import org.mitre.harmony.matchers.MatcherScore;
@@ -25,11 +27,13 @@ import org.mitre.schemastore.model.schemaInfo.HierarchicalSchemaInfo;
 import org.mitre.schemastore.model.schemaInfo.SchemaInfo;
 import org.mitre.schemastore.model.schemaInfo.model.RelationalSchemaModel;
 import org.mitre.schemastore.model.schemaInfo.model.SchemaModel;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -40,19 +44,32 @@ public class MapperService {
     private ObjectQuery query;
     private TinkerGraph tg;
     private GraphTraversalSource g;
-    private Vertex vertex;
-
-    @Inject
-    private MongoDBJsonStore mongoDBJsonStore;
-
-    //@Inject
-    //private DataReplayService dataReplayService;
-
     private CSVDataUtil csvDataUtil = new CSVDataUtil();
+
+    @PostConstruct
+    public void start()
+    {
+        //JanusGraphManager.getInstance(true);
+        //JanusGraphFactory.open("janus.properties");
+        try {
+            this.tg = TinkerGraph.open();
+            this.g = tg.traversal().withRemote("janus.properties");
+            query = new ObjectQuery(g);
+
+            logger.info("******************");
+            logger.info("OBJECT_GRAPH_QUERY_SERVICE: ACTIVE");
+            logger.info("******************");
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(),e);
+            throw new RuntimeException(e);
+        }
+    }
 
     public JsonArray map(JsonArray sourceData)
     {
-        logger.info("********SOURCE_DATA************");
+        //logger.info("********SOURCE_DATA************");
         JsonUtil.print(sourceData);
         JsonArray result = new JsonArray();
         try
@@ -77,18 +94,19 @@ public class MapperService {
                 FilteredSchemaInfo f2 = new FilteredSchemaInfo(destinationSchemaInfo);
                 f2.addElements(destinationSchemaInfo.getElements(Entity.class));
 
-                //Map<SchemaElement, Double> scores = new HashMap<>();
                 Map<SchemaElement, Double> scores = this.findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
-                logger.info("*************SCORES************************");
-                logger.info(scores.toString());
-                logger.info("*************************************");
+                //logger.info("*************SCORES************************");
+                //logger.info(scores.toString());
+                //logger.info("*************************************");
 
                 JsonObject local = this.performMapping(scores, root.toString());
-                //JsonObject local = root.getAsJsonObject();
+
+                //ObjectGraph/Gremlin integration
+                String vertexId = this.saveObjectGraph(local);
+                local.addProperty("vertexId", vertexId);
+
                 result.add(local);
             }
-
-            //this.dataReplayService.generateDiffChain(sourceData);
 
             return result;
         }
@@ -320,5 +338,16 @@ public class MapperService {
             jsonObject.add(parent,jsonArray);
             result.add(jsonObject);
         }
+    }
+
+    private String saveObjectGraph(JsonObject jsonObject)
+    {
+        String vertexId = UUID.randomUUID().toString();
+        final GraphTraversal<Vertex, Vertex> vertexGraphTraversal = this.
+                g.addV("person").
+                property("vertexId", vertexId).property("name", "name");
+        //logger.info(vertexGraphTraversal.V().V().toString());
+
+        return vertexId;
     }
 }
