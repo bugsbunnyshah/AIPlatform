@@ -272,6 +272,10 @@ public class MapperService {
 
     private void traverse(JsonObject currentObject, JsonArray result)
     {
+        String vertexId = UUID.randomUUID().toString();
+        final GraphTraversal<Vertex, Vertex> currentVertex = this.g.addV();
+        currentVertex.property("vertexId",vertexId);
+
         Iterator<String> allProps = currentObject.keySet().iterator();
         while(allProps.hasNext())
         {
@@ -293,6 +297,14 @@ public class MapperService {
                 {
                     //logger.info(nextObject+": TRAVERSING");
                     this.traverse(resolveJson, result);
+                }
+            }
+            else
+            {
+                if(resolve.isJsonPrimitive())
+                {
+                    //logger.info("PRIMITIVE_FOUND");
+                    currentVertex.property(nextObject, resolve.getAsString());
                 }
             }
         }

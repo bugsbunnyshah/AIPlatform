@@ -288,13 +288,15 @@ public class DataMapperTests extends BaseTest
 
     private void traverse(JsonObject currentObject, JsonArray result)
     {
+        String vertexId = UUID.randomUUID().toString();
+        final GraphTraversal<Vertex, Vertex> currentVertex = this.mapperService.getG().addV();
+        currentVertex.property("vertexId",vertexId);
+
         Iterator<String> allProps = currentObject.keySet().iterator();
-
-
         while(allProps.hasNext())
         {
             String nextObject = allProps.next();
-            logger.info("NEXT_OBJECT: "+nextObject);
+            //logger.info("NEXT_OBJECT: "+nextObject);
 
 
             JsonElement resolve = currentObject.get(nextObject);
@@ -320,47 +322,44 @@ public class DataMapperTests extends BaseTest
             {
                 if(resolve.isJsonPrimitive())
                 {
-                    logger.info("PRIMITIVE_FOUND");
-
-                    String vertexId = UUID.randomUUID().toString();
-                    final GraphTraversal<Vertex, Vertex> vertexGraphTraversal = this.mapperService.getG().addV("person").
-                            property("vertexId", vertexId).property(nextObject, resolve.getAsString());
-                    logger.info(vertexGraphTraversal.toList().toString());
+                    //logger.info("PRIMITIVE_FOUND");
+                    currentVertex.property(nextObject, resolve.getAsString());
                 }
             }
         }
 
-        JsonUtil.print(result);
+        logger.info(currentVertex.V().count().toList().toString());
+        //JsonUtil.print(result);
     }
 
     private void resolve(String parent, JsonObject leaf, JsonArray result)
     {
-        logger.info("*********************************");
-        logger.info("PARENT: "+parent);
-        logger.info("*********************************");
+        //logger.info("*********************************");
+        //logger.info("PARENT: "+parent);
+        //logger.info("*********************************");
         JsonArray finalResult=null;
         if (leaf.isJsonObject()) {
             String child = leaf.keySet().iterator().next();
             JsonElement childElement = leaf.get(child);
             if(childElement.isJsonArray()) {
-                logger.info(parent+": CHILD_ARRAY");
+                //logger.info(parent+": CHILD_ARRAY");
                 finalResult = childElement.getAsJsonArray();
             }
             else
             {
-                logger.info(parent+": CHILD_OBJECT");
+                //logger.info(parent+": CHILD_OBJECT");
                 finalResult = new JsonArray();
                 finalResult.add(childElement);
                 //this.traverse(childElement.getAsJsonObject(), result);
             }
         } else {
-            logger.info(parent+": LEAF_ARRAY");
+            //logger.info(parent+": LEAF_ARRAY");
             finalResult = leaf.getAsJsonArray();
         }
 
 
         if(finalResult != null) {
-            logger.info(parent+": CALCULATING");
+            //logger.info(parent+": CALCULATING");
             Iterator<JsonElement> itr = finalResult.iterator();
             JsonArray jsonArray = new JsonArray();
             while (itr.hasNext())
