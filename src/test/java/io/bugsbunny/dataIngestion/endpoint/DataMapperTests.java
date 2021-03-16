@@ -1,14 +1,19 @@
 package io.bugsbunny.dataIngestion.endpoint;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import io.bugsbunny.dataIngestion.service.MapperService;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.test.components.BaseTest;
 
+import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.jupiter.api.Test;
 import io.restassured.response.Response;
 
@@ -19,7 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,6 +38,9 @@ public class DataMapperTests extends BaseTest
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
+
+    @Inject
+    private MapperService mapperService;
 
     private CSVDataUtil csvDataUtil = new CSVDataUtil();
 
@@ -264,5 +274,111 @@ public class DataMapperTests extends BaseTest
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
         assertNotNull(ingestedData.get("dataLakeId"));
         logger.info("DataLakeId: "+ingestedData.get("dataLakeId"));
+    }
+
+    @Test
+    public void testObjectTraversal() throws Exception {
+        String json = IOUtils.toString(Thread.currentThread().getContextClassLoader()
+                        .getResourceAsStream("query/person.json"),
+                StandardCharsets.UTF_8);
+
+        JsonArray array = JsonParser.parseString(json).getAsJsonArray();
+        this.traverse(array.get(0).getAsJsonObject(), new JsonArray());
+    }
+
+    private void traverse(JsonObject currentObject, JsonArray result)
+    {
+        Iterator<String> allProps = currentObject.keySet().iterator();
+
+
+        while(allProps.hasNext())
+        {
+            String nextObject = allProps.next();
+            logger.info("NEXT_OBJECT: "+nextObject);
+
+
+            JsonElement resolve = currentObject.get(nextObject);
+            if(resolve.isJsonObject())
+            {
+                JsonObject resolveJson = resolve.getAsJsonObject();
+                if(resolveJson.keySet().size()==0)
+                {
+                    //EMPTY TAG...skip it
+                    continue;
+                }
+                if(resolveJson.keySet().size()==1) {
+                    //logger.info(nextObject+": RESOLVING");
+                    this.resolve(nextObject, resolveJson, result);
+                }
+                else
+                {
+                    //logger.info(nextObject+": TRAVERSING");
+                    this.traverse(resolveJson, result);
+                }
+            }
+            else
+            {
+                if(resolve.isJsonPrimitive())
+                {
+                    logger.info("PRIMITIVE_FOUND");
+
+                    String vertexId = UUID.randomUUID().toString();
+                    final GraphTraversal<Vertex, Vertex> vertexGraphTraversal = this.mapperService.getG().addV("person").
+                            property("vertexId", vertexId).property(nextObject, resolve.getAsString());
+                    logger.info(vertexGraphTraversal.toList().toString());
+                }
+            }
+        }
+
+        JsonUtil.print(result);
+    }
+
+    private void resolve(String parent, JsonObject leaf, JsonArray result)
+    {
+        logger.info("*********************************");
+        logger.info("PARENT: "+parent);
+        logger.info("*********************************");
+        JsonArray finalResult=null;
+        if (leaf.isJsonObject()) {
+            String child = leaf.keySet().iterator().next();
+            JsonElement childElement = leaf.get(child);
+            if(childElement.isJsonArray()) {
+                logger.info(parent+": CHILD_ARRAY");
+                finalResult = childElement.getAsJsonArray();
+            }
+            else
+            {
+                logger.info(parent+": CHILD_OBJECT");
+                finalResult = new JsonArray();
+                finalResult.add(childElement);
+                //this.traverse(childElement.getAsJsonObject(), result);
+            }
+        } else {
+            logger.info(parent+": LEAF_ARRAY");
+            finalResult = leaf.getAsJsonArray();
+        }
+
+
+        if(finalResult != null) {
+            logger.info(parent+": CALCULATING");
+            Iterator<JsonElement> itr = finalResult.iterator();
+            JsonArray jsonArray = new JsonArray();
+            while (itr.hasNext())
+            {
+                JsonElement jsonElement = itr.next();
+                if(jsonElement.isJsonPrimitive())
+                {
+                    JsonObject primitive = new JsonObject();
+                    primitive.addProperty(parent,jsonElement.toString());
+                    jsonArray.add(primitive);
+                }
+                else {
+                    jsonArray.add(jsonElement);
+                }
+            }
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.add(parent,jsonArray);
+            result.add(jsonObject);
+        }
     }
 }

@@ -67,6 +67,10 @@ public class MapperService {
         }
     }
 
+    public GraphTraversalSource getG() {
+        return g;
+    }
+
     public JsonArray map(JsonArray sourceData)
     {
         //logger.info("********SOURCE_DATA************");
@@ -106,6 +110,9 @@ public class MapperService {
                 local.addProperty("vertexId", vertexId);
 
                 result.add(local);
+
+                final GraphTraversal<Vertex, Vertex> vertexVertexGraphTraversal = this.g.V(vertexId);
+                logger.info(vertexVertexGraphTraversal.toString());
             }
 
             return result;
