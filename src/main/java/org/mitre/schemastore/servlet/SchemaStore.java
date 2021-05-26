@@ -410,7 +410,7 @@ public class SchemaStore
 		{ return getManager().getSchemaElementCache().getSchemaElementType(schemaElementID); }
 	
 	//--------------------------------
-	// Handles Data Source Operations
+	// Handles GraphData Source Operations
 	//--------------------------------
 	
 	/** Web service to get a list of all data sources */

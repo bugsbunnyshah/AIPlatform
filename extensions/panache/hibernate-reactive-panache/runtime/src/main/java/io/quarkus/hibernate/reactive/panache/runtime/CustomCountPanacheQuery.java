@@ -4,7 +4,7 @@ import org.hibernate.reactive.mutiny.Mutiny;
 
 import io.quarkus.hibernate.reactive.panache.common.runtime.CommonPanacheQueryImpl;
 
-//TODO this class is only needed by the Spring Data JPA module and would be placed there it it weren't for a dev-mode classloader issue
+//TODO this class is only needed by the Spring GraphData JPA module and would be placed there it it weren't for a dev-mode classloader issue
 // see https://github.com/quarkusio/quarkus/issues/6214
 public class CustomCountPanacheQuery<Entity> extends PanacheQueryImpl<Entity> {
 

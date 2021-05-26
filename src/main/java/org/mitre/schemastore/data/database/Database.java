@@ -40,7 +40,7 @@ public class Database
 		annotationDataCalls = new AnnotationDataCalls(connection);
 	}
 
-	// Data call getters
+	// GraphData call getters
 	public SchemaDataCalls getSchemaDataCalls() { return schemaDataCalls; }
 	public SchemaRelationshipsDataCalls getSchemaRelationshipsDataCalls() { return schemaRelationshipsDataCalls; }
 	public SchemaElementDataCalls getSchemaElementDataCalls() { return schemaElementDataCalls; }

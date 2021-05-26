@@ -75,7 +75,7 @@ public class PlotUtil {
         f.add(panel);
         f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         f.pack();
-        f.setTitle("Training Data");
+        f.setTitle("Training GraphData");
 
         f.setVisible(true);
         f.setLocation(0, 0);
@@ -104,7 +104,7 @@ public class PlotUtil {
         f.add(panel);
         f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         f.pack();
-        f.setTitle("Test Data");
+        f.setTitle("Test GraphData");
 
         f.setVisible(true);
         f.setLocationRelativeTo(null);

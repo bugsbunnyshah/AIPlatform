@@ -81,7 +81,7 @@ public class MongoDBJsonStore
         this.securityTokenContainer = securityTokenContainer;
     }
 
-    //Data Ingestion related operations-----------------------------------------------------
+    //GraphData Ingestion related operations-----------------------------------------------------
     public long storeIngestion(JsonObject jsonObject)
     {
         String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
@@ -145,7 +145,7 @@ public class MongoDBJsonStore
         }
         return ingestedDataSet;
     }
-    //Data History related operations-----------------------------------------------------
+    //GraphData History related operations-----------------------------------------------------
     public String startDiffChain(JsonObject payload)
     {
         String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();

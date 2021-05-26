@@ -9,6 +9,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,44 @@ public class GraphQueryGeneratorTests {
 
     @Inject
     private GraphQueryProcessor graphQueryProcessor;
+
+    private Graph graph;
+
+    @BeforeEach
+    public void setUp()
+    {
+        this.graph = TinkerGraph.open();
+
+        JsonObject ausJson = new JsonObject();
+        ausJson.addProperty("code","aus");
+        ausJson.addProperty("description", "AUS");
+        ausJson.addProperty("size", 100);
+
+        JsonObject laxJson = new JsonObject();
+        laxJson.addProperty("code","lax");
+        laxJson.addProperty("description", "LAX");
+        laxJson.addProperty("size", 1000);
+
+        JsonObject flight = new JsonObject();
+        flight.addProperty("flightId","123");
+        flight.addProperty("description", "SouthWest");
+
+
+
+        final Vertex aus = this.graph.addVertex(T.id, 1, T.label, "airport", "code", "aus",
+                "description", "AUS", "size", 100 ,
+                "source", ausJson.toString());
+        final Vertex lax = this.graph.addVertex(T.id, 2, T.label, "airport", "code", "lax",
+                "description", "LAX", "size", 1000,
+                "source", laxJson.toString());
+        final Vertex ausToLax = this.graph.addVertex(T.id, 3, T.label, "flight", "flightId", "123", "description", "SouthWest",
+                "source",flight.toString());
+        aus.addEdge("departure", ausToLax, T.id, 4, "weight", 0.5d);
+        lax.addEdge("arrival",ausToLax,T.id, 5, "weight", 0.5d);
+
+        SparqlTraversalSource server = new SparqlTraversalSource(this.graph);
+        GraphData graphData = new LocalGraphData(server);
+    }
 
     @Test
     public void generateQueryByCriteria() throws Exception
@@ -56,7 +95,9 @@ public class GraphQueryGeneratorTests {
                 "departure",departureCriteria);
         logger.info(navQuery);
 
-        GraphTraversal result = this.graphQueryProcessor.navigate(tinkerGraph,navQuery);
+        SparqlTraversalSource server = new SparqlTraversalSource(this.graph);
+        GraphData graphData = new LocalGraphData(server);
+        GraphTraversal result = this.graphQueryProcessor.navigate(graphData,navQuery);
         Iterator<Map> itr = result.toSet().iterator();
         while(itr.hasNext())
         {
@@ -80,7 +121,9 @@ public class GraphQueryGeneratorTests {
         criteria.addProperty("size", 100);
         String query = this.graphQueryGenerator.generateQueryByCriteria("airport",criteria);
         logger.info(query);
-        GraphTraversal result = this.graphQueryProcessor.query(graph,query);
+        SparqlTraversalSource server = new SparqlTraversalSource(this.graph);
+        GraphData graphData = new LocalGraphData(server);
+        GraphTraversal result = this.graphQueryProcessor.query(graphData,query);
         Iterator<Vertex> itr = result.toSet().iterator();
         while(itr.hasNext())
         {
@@ -99,7 +142,9 @@ public class GraphQueryGeneratorTests {
         GraphQueryGenerator queryGenerator = new GraphQueryGenerator();
         String query = this.graphQueryGenerator.generateQueryByCriteria("airport",criteria);
         logger.info(query);
-        GraphTraversal result = this.graphQueryProcessor.query(graph,query);
+        SparqlTraversalSource server = new SparqlTraversalSource(this.graph);
+        GraphData graphData = new LocalGraphData(server);
+        GraphTraversal result = this.graphQueryProcessor.query(graphData,query);
         Iterator<Vertex> itr = result.toSet().iterator();
         int counter = 0;
         while(itr.hasNext())

@@ -77,7 +77,7 @@ public class AboutDialog extends JInternalFrame implements MouseListener, MouseM
 						 "engineer to view a set of correspondences and manually edit the correspondences.  " +
 						 "Harmony manages user schemata and mappings in a bundled repository.\n\n" +
 						 "An overview of Harmony appears in: Peter Mork, Len Seligman, Arnon Rosenthal, " +
-						 "Joel Korb, and Chris Wolf, (c)The Harmony Integration Workbench,(c) Journal on Data " +
+						 "Joel Korb, and Chris Wolf, (c)The Harmony Integration Workbench,(c) Journal on GraphData " +
 						 "Semantics, vol. 11, pp. 65(c)93, Dec 2008.  Harmony(c)s use in large scale schema " +
 						 "matching problems is described in:  Ken Smith, Peter Mork, Len Seligman, Arnon " +
 						 "Rosenthal, Michael Morse, David M. Allen, and Maya Li, (c)The Role of Schema Matching " +

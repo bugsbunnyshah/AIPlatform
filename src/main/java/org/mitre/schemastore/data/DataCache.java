@@ -12,7 +12,7 @@ public abstract class DataCache
 	/** Stores the data manager */
 	private DataManager dataManager;
 
-	/** Data Cache Constructor */
+	/** GraphData Cache Constructor */
 	public DataCache(DataManager dataManager)
 		{ this.dataManager = dataManager; }
 

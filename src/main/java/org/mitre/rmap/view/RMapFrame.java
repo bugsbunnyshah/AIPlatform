@@ -48,7 +48,7 @@ public class RMapFrame extends JInternalFrame {
 	/** Dependencies to be stored */
 	private ArrayList<Dependency> dependenciesOrdered;
 
-	/** Dependency Table Data */
+	/** Dependency Table GraphData */
 	private Object[][] dependencyTableData;
 	private Integer dependencyDisplayedIndex = null;
 

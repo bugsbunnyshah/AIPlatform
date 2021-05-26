@@ -1,14 +1,12 @@
-package io.bugsbunny.query.endpoint;
+package io.bugsbunny.integration;
 
-import com.google.gson.JsonElement;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import io.bugsbunny.query.GraphData;
 import io.bugsbunny.query.LocalGraphData;
 import io.bugsbunny.query.ObjectGraphQueryService;
 import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.response.Response;
 import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -21,12 +19,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
-import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @QuarkusTest
-public class ObjectGraphQueryEndpointTests {
-    private static Logger logger = LoggerFactory.getLogger(ObjectGraphQueryEndpointTests.class);
+public class GraphQueryTests {
+    private static Logger logger = LoggerFactory.getLogger(GraphQueryTests.class);
 
     @Inject
     private ObjectGraphQueryService service;
@@ -70,7 +65,6 @@ public class ObjectGraphQueryEndpointTests {
         this.service.setGraphData(graphData);
     }
 
-
     @Test
     public void queryByCriteria() throws Exception
     {
@@ -78,33 +72,24 @@ public class ObjectGraphQueryEndpointTests {
         criteria.addProperty("size", 100);
         //criteria.addProperty("code", "aus");
 
-        JsonObject json = new JsonObject();
-        json.addProperty("entity","airport");
-        json.add("criteria",criteria);
-
-        Response response = given().body(json.toString()).when().post("/graph/query/criteria").andReturn();
-        String jsonString = response.getBody().print();
-        JsonElement responseJson = JsonParser.parseString(jsonString);
-        assertEquals(200, response.getStatusCode());
-        JsonUtil.print(responseJson);
+        JsonArray array = service.queryByCriteria("airport", criteria);
+        JsonUtil.print(array);
     }
 
     @Test
     public void navigateByCriteria() throws Exception
     {
-        JsonObject criteria = new JsonObject();
-        criteria.addProperty("code","lax");
+        JsonObject departureCriteria = new JsonObject();
+        departureCriteria.addProperty("code","aus");
+        JsonArray array = this.service.navigateByCriteria("airport","flight",
+                "departure",departureCriteria);
 
-        JsonObject json = new JsonObject();
-        json.addProperty("startEntity","airport");
-        json.addProperty("destinationEntity","flight");
-        json.addProperty("relationship","arrival");
-        json.add("criteria",criteria);
+        JsonUtil.print(array);
 
-        Response response = given().body(json.toString()).when().post("/graph/query/navigate").andReturn();
-        String jsonString = response.getBody().print();
-        JsonElement responseJson = JsonParser.parseString(jsonString);
-        assertEquals(200, response.getStatusCode());
-        JsonUtil.print(responseJson);
+        JsonObject arrivalCriteria = new JsonObject();
+        arrivalCriteria.addProperty("code","lax");
+        array = this.service.navigateByCriteria("airport","flight",
+                "arrival",arrivalCriteria);
+        JsonUtil.print(array);
     }
 }

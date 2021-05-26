@@ -21,7 +21,7 @@ final class FragmentMethodsUtil {
         if (knownImplementors.size() > 1) {
             DotName previouslyFound = null;
             for (ClassInfo knownImplementor : knownImplementors) {
-                if (knownImplementor.name().toString().endsWith("Impl")) { // the default suffix that Spring Data JPA looks for is 'Impl'
+                if (knownImplementor.name().toString().endsWith("Impl")) { // the default suffix that Spring GraphData JPA looks for is 'Impl'
                     if (previouslyFound != null) { // make sure we don't have multiple implementations suffixed with 'Impl'
                         throw new IllegalArgumentException(
                                 "Interface " + customInterfaceToImplement

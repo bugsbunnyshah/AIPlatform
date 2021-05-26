@@ -22,7 +22,7 @@ public class DataDictionaryExporter extends MappingExporter
 {
 	/** Returns the exporter name */
 	public String getName()
-		{ return "Data Dictionary Exporter"; }
+		{ return "GraphData Dictionary Exporter"; }
 	
 	/** Returns the exporter description */
 	public String getDescription()

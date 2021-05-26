@@ -83,7 +83,7 @@
         <module>grpc</module>
         <module>redis-client</module>
 
-        <!-- Data access and validation -->
+        <!-- GraphData access and validation -->
         <module>narayana-jta</module>
         <module>narayana-stm</module>
         <module>datasource</module>

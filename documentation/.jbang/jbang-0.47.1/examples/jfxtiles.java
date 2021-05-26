@@ -169,7 +169,7 @@ public class jfxtiles extends Application {
 
         value = new SimpleDoubleProperty(0);
 
-        // AreaChart Data
+        // AreaChart GraphData
         XYChart.Series<String, Number> series1 = new XYChart.Series();
         series1.setName("Whatever");
         series1.getData().add(new XYChart.Data("MO", 23));
@@ -180,7 +180,7 @@ public class jfxtiles extends Application {
         series1.getData().add(new XYChart.Data("SA", 22));
         series1.getData().add(new XYChart.Data("SU", 20));
 
-        // LineChart Data
+        // LineChart GraphData
         XYChart.Series<String, Number> series2 = new XYChart.Series();
         series2.setName("Inside");
         series2.getData().add(new XYChart.Data("MO", 8));
@@ -201,7 +201,7 @@ public class jfxtiles extends Application {
         series3.getData().add(new XYChart.Data("SA", 3));
         series3.getData().add(new XYChart.Data("SU", 5));
 
-        // WorldMap Data
+        // WorldMap GraphData
         for (int i = 0; i < Country.values().length ; i++) {
             double value = RND.nextInt(10);
             Color  color;
@@ -219,7 +219,7 @@ public class jfxtiles extends Application {
             Country.values()[i].setColor(color);
         }
 
-        // TimeControl Data
+        // TimeControl GraphData
         TimeSection timeSection = TimeSectionBuilder.create()
                 .start(LocalTime.now().plusSeconds(20))
                 .stop(LocalTime.now().plusHours(1))
@@ -249,7 +249,7 @@ public class jfxtiles extends Application {
         leaderBoardItem3 = new LeaderBoardItem("Lilli", 12);
         leaderBoardItem4 = new LeaderBoardItem("Anton", 8);
 
-        // Chart Data
+        // Chart GraphData
         chartData1 = new ChartData("Item 1", 24.0, Tile.GREEN);
         chartData2 = new ChartData("Item 2", 10.0, Tile.BLUE);
         chartData3 = new ChartData("Item 3", 12.0, Tile.RED);

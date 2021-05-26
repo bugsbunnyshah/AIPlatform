@@ -1,5 +1,5 @@
 ---
-name: "Quarkus Extension for Spring Data JPA API"
+name: "Quarkus Extension for Spring GraphData JPA API"
 metadata:
   keywords:
   - "spring-data"

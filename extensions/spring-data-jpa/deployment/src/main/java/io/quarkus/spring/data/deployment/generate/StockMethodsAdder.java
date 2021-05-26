@@ -75,7 +75,7 @@ public class StockMethodsAdder {
 
         String entityTypeStr = entityDotName.toString();
 
-        // for all Spring Data repository methods we know how to implement, check if the generated class actually needs the method
+        // for all Spring GraphData repository methods we know how to implement, check if the generated class actually needs the method
         // and if so generate the implementation while also keeping the proper records
 
         generateSave(classCreator, generatedClassName, entityDotName, entityTypeStr,
@@ -919,7 +919,7 @@ public class StockMethodsAdder {
         return GenerationUtil.interfaceMethods(GenerationUtil.extendedSpringDataRepos(repositoryToImplement), index);
     }
 
-    // Spring Data allows users to add any of the methods of CrudRepository, PagingAndSortingRepository, JpaRepository
+    // Spring GraphData allows users to add any of the methods of CrudRepository, PagingAndSortingRepository, JpaRepository
     // to the their interface declaration without having to make their repository extend any of those
     // this is done so users have the ability to add only what they need
     private Set<MethodInfo> stockMethodsAddedToInterface(ClassInfo repositoryToImplement) {
@@ -949,7 +949,7 @@ public class StockMethodsAdder {
     }
 
     // Used to determine if a method with captured generic types can be considered the same as a target method
-    // This is rather naive but works in the constraints of Spring Data
+    // This is rather naive but works in the constraints of Spring GraphData
     private boolean canMethodsBeConsideredSame(MethodInfo candidate, MethodInfo target) {
         if (!candidate.name().equals(target.name())) {
             return false;

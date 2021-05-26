@@ -8,7 +8,7 @@ import java.util.Arrays;
 import io.quarkus.vault.VaultTransitSecretEngine;
 
 /**
- * Data wrapper used in the sign methods of the {@link VaultTransitSecretEngine}
+ * GraphData wrapper used in the sign methods of the {@link VaultTransitSecretEngine}
  */
 public class SigningInput {
 

@@ -424,7 +424,7 @@ public class SchemaStoreClient
 	}
 
 	//-----------------------
-	// Data Source Functions
+	// GraphData Source Functions
 	//-----------------------
 
 	/** Gets the list of data sources from the web service */

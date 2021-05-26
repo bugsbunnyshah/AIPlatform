@@ -12,16 +12,16 @@ import javax.inject.Singleton;
 public class GraphQueryProcessor {
     private static Logger logger = LoggerFactory.getLogger(GraphQueryProcessor.class);
 
-    public GraphTraversal query(Graph graph, String sparqlQuery)
+    public GraphTraversal query(GraphData graphData, String sparqlQuery)
     {
-        SparqlTraversalSource server = new SparqlTraversalSource(graph);
+        SparqlTraversalSource server = graphData.getTraversalSource();
         GraphTraversal result = server.sparql(sparqlQuery);
         return result;
     }
 
-    public GraphTraversal navigate(Graph graph, String sparqlQuery)
+    public GraphTraversal navigate(GraphData graphData, String sparqlQuery)
     {
-        SparqlTraversalSource server = new SparqlTraversalSource(graph);
+        SparqlTraversalSource server = graphData.getTraversalSource();
         GraphTraversal result = server.sparql(sparqlQuery);
         return result;
     }

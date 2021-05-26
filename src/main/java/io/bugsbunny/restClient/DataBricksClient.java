@@ -52,7 +52,7 @@ public class DataBricksClient
                 throw new DataBricksProcessException("CREATE_EXPERIMENT_FAIL: "+httpResponse.toString());
             }
 
-            //Create Experiment Meta Data
+            //Create Experiment Meta GraphData
             JsonObject responseJsonObject = JsonParser.parseString(responseJson).getAsJsonObject();
             experimentId = responseJsonObject.get("experiment_id").getAsString();
             json = new JsonObject();

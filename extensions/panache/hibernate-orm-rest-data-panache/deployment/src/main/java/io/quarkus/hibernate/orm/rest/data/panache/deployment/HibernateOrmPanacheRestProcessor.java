@@ -76,7 +76,7 @@ class HibernateOrmPanacheRestProcessor {
         }
 
         if (classInfo.interfaceNames().size() > 1) {
-            throw new RuntimeException(classInfo.name() + " should only extend REST Data Panache interface");
+            throw new RuntimeException(classInfo.name() + " should only extend REST GraphData Panache interface");
         }
 
         if (!index.getKnownDirectImplementors(classInfo.name()).isEmpty()) {

@@ -64,8 +64,8 @@ public class SpringDataRepositoryCreator {
         }
 
         // handle the fragment repositories
-        // Spring Data allows users to define (and implement their own interfaces containing data access related methods)
-        // that can then be used along with any of the typical Spring Data repository interfaces in the final
+        // Spring GraphData allows users to define (and implement their own interfaces containing data access related methods)
+        // that can then be used along with any of the typical Spring GraphData repository interfaces in the final
         // repository in order to compose functionality
 
         List<DotName> interfaceNames = repositoryToImplement.interfaceNames();
@@ -101,8 +101,8 @@ public class SpringDataRepositoryCreator {
             }
 
             // for every method we add we need to make sure that we only haven't added it before
-            // we first add custom methods (as per Spring Data implementation) thus ensuring that user provided methods
-            // always override stock methods from the Spring Data repository interfaces
+            // we first add custom methods (as per Spring GraphData implementation) thus ensuring that user provided methods
+            // always override stock methods from the Spring GraphData repository interfaces
 
             fragmentMethodsAdder.add(classCreator, generatedClassName, fragmentNamesToImplement,
                     fragmentImplNameToFieldDescriptor);
@@ -127,7 +127,7 @@ public class SpringDataRepositoryCreator {
         DotName entityDotName = null;
         DotName idDotName = null;
 
-        // we need to pull the entity and ID types for the Spring Data generic types
+        // we need to pull the entity and ID types for the Spring GraphData generic types
         // we also need to make sure that the user didn't try to specify multiple different types
         // in the same interface (which is possible if only Repository is used)
         for (DotName extendedSpringDataRepo : GenerationUtil.extendedSpringDataRepos(repositoryToImplement)) {

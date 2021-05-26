@@ -69,7 +69,7 @@ public class SpringDataJPAProcessor {
 
     @BuildStep
     void contributeClassesToIndex(BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClasses) {
-        // index the Spring Data repository interfaces that extend Repository because we need to pull the generic types from it
+        // index the Spring GraphData repository interfaces that extend Repository because we need to pull the generic types from it
         additionalIndexedClasses.produce(new AdditionalIndexedClassesBuildItem(
                 Repository.class.getName(),
                 CrudRepository.class.getName(),
