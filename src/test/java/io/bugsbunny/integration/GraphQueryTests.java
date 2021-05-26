@@ -2,94 +2,129 @@ package io.bugsbunny.integration;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.bugsbunny.query.GraphData;
+import com.google.gson.JsonParser;
+import io.bugsbunny.dataIngestion.service.MapperService;
 import io.bugsbunny.query.LocalGraphData;
 import io.bugsbunny.query.ObjectGraphQueryService;
+import io.bugsbunny.test.components.BaseTest;
 import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
+import org.apache.commons.io.IOUtils;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @QuarkusTest
-public class GraphQueryTests {
+public class GraphQueryTests extends BaseTest {
     private static Logger logger = LoggerFactory.getLogger(GraphQueryTests.class);
 
     @Inject
-    private ObjectGraphQueryService service;
+    private MapperService mapperService;
 
-    private Graph graph;
-
-    @BeforeEach
-    public void setUp()
-    {
-        this.graph = TinkerGraph.open();
-
-        JsonObject ausJson = new JsonObject();
-        ausJson.addProperty("code","aus");
-        ausJson.addProperty("description", "AUS");
-        ausJson.addProperty("size", 100);
-
-        JsonObject laxJson = new JsonObject();
-        laxJson.addProperty("code","lax");
-        laxJson.addProperty("description", "LAX");
-        laxJson.addProperty("size", 1000);
-
-        JsonObject flight = new JsonObject();
-        flight.addProperty("flightId","123");
-        flight.addProperty("description", "SouthWest");
-
-
-
-        final Vertex aus = this.graph.addVertex(T.id, 1, T.label, "airport", "code", "aus",
-                "description", "AUS", "size", 100 ,
-                "source", ausJson.toString());
-        final Vertex lax = this.graph.addVertex(T.id, 2, T.label, "airport", "code", "lax",
-                "description", "LAX", "size", 1000,
-                "source", laxJson.toString());
-        final Vertex ausToLax = this.graph.addVertex(T.id, 3, T.label, "flight", "flightId", "123", "description", "SouthWest",
-                "source",flight.toString());
-        aus.addEdge("departure", ausToLax, T.id, 4, "weight", 0.5d);
-        lax.addEdge("arrival",ausToLax,T.id, 5, "weight", 0.5d);
-
-        SparqlTraversalSource server = new SparqlTraversalSource(this.graph);
-        GraphData graphData = new LocalGraphData(server);
-        this.service.setGraphData(graphData);
-    }
+    @Inject
+    private ObjectGraphQueryService queryService;
 
     @Test
-    public void queryByCriteria() throws Exception
+    public void testMapAirlineData() throws Exception
     {
-        JsonObject criteria = new JsonObject();
-        criteria.addProperty("size", 100);
-        //criteria.addProperty("code", "aus");
+        String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "aviation/flights.json"),
+                StandardCharsets.UTF_8);
+        JsonArray jsonArray = JsonParser.parseString(sourceData).getAsJsonObject().getAsJsonArray("data");
 
-        JsonArray array = service.queryByCriteria("airport", criteria);
-        JsonUtil.print(array);
-    }
+        JsonArray input = new JsonArray();
+        for(int i=0; i<5; i++)
+        {
+            input.add(jsonArray.get(0));
+        }
 
-    @Test
-    public void navigateByCriteria() throws Exception
-    {
+        TinkerGraph graph = TinkerGraph.open();
+        SparqlTraversalSource server = new SparqlTraversalSource(graph);
+
+        for(int i=0;i<5; i++) {
+            JsonObject json = input.get(i).getAsJsonObject();
+            json.addProperty("id",UUID.randomUUID().toString());
+            //JsonUtil.print(json);
+            Vertex vertex = this.saveObjectGraph("flightEntity",json,null, server);
+            //logger.info(vertex.keys().toString());
+        }
+
+        this.queryService.setGraphData(new LocalGraphData(server));
+
+        JsonArray data = this.queryService.queryByCriteria("flightEntity", new JsonObject());
+        //JsonUtil.print(data);
+
+        data = this.queryService.queryByCriteria("departure", new JsonObject());
+        //JsonUtil.print(data);
+
+        data = this.queryService.queryByCriteria("flight", new JsonObject());
+        //JsonUtil.print(data);
+
+        data = this.queryService.queryByCriteria("arrival", new JsonObject());
+        //JsonUtil.print(data);
+
+        data = this.queryService.queryByCriteria("airline", new JsonObject());
+        //JsonUtil.print(data);
+
+        data = this.queryService.queryByCriteria("id", new JsonObject());
+        //JsonUtil.print(data);
+
         JsonObject departureCriteria = new JsonObject();
-        departureCriteria.addProperty("code","aus");
-        JsonArray array = this.service.navigateByCriteria("airport","flight",
-                "departure",departureCriteria);
+        departureCriteria.addProperty("flight_status","scheduled");
+        data = this.queryService.navigateByCriteria("flightEntity","departure","has"
+        ,departureCriteria);
+        JsonUtil.print(data);
+    }
 
-        JsonUtil.print(array);
+    private Vertex saveObjectGraph(String entity,JsonObject parent,JsonObject child,SparqlTraversalSource server)
+    {
+        Vertex vertex;
 
-        JsonObject arrivalCriteria = new JsonObject();
-        arrivalCriteria.addProperty("code","lax");
-        array = this.service.navigateByCriteria("airport","flight",
-                "arrival",arrivalCriteria);
-        JsonUtil.print(array);
+        String vertexId = UUID.randomUUID().toString();
+
+        GraphTraversal<Vertex,Vertex> traversal = server.addV(entity);
+
+        JsonObject json = parent;
+        if(child != null)
+        {
+            json = child;
+        }
+        Set<String> properties = json.keySet();
+        List<Vertex> children = new ArrayList<>();
+        for(String property:properties)
+        {
+            if(json.get(property).isJsonObject())
+            {
+                JsonObject propertyObject = json.getAsJsonObject(property);
+                Vertex propertyVertex = this.saveObjectGraph(property,parent,propertyObject,server);
+                children.add(propertyVertex);
+            }
+            else if(json.get(property).isJsonPrimitive())
+            {
+                String value = json.get(property).getAsString();
+                traversal = traversal.property(property,value+":"+vertexId);
+            }
+        }
+        traversal.property("source",json.toString());
+        vertex = traversal.next();
+
+        for(Vertex local:children)
+        {
+            vertex.addEdge("has", local, T.id, UUID.randomUUID().toString(), "weight", 0.5d);
+        }
+
+        return vertex;
     }
 }

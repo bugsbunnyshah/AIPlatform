@@ -73,18 +73,28 @@ public class ObjectGraphQueryService {
             Map map = itr.next();
             Vertex start = (Vertex) map.get(startEntity);
             Vertex end = (Vertex) map.get(destinationEntity);
+
             if(start == null || end == null)
             {
                 continue;
             }
+            if(!end.label().equals(destinationEntity))
+            {
+                continue;
+            }
+
+            //logger.info(end.label());
+
+            JsonObject row = new JsonObject();
 
             JsonObject startJson = JsonParser.parseString(start.property("source").value().toString()).getAsJsonObject();
-
-
             JsonObject endJson = JsonParser.parseString(end.property("source").value().toString()).getAsJsonObject();
-            startJson.add(destinationEntity,endJson);
 
-            response.add(startJson);
+            row.add(startEntity,startJson);
+            row.add(destinationEntity,endJson);
+            row.addProperty("relationship",relationship);
+
+            response.add(row);
         }
 
         return response;

@@ -95,7 +95,7 @@ public class SparqlTest {
         }
     }
 
-    @Test
+    //@Test
     public void testRemoteQuery() throws Exception
     {
         BaseConfiguration configuration = new BaseConfiguration();

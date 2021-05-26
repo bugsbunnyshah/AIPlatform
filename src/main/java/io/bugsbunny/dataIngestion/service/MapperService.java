@@ -71,7 +71,7 @@ public class MapperService {
     public JsonArray map(JsonArray sourceData)
     {
         //logger.info("********SOURCE_DATA************");
-        JsonUtil.print(sourceData);
+        //JsonUtil.print(sourceData);
         JsonArray result = new JsonArray();
         try
         {
@@ -105,11 +105,10 @@ public class MapperService {
                 //ObjectGraph/Gremlin integration
                 String vertexId = this.saveObjectGraph(local);
                 local.addProperty("vertexId", vertexId);
-
                 result.add(local);
 
                 final GraphTraversal<Vertex, Vertex> vertexVertexGraphTraversal = this.g.V(vertexId);
-                logger.info(vertexVertexGraphTraversal.toString());
+                //logger.info(vertexVertexGraphTraversal.toString());
             }
 
             return result;
@@ -358,6 +357,8 @@ public class MapperService {
 
     private String saveObjectGraph(JsonObject jsonObject)
     {
+        JsonUtil.print(jsonObject);
+
         String vertexId = UUID.randomUUID().toString();
         final GraphTraversal<Vertex, Vertex> vertexGraphTraversal = this.
                 g.addV("person").
