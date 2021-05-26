@@ -4,8 +4,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 //import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-//import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
-//import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import org.codehaus.plexus.util.dag.Vertex;
@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 public class TinkerPopStartedTests {
     private static Logger logger = LoggerFactory.getLogger(TinkerPopStartedTests.class);
 
-    /*@Test
+    @Test
     public void testStart() throws Exception
     {
         TinkerGraph tg = TinkerGraph.open();
@@ -83,7 +83,7 @@ public class TinkerPopStartedTests {
         logger.info(vertices.toString());
 
         //has
-        Predicate<String> left = new TextP(new BiPredicate<String, String>() {
+        /*Predicate<String> left = new TextP(new BiPredicate<String, String>() {
             @Override
             public boolean test(String s, String s2) {
                 return s.equals(s2);
@@ -94,9 +94,9 @@ public class TinkerPopStartedTests {
             public boolean test(String s, String s2) {
                 return s.equals(s2);
             }
-        },"josh");
-        Predicate<String> where = left.or(right);
-        GraphTraversal has = traversal.has("person", "name", where);
+        },"josh");*/
+        //Predicate<String> where = left.or(right);
+        GraphTraversal has = traversal.has("person", "name");
         logger.info(has.toString());
 
         //g.V().
@@ -141,7 +141,7 @@ public class TinkerPopStartedTests {
         logger.info(vertices.toString());
 
         //has (or)
-        Predicate<String> left = new TextP(new BiPredicate<String, String>() {
+        /*Predicate<String> left = new TextP(new BiPredicate<String, String>() {
             @Override
             public boolean test(String s, String s2) {
                 return s.equals(s2);
@@ -153,8 +153,8 @@ public class TinkerPopStartedTests {
                 return s.equals(s2);
             }
         },"DFW");
-        Predicate<String> where = left.or(right);
-        GraphTraversal has = traversal.has("airport", "code", where);
+        Predicate<String> where = left.or(right);*/
+        GraphTraversal has = traversal.has("airport", "code");
         logger.info(has.toString());
 
         //g.V().
@@ -204,7 +204,7 @@ public class TinkerPopStartedTests {
         logger.info(vertices.toString());
 
         //has (or)
-        Predicate<String> left = new TextP(new BiPredicate<String, String>() {
+        /*Predicate<String> left = new TextP(new BiPredicate<String, String>() {
             @Override
             public boolean test(String s, String s2) {
                 return s.equals(s2);
@@ -216,8 +216,8 @@ public class TinkerPopStartedTests {
                 return s.equals(s2);
             }
         },"DFW");
-        Predicate<String> where = left.and(right);
-        GraphTraversal has = traversal.has("airport", "code", where);
+        Predicate<String> where = left.and(right);*/
+        GraphTraversal has = traversal.has("airport", "code");
         logger.info(has.toString());
 
         //g.V().
@@ -230,5 +230,5 @@ public class TinkerPopStartedTests {
         //Object result = has.outE().groupCount().by("code").next();
         Object result = has.outE().groupCount().next();
         System.out.println(result);
-    }*/
+    }
 }

@@ -12,7 +12,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.object.traversal.ObjectQuery;
 
 import org.mitre.harmony.matchers.ElementPair;
 import org.mitre.harmony.matchers.MatcherManager;
@@ -41,7 +40,6 @@ import java.util.*;
 public class MapperService {
     private static Logger logger = LoggerFactory.getLogger(MapperService.class);
 
-    private ObjectQuery query;
     private TinkerGraph tg;
     private GraphTraversalSource g;
     private CSVDataUtil csvDataUtil = new CSVDataUtil();
@@ -53,11 +51,10 @@ public class MapperService {
         //JanusGraphFactory.open("janus.properties");
         try {
             this.tg = TinkerGraph.open();
-            this.g = tg.traversal().withRemote("janus.properties");
-            query = new ObjectQuery(g);
+            this.g = tg.traversal(); //TODO add remoteconnection
 
             logger.info("******************");
-            logger.info("OBJECT_GRAPH_QUERY_SERVICE: ACTIVE");
+            logger.info("OBJECT_GRAPH_QUERY_SERVICE_WITH_OBJECT_GRAPH_SUPPORT: ACTIVE");
             logger.info("******************");
         }
         catch(Exception e)
@@ -303,7 +300,7 @@ public class MapperService {
             {
                 if(resolve.isJsonPrimitive())
                 {
-                    //logger.info("PRIMITIVE_FOUND");
+                    logger.info("PRIMITIVE_FOUND");
                     currentVertex.property(nextObject, resolve.getAsString());
                 }
             }

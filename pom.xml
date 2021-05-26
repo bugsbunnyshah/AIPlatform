@@ -247,19 +247,31 @@
     <dependency>
       <groupId>org.apache.tinkerpop</groupId>
       <artifactId>tinkergraph-gremlin</artifactId>
-      <version>3.3.1</version>
+      <version>3.4.6</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tinkerpop</groupId>
       <artifactId>gremlin-server</artifactId>
-      <version>3.3.1</version>
+      <version>3.4.6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.tinkerpop</groupId>
       <artifactId>gremlin-driver</artifactId>
-      <version>3.3.1</version>
+      <version>3.4.6</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.tinkerpop</groupId>
+      <artifactId>sparql-gremlin</artifactId>
+      <version>3.4.6</version>
+    </dependency>
+    <!--
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-configuration2</artifactId>
+      <version>2.7</version>
+    </dependency>
+    -->
     <dependency>
       <groupId>org.janusgraph</groupId>
       <artifactId>janusgraph-core</artifactId>
@@ -269,11 +281,6 @@
       <groupId>org.janusgraph</groupId>
       <artifactId>janusgraph-inmemory</artifactId>
       <version>0.5.3</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.karthicks</groupId>
-      <artifactId>gremlin-objects</artifactId>
-      <version>3.3.1-RC1</version>
     </dependency>
 
 
