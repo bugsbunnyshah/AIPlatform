@@ -9,10 +9,16 @@ import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.preprocess.AITrafficAgent;
 
+import io.bugsbunny.query.GraphData;
+import io.bugsbunny.query.LocalGraphData;
+import io.bugsbunny.query.ObjectGraphQueryService;
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
+import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +44,18 @@ public class TrainModelTests extends BaseTest
 
     @Inject
     private PackagingService packagingService;
+
+    @Inject
+    private ObjectGraphQueryService objectGraphQueryService;
+
+    /*@BeforeEach
+    public void setUp()
+    {
+        TinkerGraph graph = TinkerGraph.open();
+        SparqlTraversalSource server = new SparqlTraversalSource(graph);
+        GraphData graphData = new LocalGraphData(server);
+        this.objectGraphQueryService.setGraphData(graphData);
+    }*/
 
     @Test
     public void testTrainJava() throws Exception
@@ -82,6 +100,10 @@ public class TrainModelTests extends BaseTest
     @Test
     public void testTrainJavaFromDataLake() throws Exception
     {
+        TinkerGraph graph = TinkerGraph.open();
+        SparqlTraversalSource server = new SparqlTraversalSource(graph);
+        GraphData graphData = new LocalGraphData(server);
+        this.objectGraphQueryService.setGraphData(graphData);
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
@@ -95,7 +117,7 @@ public class TrainModelTests extends BaseTest
 
         input = new JsonObject();
         input.addProperty("sourceData", xml);
-
+        input.addProperty("entity","saturn");
 
         Response ingestionResponse = given().body(input.toString()).when().post("/dataMapper/mapXml/")
                 .andReturn();
@@ -168,6 +190,11 @@ public class TrainModelTests extends BaseTest
     @Test
     public void testDataHistoryFromDataLake() throws Exception
     {
+        TinkerGraph graph = TinkerGraph.open();
+        SparqlTraversalSource server = new SparqlTraversalSource(graph);
+        GraphData graphData = new LocalGraphData(server);
+        this.objectGraphQueryService.setGraphData(graphData);
+
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
@@ -179,6 +206,7 @@ public class TrainModelTests extends BaseTest
         JsonObject ingestion = new JsonObject();
         ingestion.addProperty("sourceData", data);
         ingestion.addProperty("hasHeader", false);
+        ingestion.addProperty("entity","saturn");
 
         long[] dataIds = new long[3];
         String dataHistoryId=null;

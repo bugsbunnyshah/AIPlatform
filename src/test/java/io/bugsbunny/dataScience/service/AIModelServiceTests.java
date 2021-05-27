@@ -262,6 +262,7 @@ public class AIModelServiceTests extends BaseTest {
         input.addProperty("sourceSchema", xml);
         input.addProperty("destinationSchema", xml);
         input.addProperty("sourceData", xml);
+        input.addProperty("entity","saturn");
 
 
         Response ingestionResponse = given().body(input.toString()).when().post("/dataMapper/mapXml/")
@@ -304,6 +305,7 @@ public class AIModelServiceTests extends BaseTest {
         input.addProperty("sourceSchema", xml);
         input.addProperty("destinationSchema", xml);
         input.addProperty("sourceData", xml);
+        input.addProperty("entity","saturn");
 
 
         Response ingestionResponse = given().body(input.toString()).when().post("/dataMapper/mapXml/")
