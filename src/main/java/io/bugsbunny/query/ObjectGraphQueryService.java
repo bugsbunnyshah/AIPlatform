@@ -44,6 +44,11 @@ public class ObjectGraphQueryService {
         this.graphData = graphData;
     }
 
+    public GraphData getGraphData()
+    {
+        return this.graphData;
+    }
+
     public JsonArray queryByCriteria(String entity, JsonObject criteria)
     {
         JsonArray response = new JsonArray();

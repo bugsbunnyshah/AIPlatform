@@ -57,7 +57,7 @@ public class GraphQueryTests extends BaseTest {
             JsonObject json = input.get(i).getAsJsonObject();
             json.addProperty("id",UUID.randomUUID().toString());
             //JsonUtil.print(json);
-            Vertex vertex = this.saveObjectGraph("flightEntity",json,null, server);
+            Vertex vertex = this.saveObjectGraph("flight",json,null, server,false);
             //logger.info(vertex.keys().toString());
         }
 
@@ -70,7 +70,7 @@ public class GraphQueryTests extends BaseTest {
         //JsonUtil.print(data);
 
         data = this.queryService.queryByCriteria("flight", new JsonObject());
-        //JsonUtil.print(data);
+        JsonUtil.print(data);
 
         data = this.queryService.queryByCriteria("arrival", new JsonObject());
         //JsonUtil.print(data);
@@ -83,18 +83,26 @@ public class GraphQueryTests extends BaseTest {
 
         JsonObject departureCriteria = new JsonObject();
         departureCriteria.addProperty("flight_status","scheduled");
-        data = this.queryService.navigateByCriteria("flightEntity","departure","has"
+        data = this.queryService.navigateByCriteria("entity_flight","flight","has"
         ,departureCriteria);
         JsonUtil.print(data);
     }
 
-    private Vertex saveObjectGraph(String entity,JsonObject parent,JsonObject child,SparqlTraversalSource server)
+    private Vertex saveObjectGraph(String entity,JsonObject parent,JsonObject child,SparqlTraversalSource server,boolean isProperty)
     {
         Vertex vertex;
 
         String vertexId = UUID.randomUUID().toString();
 
-        GraphTraversal<Vertex,Vertex> traversal = server.addV(entity);
+        GraphTraversal<Vertex,Vertex> traversal = null;
+        if(isProperty)
+        {
+            traversal = server.addV(entity);
+        }
+        else
+        {
+            traversal = server.addV("entity_"+entity);
+        }
 
         JsonObject json = parent;
         if(child != null)
@@ -108,7 +116,7 @@ public class GraphQueryTests extends BaseTest {
             if(json.get(property).isJsonObject())
             {
                 JsonObject propertyObject = json.getAsJsonObject(property);
-                Vertex propertyVertex = this.saveObjectGraph(property,parent,propertyObject,server);
+                Vertex propertyVertex = this.saveObjectGraph(property,parent,propertyObject,server,true);
                 children.add(propertyVertex);
             }
             else if(json.get(property).isJsonPrimitive())
@@ -117,6 +125,7 @@ public class GraphQueryTests extends BaseTest {
                 traversal = traversal.property(property,value+":"+vertexId);
             }
         }
+        traversal.property("vertexId",UUID.randomUUID().toString());
         traversal.property("source",json.toString());
         vertex = traversal.next();
 

@@ -1,6 +1,7 @@
 package io.bugsbunny.dataIngestion.service;
 
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
+import io.bugsbunny.query.ObjectGraphQueryService;
 import io.bugsbunny.util.JsonUtil;
 
 import com.google.gson.JsonArray;
@@ -10,6 +11,8 @@ import com.google.gson.JsonParser;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
@@ -32,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import java.io.IOException;
 import java.util.*;
@@ -43,6 +47,9 @@ public class MapperService {
     private TinkerGraph tg;
     private GraphTraversalSource g;
     private CSVDataUtil csvDataUtil = new CSVDataUtil();
+
+    @Inject
+    private ObjectGraphQueryService objectGraphQueryService;
 
     @PostConstruct
     public void start()
@@ -64,11 +71,7 @@ public class MapperService {
         }
     }
 
-    public GraphTraversalSource getG() {
-        return g;
-    }
-
-    public JsonArray map(JsonArray sourceData)
+    public JsonArray map(String entity,JsonArray sourceData)
     {
         //logger.info("********SOURCE_DATA************");
         //JsonUtil.print(sourceData);
@@ -103,12 +106,11 @@ public class MapperService {
                 JsonObject local = this.performMapping(scores, root.toString());
 
                 //ObjectGraph/Gremlin integration
-                String vertexId = this.saveObjectGraph(local);
+                Vertex vertex = this.saveObjectGraph(entity,local,null, this.objectGraphQueryService.getGraphData().getTraversalSource(),
+                        false);
+                String vertexId = vertex.property("vertexId").value().toString();
                 local.addProperty("vertexId", vertexId);
                 result.add(local);
-
-                final GraphTraversal<Vertex, Vertex> vertexVertexGraphTraversal = this.g.V(vertexId);
-                //logger.info(vertexVertexGraphTraversal.toString());
             }
 
             return result;
@@ -121,13 +123,13 @@ public class MapperService {
     }
 
 
-    public JsonArray mapXml(JsonObject sourceData)
+    public JsonArray mapXml(String entity,JsonObject sourceData)
     {
         JsonArray result = new JsonArray();
 
         this.traverse(sourceData, result);
 
-        result = this.map(result);
+        result = this.map(entity,result);
         return result;
     }
     //---------------------------------------------------------------------------------------------------------------------
@@ -355,16 +357,52 @@ public class MapperService {
         }
     }
 
-    private String saveObjectGraph(JsonObject jsonObject)
+    private Vertex saveObjectGraph(String entity,JsonObject parent,JsonObject child,SparqlTraversalSource server,boolean isProperty)
     {
-        JsonUtil.print(jsonObject);
+        Vertex vertex;
 
         String vertexId = UUID.randomUUID().toString();
-        final GraphTraversal<Vertex, Vertex> vertexGraphTraversal = this.
-                g.addV("person").
-                property("vertexId", vertexId).property("name", "name");
-        //logger.info(vertexGraphTraversal.V().V().toString());
 
-        return vertexId;
+        GraphTraversal<Vertex,Vertex> traversal = null;
+        if(isProperty)
+        {
+            traversal = server.addV(entity);
+        }
+        else
+        {
+            traversal = server.addV("entity_"+entity);
+        }
+
+        JsonObject json = parent;
+        if(child != null)
+        {
+            json = child;
+        }
+        Set<String> properties = json.keySet();
+        List<Vertex> children = new ArrayList<>();
+        for(String property:properties)
+        {
+            if(json.get(property).isJsonObject())
+            {
+                JsonObject propertyObject = json.getAsJsonObject(property);
+                Vertex propertyVertex = this.saveObjectGraph(property,parent,propertyObject,server,true);
+                children.add(propertyVertex);
+            }
+            else if(json.get(property).isJsonPrimitive())
+            {
+                String value = json.get(property).getAsString();
+                traversal = traversal.property(property,value+":"+vertexId);
+            }
+        }
+        traversal.property("vertexId",UUID.randomUUID().toString());
+        traversal.property("source",json.toString());
+        vertex = traversal.next();
+
+        for(Vertex local:children)
+        {
+            vertex.addEdge("has", local, T.id, UUID.randomUUID().toString(), "weight", 0.5d);
+        }
+
+        return vertex;
     }
 }

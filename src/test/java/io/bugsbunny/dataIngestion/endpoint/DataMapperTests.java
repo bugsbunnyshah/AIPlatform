@@ -8,12 +8,18 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.dataIngestion.service.MapperService;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import io.bugsbunny.query.GraphData;
+import io.bugsbunny.query.LocalGraphData;
+import io.bugsbunny.query.ObjectGraphQueryService;
 import io.bugsbunny.test.components.BaseTest;
 
 import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import io.restassured.response.Response;
 
@@ -44,6 +50,18 @@ public class DataMapperTests extends BaseTest
 
     private CSVDataUtil csvDataUtil = new CSVDataUtil();
 
+    @Inject
+    private ObjectGraphQueryService objectGraphQueryService;
+
+    @BeforeEach
+    public void setUp()
+    {
+        TinkerGraph graph = TinkerGraph.open();
+        SparqlTraversalSource server = new SparqlTraversalSource(graph);
+        GraphData graphData = new LocalGraphData(server);
+        this.objectGraphQueryService.setGraphData(graphData);
+    }
+
     @Test
     public void testMapWithOneToOneFields() throws Exception {
         String sourceSchema = IOUtils.toString(Thread.currentThread().getContextClassLoader().
@@ -56,6 +74,7 @@ public class DataMapperTests extends BaseTest
         input.addProperty("sourceSchema", sourceSchema);
         input.addProperty("destinationSchema", sourceSchema);
         input.addProperty("sourceData", sourceData);
+        input.addProperty("entity","person");
 
 
         Response response = given().body(input.toString()).when().post("/dataMapper/map")
@@ -97,6 +116,7 @@ public class DataMapperTests extends BaseTest
         input.addProperty("sourceSchema", sourceSchema);
         input.addProperty("destinationSchema", sourceSchema);
         input.addProperty("sourceData", sourceData);
+        input.addProperty("entity","person");
 
 
         Response response = given().body(input.toString()).when().post("/dataMapper/map")
@@ -130,6 +150,7 @@ public class DataMapperTests extends BaseTest
         input.addProperty("destinationSchema", "");
         input.addProperty("sourceData", spaceData);
         input.addProperty("hasHeader", true);
+        input.addProperty("entity","person");
         Response response = given().body(input.toString()).when().post("/dataMapper/mapCsv")
                 .andReturn();
 
@@ -160,6 +181,7 @@ public class DataMapperTests extends BaseTest
         input.addProperty("destinationSchema", "");
         input.addProperty("sourceData", spaceData);
         input.addProperty("hasHeader", false);
+        input.addProperty("entity","person");
         Response response = given().body(input.toString()).when().post("/dataMapper/mapCsv")
                 .andReturn();
 
@@ -196,6 +218,7 @@ public class DataMapperTests extends BaseTest
         input.addProperty("destinationSchema", "");
         input.addProperty("sourceData", spaceData);
         input.addProperty("hasHeader", true);
+        input.addProperty("entity","person");
         Response response = given().body(input.toString()).when().post("/dataMapper/mapCsv")
                 .andReturn();
 
@@ -231,6 +254,7 @@ public class DataMapperTests extends BaseTest
         input.addProperty("sourceSchema", xml);
         input.addProperty("destinationSchema", xml);
         input.addProperty("sourceData", xml);
+        input.addProperty("entity","person");
 
 
         Response response = given().body(input.toString()).when().post("/dataMapper/mapXml/")
@@ -256,6 +280,7 @@ public class DataMapperTests extends BaseTest
 
         JsonObject input = new JsonObject();
         input.addProperty("sourceData", json);
+        input.addProperty("entity","person");
 
         logger.info(input.toString());
 
@@ -274,110 +299,5 @@ public class DataMapperTests extends BaseTest
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
         assertNotNull(ingestedData.get("dataLakeId"));
         logger.info("DataLakeId: "+ingestedData.get("dataLakeId"));
-    }
-
-    @Test
-    public void testObjectTraversal() throws Exception {
-        String json = IOUtils.toString(Thread.currentThread().getContextClassLoader()
-                        .getResourceAsStream("query/person.json"),
-                StandardCharsets.UTF_8);
-
-        JsonArray array = JsonParser.parseString(json).getAsJsonArray();
-        this.traverse(array.get(0).getAsJsonObject(), new JsonArray());
-    }
-
-    private void traverse(JsonObject currentObject, JsonArray result)
-    {
-        String vertexId = UUID.randomUUID().toString();
-        final GraphTraversal<Vertex, Vertex> currentVertex = this.mapperService.getG().addV();
-        currentVertex.property("vertexId",vertexId);
-
-        Iterator<String> allProps = currentObject.keySet().iterator();
-        while(allProps.hasNext())
-        {
-            String nextObject = allProps.next();
-            //logger.info("NEXT_OBJECT: "+nextObject);
-
-
-            JsonElement resolve = currentObject.get(nextObject);
-            if(resolve.isJsonObject())
-            {
-                JsonObject resolveJson = resolve.getAsJsonObject();
-                if(resolveJson.keySet().size()==0)
-                {
-                    //EMPTY TAG...skip it
-                    continue;
-                }
-                if(resolveJson.keySet().size()==1) {
-                    //logger.info(nextObject+": RESOLVING");
-                    this.resolve(nextObject, resolveJson, result);
-                }
-                else
-                {
-                    //logger.info(nextObject+": TRAVERSING");
-                    this.traverse(resolveJson, result);
-                }
-            }
-            else
-            {
-                if(resolve.isJsonPrimitive())
-                {
-                    //logger.info("PRIMITIVE_FOUND");
-                    currentVertex.property(nextObject, resolve.getAsString());
-                }
-            }
-        }
-
-        logger.info(currentVertex.V().count().toList().toString());
-        //JsonUtil.print(result);
-    }
-
-    private void resolve(String parent, JsonObject leaf, JsonArray result)
-    {
-        //logger.info("*********************************");
-        //logger.info("PARENT: "+parent);
-        //logger.info("*********************************");
-        JsonArray finalResult=null;
-        if (leaf.isJsonObject()) {
-            String child = leaf.keySet().iterator().next();
-            JsonElement childElement = leaf.get(child);
-            if(childElement.isJsonArray()) {
-                //logger.info(parent+": CHILD_ARRAY");
-                finalResult = childElement.getAsJsonArray();
-            }
-            else
-            {
-                //logger.info(parent+": CHILD_OBJECT");
-                finalResult = new JsonArray();
-                finalResult.add(childElement);
-                //this.traverse(childElement.getAsJsonObject(), result);
-            }
-        } else {
-            //logger.info(parent+": LEAF_ARRAY");
-            finalResult = leaf.getAsJsonArray();
-        }
-
-
-        if(finalResult != null) {
-            //logger.info(parent+": CALCULATING");
-            Iterator<JsonElement> itr = finalResult.iterator();
-            JsonArray jsonArray = new JsonArray();
-            while (itr.hasNext())
-            {
-                JsonElement jsonElement = itr.next();
-                if(jsonElement.isJsonPrimitive())
-                {
-                    JsonObject primitive = new JsonObject();
-                    primitive.addProperty(parent,jsonElement.toString());
-                    jsonArray.add(primitive);
-                }
-                else {
-                    jsonArray.add(jsonElement);
-                }
-            }
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.add(parent,jsonArray);
-            result.add(jsonObject);
-        }
     }
 }
