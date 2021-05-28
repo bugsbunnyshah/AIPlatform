@@ -106,7 +106,8 @@ public class MapperService {
                 JsonObject local = this.performMapping(scores, root.toString());
 
                 //ObjectGraph/Gremlin integration
-                Vertex vertex = this.saveObjectGraph(entity,local,null, this.objectGraphQueryService.getGraphData().getTraversalSource(),
+                Vertex vertex = this.saveObjectGraph(entity,local,null, this.
+                                objectGraphQueryService.getGraphData().getTraversalSource(),
                         false);
                 String vertexId = vertex.property("vertexId").value().toString();
                 local.addProperty("vertexId", vertexId);
