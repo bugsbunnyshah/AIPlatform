@@ -2,27 +2,34 @@ package prototypes.largeProcessor;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
-import akka.actor.typed.javadsl.AbstractBehavior;
-import akka.actor.typed.javadsl.ActorContext;
-import akka.actor.typed.javadsl.Behaviors;
-import akka.actor.typed.javadsl.Receive;
+import akka.actor.typed.SupervisorStrategy;
+import akka.actor.typed.javadsl.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
 public class DataProcessor extends AbstractBehavior<ProcessData> {
-    private ActorRef<ProcessData> dataAgent;
-    private int max;
-    private int dataCounter;
+    private static Logger logger = LoggerFactory.getLogger(DataProcessor.class);
+    private ActorRef<ProcessData> router;
 
     public DataProcessor(ActorContext<ProcessData> context,int max) {
         super(context);
-        this.max = max;
-        this.dataCounter = 0;
-        this.dataAgent = context.spawn(DataAgent.create(), "DataAgent1");
     }
 
     public static Behavior<ProcessData> create(int max) {
-        return Behaviors.setup(context -> new DataProcessor(context, max));
+        return Behaviors.setup(context -> {
+            DataProcessor dataProcessor = new DataProcessor(context,max);
+            int poolSize = 4;
+            PoolRouter<ProcessData> pool =
+                    Routers.pool(
+                            poolSize,
+                            // make sure the workers are restarted if they fail
+                            Behaviors.supervise(DataAgent.create()).onFailure(SupervisorStrategy.restart()));
+
+            dataProcessor.router = context.spawn(pool, "worker-pool");
+            return dataProcessor;
+        });
     }
 
     @Override
@@ -31,16 +38,10 @@ public class DataProcessor extends AbstractBehavior<ProcessData> {
     }
 
     private Behavior<ProcessData> onStart(ProcessData command) {
-        System.out.println("DATA_PROCESSOR_STARTED....");
-        if(this.dataCounter >= this.max) {
-            System.out.println("STOPPING");
-            return Behaviors.stopped();
-        }
-
         String actorName = UUID.randomUUID().toString();
         command.setCaller(null);
-        this.dataAgent.tell(command);
-        this.dataCounter++;
+
+        this.router.tell(command);
         return this;
     }
 }

@@ -6,6 +6,9 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+
 public class DataAgent extends AbstractBehavior<ProcessData> {
 
     public DataAgent(ActorContext<ProcessData> context) {
@@ -22,7 +25,9 @@ public class DataAgent extends AbstractBehavior<ProcessData> {
     }
 
     private Behavior<ProcessData> onStart(ProcessData command) {
-        getContext().getLog().info("JSON: "+command.getJsonData());
+        String jsonData = command.getJsonData();
+        jsonData += OffsetDateTime.now(ZoneOffset.UTC).toEpochSecond();
+        getContext().getLog().info(jsonData);
         //command.replyTo.tell(new HelloWorld.Greeted(command.whom, getContext().getSelf()));
         return this;
     }
