@@ -51,8 +51,7 @@ public class MapperService implements Serializable {
 
     public JsonObject map(JsonArray sourceData)
     {
-        StreamIngester streamIngester = Braineous.streamIngester;
-        JsonObject result = streamIngester.submit(sourceData);
+        JsonObject result = StreamIngesterContext.getStreamIngester().submit(sourceData);
         return result;
     }
 

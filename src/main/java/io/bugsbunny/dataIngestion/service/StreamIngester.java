@@ -92,23 +92,14 @@ public class StreamIngester implements Serializable{
         if(this.streamingContext == null){
             try {
                 // Create a local StreamingContext with two working thread and batch interval of 1 second
-                System.out.println("1");
                 sparkConf = new SparkConf().setAppName("StreamIngester").setMaster("local[5]");
-                System.out.println("2");
                 streamingContext = new JavaStreamingContext(sparkConf, new Duration(1000));
-                System.out.println("3");
                 streamReceiver = new StreamReceiver(StorageLevels.MEMORY_AND_DISK_2);
-                System.out.println("4");
                 startIngester();
-                System.out.println("5");
             }
             catch (Exception e)
             {
-                System.out.println("6");
                 throw new RuntimeException(e);
-            }
-            finally {
-                System.out.println("7");
             }
         }
         this.streamReceiver.receiveData(sourceData.toString());
@@ -145,7 +136,7 @@ public class StreamIngester implements Serializable{
 
         public void receiveData(String data)
         {
-            StreamIngesterQueue.data = JsonParser.parseString(data).getAsJsonArray();
+            StreamIngesterContext.getStreamIngesterContext().setData(data);
         }
     }
 
@@ -164,13 +155,14 @@ public class StreamIngester implements Serializable{
             try {
                 // Until stopped or connection broken continue reading
                 while (!this.streamReceiver.isStopped()) {
-                    if(StreamIngesterQueue.getData() != null) {
-                        JsonArray jsonArray = StreamIngesterQueue.getData();
+                    if(StreamIngesterContext.getStreamIngesterContext().getData() != null) {
+                        String data = StreamIngesterContext.getStreamIngesterContext().getData();
+                        JsonArray jsonArray = JsonParser.parseString(data).getAsJsonArray();
                         Iterator<JsonElement> iterator = jsonArray.iterator();
                         while (iterator.hasNext()) {
                             this.streamReceiver.store(iterator.next().getAsJsonObject().toString());
                         }
-                        StreamIngesterQueue.data = null;
+                        StreamIngesterContext.getStreamIngesterContext().setData(null);
                     }
                 }
                 this.streamReceiver.restart("RESTARTING.......");

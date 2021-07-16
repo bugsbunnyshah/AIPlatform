@@ -1,14 +1,15 @@
 package io.bugsbunny.dataIngestion.service;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import java.io.Serializable;
 
-public class StreamIngesterQueue {
+public class StreamIngesterQueue implements Serializable {
+    private String data;
 
-    public static JsonArray data;
+    public String getData() {
+        return data;
+    }
 
-    public static JsonArray getData()
-    {
-        return StreamIngesterQueue.data;
+    public void setData(String data) {
+        this.data = data;
     }
 }
