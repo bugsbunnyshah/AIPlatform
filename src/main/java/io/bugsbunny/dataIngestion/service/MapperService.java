@@ -1,5 +1,9 @@
 package io.bugsbunny.dataIngestion.service;
 
+import akka.NotUsed;
+import akka.actor.ActorSystem;
+import akka.japi.function.Procedure;
+import akka.stream.javadsl.Source;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -42,38 +46,51 @@ public class MapperService {
 
     public JsonArray map(JsonArray sourceData)
     {
+        /*JsonArray result = new JsonArray();
         //logger.info("**************************************************");
         //logger.info("SOURCE_DATA: "+sourceData.toString());
         //logger.info("**************************************************");
-        JsonArray result = new JsonArray();
+        /*
         try
         {
+            final ActorSystem system = ActorSystem.create("MapperService");
+            // Create a source from an Iterable
+            List<JsonElement> list = new LinkedList<JsonElement>();
             int size = sourceData.size();
-            for(int i=0; i<size; i++)
+            Iterator<JsonElement> iterator = sourceData.iterator();
+            while (iterator.hasNext())
             {
-                JsonElement root = sourceData.get(i);
-                if(root.isJsonPrimitive())
-                {
-                    continue;
-                }
-
-                HierarchicalSchemaInfo sourceSchemaInfo = this.populateHierarchialSchema(root.toString(),
-                        root.toString(), null);
-                HierarchicalSchemaInfo destinationSchemaInfo = this.populateHierarchialSchema(root.toString(),
-                        root.toString(), null);
-
-
-                FilteredSchemaInfo f1 = new FilteredSchemaInfo(sourceSchemaInfo);
-                f1.addElements(sourceSchemaInfo.getElements(Entity.class));
-                FilteredSchemaInfo f2 = new FilteredSchemaInfo(destinationSchemaInfo);
-                f2.addElements(destinationSchemaInfo.getElements(Entity.class));
-                Map<SchemaElement, Double> scores = this.findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
-                //logger.info("*************************************");
-                //logger.info(scores.toString());
-                //logger.info("*************************************");
-                JsonObject local = this.performMapping(scores, root.toString());
-                result.add(local);
+                list.add(iterator.next());
             }
+            Source<JsonElement, NotUsed> source = Source.from(list);
+            Procedure<JsonElement> procedure = new Procedure<>() {
+                @Override
+                public void apply(JsonElement root) throws Exception{
+                    System.out.println(Thread.currentThread());
+                    if(root.isJsonPrimitive())
+                    {
+                        return;
+                    }
+
+                    HierarchicalSchemaInfo sourceSchemaInfo = populateHierarchialSchema(root.toString(),
+                            root.toString(), null);
+                    HierarchicalSchemaInfo destinationSchemaInfo = populateHierarchialSchema(root.toString(),
+                            root.toString(), null);
+
+
+                    FilteredSchemaInfo f1 = new FilteredSchemaInfo(sourceSchemaInfo);
+                    f1.addElements(sourceSchemaInfo.getElements(Entity.class));
+                    FilteredSchemaInfo f2 = new FilteredSchemaInfo(destinationSchemaInfo);
+                    f2.addElements(destinationSchemaInfo.getElements(Entity.class));
+                    Map<SchemaElement, Double> scores = findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
+                    //logger.info("*************************************");
+                    //logger.info(scores.toString());
+                    //logger.info("*************************************");
+                    JsonObject local = performMapping(scores, root.toString());
+                    result.add(local);
+                }
+            };
+            //source.runForeach(procedure,system).toCompletableFuture().join();
 
             //this.dataReplayService.generateDiffChain(sourceData);
 
@@ -83,7 +100,8 @@ public class MapperService {
         {
             logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
-        }
+        }*/
+        return null;
     }
 
 

@@ -149,10 +149,22 @@
     </dependency>
 
     <!-- Experimentation related -->
+    <!--
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_2.12</artifactId>
       <version>3.0.1</version>
+    </dependency>
+    -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-streaming_2.11</artifactId>
+      <version>2.4.8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>2.11.11</version>
     </dependency>
 
     <!-- DataIngestion related...This is a beautiful one -->
@@ -179,11 +191,6 @@
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-stream_${scala.binary.version}</artifactId>
       <version>${akka.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.scala-lang</groupId>
-      <artifactId>scala-library</artifactId>
-      <version>2.13.3</version>
     </dependency>
 
     <!-- Automatic Ingestion Mapping related...Very Important -->

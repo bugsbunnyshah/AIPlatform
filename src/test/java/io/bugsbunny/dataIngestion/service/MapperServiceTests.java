@@ -44,4 +44,17 @@ public class MapperServiceTests extends BaseTest {
         assertEquals("77777", jsonObject.get("Rcvr").getAsString());
         assertEquals(Boolean.FALSE, jsonObject.get("HasSig").getAsBoolean());
     }
+
+    @Test
+    public void testMapAirlineDataBig() throws Exception
+    {
+        String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "aviation/flights0.json"),
+                StandardCharsets.UTF_8);
+        JsonArray jsonArray = JsonParser.parseString(sourceData).getAsJsonObject().get("data").getAsJsonArray();
+        JsonArray array = this.mapperService.map(jsonArray);
+        logger.info("*******");
+        logger.info(array.toString());
+        logger.info("*******");
+    }
 }
