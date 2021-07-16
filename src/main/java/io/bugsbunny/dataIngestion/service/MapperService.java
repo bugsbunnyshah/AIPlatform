@@ -8,9 +8,20 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.Braineous;
 import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import org.apache.commons.io.IOUtils;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.StorageLevels;
+import org.apache.spark.api.java.function.VoidFunction;
+import org.apache.spark.storage.StorageLevel;
+import org.apache.spark.streaming.Duration;
+import org.apache.spark.streaming.api.java.JavaDStream;
+import org.apache.spark.streaming.api.java.JavaStreamingContext;
+import org.apache.spark.streaming.receiver.Receiver;
 import org.mitre.harmony.matchers.ElementPair;
 import org.mitre.harmony.matchers.MatcherManager;
 import org.mitre.harmony.matchers.MatcherScore;
@@ -27,95 +38,33 @@ import org.mitre.schemastore.model.schemaInfo.model.SchemaModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 
 @ApplicationScoped
-public class MapperService {
+public class MapperService implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(MapperService.class);
 
-    @Inject
-    private MongoDBJsonStore mongoDBJsonStore;
-
-    //@Inject
-    //private DataReplayService dataReplayService;
-
-    private CSVDataUtil csvDataUtil = new CSVDataUtil();
-
-    public JsonArray map(JsonArray sourceData)
+    public JsonObject map(JsonArray sourceData)
     {
-        /*JsonArray result = new JsonArray();
-        //logger.info("**************************************************");
-        //logger.info("SOURCE_DATA: "+sourceData.toString());
-        //logger.info("**************************************************");
-        /*
-        try
-        {
-            final ActorSystem system = ActorSystem.create("MapperService");
-            // Create a source from an Iterable
-            List<JsonElement> list = new LinkedList<JsonElement>();
-            int size = sourceData.size();
-            Iterator<JsonElement> iterator = sourceData.iterator();
-            while (iterator.hasNext())
-            {
-                list.add(iterator.next());
-            }
-            Source<JsonElement, NotUsed> source = Source.from(list);
-            Procedure<JsonElement> procedure = new Procedure<>() {
-                @Override
-                public void apply(JsonElement root) throws Exception{
-                    System.out.println(Thread.currentThread());
-                    if(root.isJsonPrimitive())
-                    {
-                        return;
-                    }
-
-                    HierarchicalSchemaInfo sourceSchemaInfo = populateHierarchialSchema(root.toString(),
-                            root.toString(), null);
-                    HierarchicalSchemaInfo destinationSchemaInfo = populateHierarchialSchema(root.toString(),
-                            root.toString(), null);
-
-
-                    FilteredSchemaInfo f1 = new FilteredSchemaInfo(sourceSchemaInfo);
-                    f1.addElements(sourceSchemaInfo.getElements(Entity.class));
-                    FilteredSchemaInfo f2 = new FilteredSchemaInfo(destinationSchemaInfo);
-                    f2.addElements(destinationSchemaInfo.getElements(Entity.class));
-                    Map<SchemaElement, Double> scores = findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
-                    //logger.info("*************************************");
-                    //logger.info(scores.toString());
-                    //logger.info("*************************************");
-                    JsonObject local = performMapping(scores, root.toString());
-                    result.add(local);
-                }
-            };
-            //source.runForeach(procedure,system).toCompletableFuture().join();
-
-            //this.dataReplayService.generateDiffChain(sourceData);
-
-            return result;
-        }
-        catch(Exception e)
-        {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }*/
-        return null;
-    }
-
-
-    public JsonArray mapXml(JsonObject sourceData)
-    {
-        JsonArray result = new JsonArray();
-
-        this.traverse(sourceData, result);
-
-        result = this.map(result);
+        StreamIngester streamIngester = Braineous.streamIngester;
+        JsonObject result = streamIngester.submit(sourceData);
         return result;
     }
+
+
+    public JsonObject mapXml(JsonObject sourceData)
+    {
+        JsonArray result = new JsonArray();
+        this.traverse(sourceData, result);
+        return this.map(result);
+    }
     //---------------------------------------------------------------------------------------------------------------------
-    private HierarchicalSchemaInfo createHierachialSchemaInfo(String schemaName)
+    static HierarchicalSchemaInfo createHierachialSchemaInfo(String schemaName)
     {
         Schema schema = new Schema();
         schema.setName(schemaName);
@@ -129,9 +78,9 @@ public class MapperService {
         return schemaInfo;
     }
 
-    private HierarchicalSchemaInfo populateHierarchialSchema(String object, String sourceData, String parent)
+    static HierarchicalSchemaInfo populateHierarchialSchema(String object, String sourceData, String parent)
     {
-        HierarchicalSchemaInfo schemaInfo = this.createHierachialSchemaInfo(object);
+        HierarchicalSchemaInfo schemaInfo = createHierachialSchemaInfo(object);
         JsonElement sourceElement = JsonParser.parseString(sourceData);
         JsonObject jsonObject = new JsonObject();
         if(!sourceElement.isJsonPrimitive())
@@ -157,7 +106,7 @@ public class MapperService {
                 element.setName(field);
                 element.setDescription(field);
                 schemaInfo.addElement(element);
-                HierarchicalSchemaInfo fieldInfos = this.populateHierarchialSchema(field,
+                HierarchicalSchemaInfo fieldInfos = populateHierarchialSchema(field,
                         jsonElement.getAsJsonObject().toString(), object);
 
                 ArrayList<SchemaElement> blah = fieldInfos.getElements(Entity.class);
@@ -171,7 +120,7 @@ public class MapperService {
             else if(jsonElement.isJsonArray())
             {
                 JsonElement top = jsonElement.getAsJsonArray().get(0);
-                HierarchicalSchemaInfo fieldInfos = this.populateHierarchialSchema(field,
+                HierarchicalSchemaInfo fieldInfos = populateHierarchialSchema(field,
                         top.toString(), object);
 
                 ArrayList<SchemaElement> blah = fieldInfos.getElements(Entity.class);
@@ -196,7 +145,7 @@ public class MapperService {
         return schemaInfo;
     }
 
-    private JsonObject performMapping(Map<SchemaElement, Double> scores, String json) throws IOException
+    static JsonObject performMapping(Map<SchemaElement, Double> scores, String json) throws IOException
     {
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
 
@@ -222,7 +171,7 @@ public class MapperService {
         return result;
     }
 
-    private Map<SchemaElement,Double> findMatches(FilteredSchemaInfo f1, FilteredSchemaInfo f2,
+    static Map<SchemaElement,Double> findMatches(FilteredSchemaInfo f1, FilteredSchemaInfo f2,
                                                   ArrayList<SchemaElement> sourceElements)
     {
         Map<SchemaElement, Double> result = new HashMap<>();
@@ -279,9 +228,6 @@ public class MapperService {
 
     private void resolve(String parent, JsonObject leaf, JsonArray result)
     {
-        //logger.info("*********************************");
-        //logger.info("PARENT: "+parent);
-        //logger.info("*********************************");
         JsonArray finalResult=null;
         if (leaf.isJsonObject()) {
             String child = leaf.keySet().iterator().next();
@@ -323,6 +269,58 @@ public class MapperService {
             JsonObject jsonObject = new JsonObject();
             jsonObject.add(parent,jsonArray);
             result.add(jsonObject);
+        }
+    }
+
+    private static class JavaCustomReceiver extends Receiver<String> {
+        private String data;
+
+        public JavaCustomReceiver(StorageLevel storageLevel) {
+            super(storageLevel);
+        }
+
+        @Override
+        public void onStart() {
+            try {
+
+                // Start the thread that receives data over a connection
+                new Thread(this::receive).start();
+            }
+            catch (Exception e){
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void onStop() {
+            // There is nothing much to do as the thread calling receive()
+            // is designed to stop by itself if isStopped() returns false
+        }
+
+        void receiveData(String data)
+        {
+            this.data = data;
+        }
+
+        private void receive() {
+            try {
+                // Until stopped or connection broken continue reading
+                while (!isStopped()) {
+                    if(this.data != null) {
+                        JsonArray jsonArray = JsonParser.parseString(this.data).getAsJsonArray();
+                        Iterator<JsonElement> iterator = jsonArray.iterator();
+                        while (iterator.hasNext()) {
+                            store(iterator.next().getAsJsonObject().toString());
+                        }
+                        this.data = null;
+                    }
+                }
+                restart("RESTARTING.......");
+            } catch(Throwable t) {
+                // restart if there is any other error
+                t.printStackTrace();
+                restart("Error receiving data", t);
+            }
         }
     }
 }

@@ -33,7 +33,8 @@ public class DataStreamingTests {
         SparkConf sparkConf = new SparkConf().setAppName("JavaCustomReceiver").setMaster("local[2]");
         JavaStreamingContext jssc = new JavaStreamingContext(sparkConf, new Duration(1000));
 
-        JavaDStream<String> customReceiverStream = jssc.receiverStream(new JavaCustomReceiver(StorageLevels.MEMORY_AND_DISK_2));
+        JavaCustomReceiver customReceiver = new JavaCustomReceiver(StorageLevels.MEMORY_AND_DISK_2);
+        JavaDStream<String> customReceiverStream = jssc.receiverStream(customReceiver);
         customReceiverStream.foreachRDD(new VoidFunction<JavaRDD<String>>() {
             @Override
             public void call(JavaRDD<String> stringJavaRDD) throws Exception {

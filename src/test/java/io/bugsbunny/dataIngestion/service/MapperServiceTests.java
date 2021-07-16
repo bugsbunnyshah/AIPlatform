@@ -15,14 +15,14 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@QuarkusTest
-public class MapperServiceTests extends BaseTest {
+//@QuarkusTest
+public class MapperServiceTests {
     private static Logger logger = LoggerFactory.getLogger(MapperServiceTests.class);
 
-    @Inject
-    private MapperService mapperService;
+    //@Inject
+    //private MapperService mapperService;
 
-    @Test
+    /*@Test
     public void testMapAirlineData() throws Exception
     {
         String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
@@ -56,5 +56,26 @@ public class MapperServiceTests extends BaseTest {
         logger.info("*******");
         logger.info(array.toString());
         logger.info("*******");
+    }*/
+
+    @Test
+    public void streamIngesterSubmit() throws Exception{
+        System.out.println("TEST_STARTED");
+
+
+        String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "aviation/flights0.json"),
+                StandardCharsets.UTF_8);
+        JsonArray jsonArray = JsonParser.parseString(sourceData).getAsJsonObject().get("data").getAsJsonArray();
+
+
+        System.out.println("*******************************");
+        System.out.println("STARTING_INGESTION");
+        System.out.println("*******************************");
+        StreamIngester streamIngester = new StreamIngester();
+        JsonObject json = streamIngester.submit(jsonArray);
+        System.out.println(json);
+
+        Thread.sleep(7*60*1000);
     }
 }
