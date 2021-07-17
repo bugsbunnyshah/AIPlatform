@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <name>braineous</name>
-  <version>master</version>
+  <version>arjunv1</version>
   <groupId>io.appgallabs.aiplatform</groupId>
   <artifactId>braineous</artifactId>
   <url>http://maven.apache.org</url>
