@@ -21,8 +21,8 @@ public class IngestionService implements Serializable {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("data", data);
 
-        long dataLakeId = this.mongoDBJsonStore.storeIngestion(jsonObject);
-        jsonObject.addProperty("dataLakeId", dataLakeId);
+        //long dataLakeId = this.mongoDBJsonStore.storeIngestion(jsonObject);
+        //jsonObject.addProperty("dataLakeId", dataLakeId);
 
         return jsonObject;
     }

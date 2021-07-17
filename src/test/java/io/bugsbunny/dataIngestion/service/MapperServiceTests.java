@@ -73,8 +73,9 @@ public class MapperServiceTests extends BaseTest{
         System.out.println("STARTING_INGESTION");
         System.out.println("*******************************");
 
-        JsonObject json = this.mapperService.map(jsonArray);
-        System.out.println(json);
+        //TODO
+        //JsonObject json = this.mapperService.map("flight",jsonArray);
+        //System.out.println(json);
 
         Thread.sleep(7*60*1000);
     }

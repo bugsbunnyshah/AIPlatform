@@ -136,7 +136,7 @@ public class MapperService {
         return result;
     }
     //---------------------------------------------------------------------------------------------------------------------
-    private HierarchicalSchemaInfo createHierachialSchemaInfo(String schemaName)
+    static HierarchicalSchemaInfo createHierachialSchemaInfo(String schemaName)
     {
         Schema schema = new Schema();
         schema.setName(schemaName);
@@ -150,9 +150,9 @@ public class MapperService {
         return schemaInfo;
     }
 
-    private HierarchicalSchemaInfo populateHierarchialSchema(String object, String sourceData, String parent)
+    static HierarchicalSchemaInfo populateHierarchialSchema(String object, String sourceData, String parent)
     {
-        HierarchicalSchemaInfo schemaInfo = this.createHierachialSchemaInfo(object);
+        HierarchicalSchemaInfo schemaInfo = createHierachialSchemaInfo(object);
         JsonElement sourceElement = JsonParser.parseString(sourceData);
         JsonObject jsonObject = new JsonObject();
         if(!sourceElement.isJsonPrimitive())
@@ -178,7 +178,7 @@ public class MapperService {
                 element.setName(field);
                 element.setDescription(field);
                 schemaInfo.addElement(element);
-                HierarchicalSchemaInfo fieldInfos = this.populateHierarchialSchema(field,
+                HierarchicalSchemaInfo fieldInfos = populateHierarchialSchema(field,
                         jsonElement.getAsJsonObject().toString(), object);
 
                 ArrayList<SchemaElement> blah = fieldInfos.getElements(Entity.class);
@@ -192,7 +192,7 @@ public class MapperService {
             else if(jsonElement.isJsonArray())
             {
                 JsonElement top = jsonElement.getAsJsonArray().get(0);
-                HierarchicalSchemaInfo fieldInfos = this.populateHierarchialSchema(field,
+                HierarchicalSchemaInfo fieldInfos = populateHierarchialSchema(field,
                         top.toString(), object);
 
                 ArrayList<SchemaElement> blah = fieldInfos.getElements(Entity.class);
@@ -217,7 +217,7 @@ public class MapperService {
         return schemaInfo;
     }
 
-    private JsonObject performMapping(Map<SchemaElement, Double> scores, String json) throws IOException
+    static JsonObject performMapping(Map<SchemaElement, Double> scores, String json) throws IOException
     {
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
 
@@ -243,7 +243,7 @@ public class MapperService {
         return result;
     }
 
-    private Map<SchemaElement,Double> findMatches(FilteredSchemaInfo f1, FilteredSchemaInfo f2,
+    static Map<SchemaElement,Double> findMatches(FilteredSchemaInfo f1, FilteredSchemaInfo f2,
                                                   ArrayList<SchemaElement> sourceElements)
     {
         Map<SchemaElement, Double> result = new HashMap<>();
