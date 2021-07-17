@@ -9,6 +9,8 @@ import com.mongodb.client.MongoDatabase;
 import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.infrastructure.Tenant;
+import io.bugsbunny.preprocess.SecurityToken;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,8 @@ public class StreamIngesterContext implements Serializable {
     private MongoDBJsonStore mongoDBJsonStore;
 
     private DataReplayService dataReplayService;
+
+    private SecurityTokenContainer securityTokenContainer;
 
 
     private StreamIngesterContext()
@@ -68,6 +72,11 @@ public class StreamIngesterContext implements Serializable {
 
         Tenant tenant = new Tenant();
         tenant.setPrincipal(principal);
+        SecurityToken securityToken = new SecurityToken();
+        securityToken.setPrincipal(principal);
+        this.securityTokenContainer.setSecurityToken(securityToken);
+
+        //Store in the DataLake
         this.mongoDBJsonStore.storeIngestion(tenant,jsonObject);
 
         //Add for DataReplay
@@ -81,5 +90,9 @@ public class StreamIngesterContext implements Serializable {
 
     public void setMongoDBJsonStore(MongoDBJsonStore mongoDBJsonStore) {
         this.mongoDBJsonStore = mongoDBJsonStore;
+    }
+
+    public void setSecurityTokenContainer(SecurityTokenContainer securityTokenContainer) {
+        this.securityTokenContainer = securityTokenContainer;
     }
 }

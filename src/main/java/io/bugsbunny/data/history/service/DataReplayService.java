@@ -283,4 +283,12 @@ public class DataReplayService {
     public void setMongoDBJsonStore(MongoDBJsonStore mongoDBJsonStore) {
         this.mongoDBJsonStore = mongoDBJsonStore;
     }
+
+    public SecurityTokenContainer getSecurityTokenContainer() {
+        return securityTokenContainer;
+    }
+
+    public void setSecurityTokenContainer(SecurityTokenContainer securityTokenContainer) {
+        this.securityTokenContainer = securityTokenContainer;
+    }
 }

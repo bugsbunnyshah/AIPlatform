@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.infrastructure.Tenant;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.StorageLevels;
@@ -94,7 +95,7 @@ public class StreamIngester implements Serializable{
         }
     }
 
-    public JsonObject submit(Tenant tenant,
+    public JsonObject submit(Tenant tenant, SecurityTokenContainer securityTokenContainer,
                              MongoDBJsonStore mongoDBJsonStore,
                              DataReplayService dataReplayService,
                              JsonArray sourceData)
@@ -117,6 +118,7 @@ public class StreamIngester implements Serializable{
 
         if(StreamIngesterContext.getStreamIngesterContext() != null){
             StreamIngesterContext streamIngesterContext = StreamIngesterContext.getStreamIngesterContext();
+            streamIngesterContext.setSecurityTokenContainer(securityTokenContainer);
             streamIngesterContext.setDataReplayService(dataReplayService);
             streamIngesterContext.setMongoDBJsonStore(mongoDBJsonStore);
         }

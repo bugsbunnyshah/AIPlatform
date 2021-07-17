@@ -90,6 +90,7 @@ public class MapperService {
         Tenant tenant = this.securityTokenContainer.getTenant();
         JsonObject result = StreamIngesterContext.getStreamIngester().submit(
                 tenant,
+                this.securityTokenContainer,
                 this.mongoDBJsonStore,
                 this.dataReplayService,
                 sourceData);
