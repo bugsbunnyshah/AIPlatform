@@ -128,7 +128,7 @@ public class IngestData extends TimerTask {
 
 
             this.securityTokenContainer.setSecurityToken(this.securityToken);
-            long dataSetId = this.modelDataSetService.storeTrainingDataSet(csvJson);
+            String dataSetId = this.modelDataSetService.storeTrainingDataSet(csvJson);
             this.aviationDataIngestionService.registerDataSetId(dataSetId);
         }
         catch(Exception e)

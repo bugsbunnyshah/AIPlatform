@@ -26,18 +26,18 @@ public class PackagingService {
 
         JsonObject modelPackage = JsonParser.parseString(packageString).getAsJsonObject();
         modelPackage.addProperty("live", false);
-        long modelId = this.mongoDBJsonStore.storeModel(this.securityTokenContainer.getTenant(),modelPackage);
+        String modelId = this.mongoDBJsonStore.storeModel(this.securityTokenContainer.getTenant(),modelPackage);
 
         jsonObject.addProperty("modelId", modelId);
         return jsonObject;
     }
 
-    public JsonObject getModelPackage(long modelId)
+    public JsonObject getModelPackage(String modelId)
     {
         return this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(),modelId);
     }
 
-    public String getModel(long modelId)
+    public String getModel(String modelId)
     {
         return this.mongoDBJsonStore.getModel(this.securityTokenContainer.getTenant(),modelId);
     }

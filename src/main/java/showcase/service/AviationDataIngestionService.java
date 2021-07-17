@@ -28,7 +28,7 @@ public class AviationDataIngestionService {
 
     private IngestData ingestData;
 
-    private List<Long> dataSetIds;
+    private List<String> dataSetIds;
 
     public AviationDataIngestionService()
     {
@@ -42,7 +42,7 @@ public class AviationDataIngestionService {
         ingestData.start();
     }
 
-    public void registerDataSetId(long dataSetId)
+    public void registerDataSetId(String dataSetId)
     {
         logger.info("***********************");
         logger.info("REGISTERING: "+dataSetId);
@@ -50,7 +50,7 @@ public class AviationDataIngestionService {
         this.dataSetIds.add(dataSetId);
     }
 
-    public List<Long> getDataSetIds()
+    public List<String> getDataSetIds()
     {
         return this.dataSetIds;
     }

@@ -153,7 +153,7 @@ public class DataMapper {
     @Path("readDataLakeObject")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response readDataLakeObject(@QueryParam("dataLakeId") long dataLakeId)
+    public Response readDataLakeObject(@QueryParam("dataLakeId") String dataLakeId)
     {
         try {
             JsonObject jsonInput = this.ingestionService.readDataLakeData(dataLakeId);

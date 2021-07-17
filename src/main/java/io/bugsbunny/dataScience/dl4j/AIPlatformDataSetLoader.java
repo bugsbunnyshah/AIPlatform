@@ -73,8 +73,8 @@ public class AIPlatformDataSetLoader implements Loader
             StringBuilder csvData = new StringBuilder();
             while (iterator.hasNext())
             {
-                JsonObject dataSetJson = JsonParser.parseString(mongoDBJsonStore.
-                        readDataSet(this.securityTokenContainer.getTenant(),iterator.next().getAsLong()).toString()).getAsJsonObject();
+                String id = iterator.next().getAsString();
+                JsonObject dataSetJson = mongoDBJsonStore.readDataSet(this.securityTokenContainer.getTenant(),id);
                 String format = dataSetJson.get("format").getAsString();
                 if(!format.equals("csv"))
                 {

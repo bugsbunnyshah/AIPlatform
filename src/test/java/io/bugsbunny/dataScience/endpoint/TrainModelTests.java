@@ -208,7 +208,7 @@ public class TrainModelTests extends BaseTest
         ingestion.addProperty("hasHeader", false);
         ingestion.addProperty("entity","saturn");
 
-        long[] dataIds = new long[3];
+        String[] dataIds = new String[3];
         String dataHistoryId=null;
         for(int i=0; i<dataIds.length; i++) {
             Response response = given().body(ingestion.toString()).when().post("/dataMapper/mapCsv/").andReturn();
@@ -218,7 +218,7 @@ public class TrainModelTests extends BaseTest
             assertEquals(200, response.getStatusCode());
 
             JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-            long dataLakeId = returnValue.get("dataLakeId").getAsLong();
+            String dataLakeId = returnValue.get("dataLakeId").getAsString();
             JsonObject input = new JsonObject();
             JsonArray dataLakeIdArray = new JsonArray();
             dataLakeIdArray.add(dataLakeId);

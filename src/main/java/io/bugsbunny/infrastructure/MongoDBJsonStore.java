@@ -82,7 +82,7 @@ public class MongoDBJsonStore implements Serializable
         collection.insertOne(Document.parse(jsonObject.toString()));
     }
 
-    public JsonObject getIngestion(Tenant tenant,long dataLakeId)
+    public JsonObject getIngestion(Tenant tenant,String dataLakeId)
     {
         JsonObject ingestion = null;
 
@@ -139,11 +139,21 @@ public class MongoDBJsonStore implements Serializable
 
         MongoCollection<Document> collection = database.getCollection("diffchain");
 
-        String modelId = payload.get("braineous_datalakeid").getAsString();
-        String chainId = "/"+principal+"/"+modelId;
+        String datalakeid;
+        String chainId;
+        if(payload.has("braineous_datalakeid")) {
+            datalakeid = payload.get("braineous_datalakeid").getAsString();
+        }
+        else {
+            datalakeid = UUID.randomUUID().toString();
+        }
+        chainId = "/" + principal + "/" + datalakeid;
+
+
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("chainId", chainId);
         jsonObject.add("payload", payload);
+
 
         Document doc = Document.parse(jsonObject.toString());
         collection.insertOne(doc);
@@ -290,14 +300,14 @@ public class MongoDBJsonStore implements Serializable
         return diffs;
     }
     //-----------------------------------------------------------------------------
-    public long storeModel(Tenant tenant,JsonObject modelPackage)
+    public String storeModel(Tenant tenant,JsonObject modelPackage)
     {
         String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("aimodels");
-        long modelId = new Random().nextLong();
+        String modelId = UUID.randomUUID().toString();
         modelPackage.addProperty("modelId", modelId);
         Document doc = Document.parse(modelPackage.toString());
         collection.insertOne(doc);
@@ -305,7 +315,7 @@ public class MongoDBJsonStore implements Serializable
         return modelId;
     }
 
-    public String getModel(Tenant tenant,long modelId)
+    public String getModel(Tenant tenant,String modelId)
     {
         String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
@@ -326,7 +336,7 @@ public class MongoDBJsonStore implements Serializable
         return null;
     }
 
-    public JsonObject getModelPackage(Tenant tenant,long modelId)
+    public JsonObject getModelPackage(Tenant tenant,String modelId)
     {
         String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
@@ -347,7 +357,7 @@ public class MongoDBJsonStore implements Serializable
         return null;
     }
 
-    public void deployModel(Tenant tenant,long modelId)
+    public void deployModel(Tenant tenant,String modelId)
     {
         String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
@@ -363,7 +373,7 @@ public class MongoDBJsonStore implements Serializable
         this.storeLiveModel(tenant,currentModel);
     }
 
-    public void undeployModel(Tenant tenant,long modelId)
+    public void undeployModel(Tenant tenant,String modelId)
     {
         String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
@@ -390,7 +400,7 @@ public class MongoDBJsonStore implements Serializable
         collection.insertOne(doc);
     }
     //DataLake related operations----------------------------------------------------------------
-    public long storeTrainingDataSet(Tenant tenant,JsonObject dataSetJson)
+    public String storeTrainingDataSet(Tenant tenant,JsonObject dataSetJson)
     {
         String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
@@ -398,7 +408,7 @@ public class MongoDBJsonStore implements Serializable
 
         MongoCollection<Document> collection = database.getCollection("dataset");
 
-        long oid = new Random().nextLong();
+        String oid = UUID.randomUUID().toString();
         dataSetJson.addProperty("dataSetId", oid);
         dataSetJson.addProperty("dataSetType", "training");
         Document doc = Document.parse(dataSetJson.toString());
@@ -407,7 +417,7 @@ public class MongoDBJsonStore implements Serializable
         return oid;
     }
 
-    public long storeEvalDataSet(Tenant tenant,JsonObject dataSetJson)
+    public String storeEvalDataSet(Tenant tenant,JsonObject dataSetJson)
     {
         String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
@@ -415,7 +425,7 @@ public class MongoDBJsonStore implements Serializable
 
         MongoCollection<Document> collection = database.getCollection("dataset");
 
-        long oid = new Random().nextLong();
+        String oid = UUID.randomUUID().toString();
         dataSetJson.addProperty("dataSetId", oid);
         dataSetJson.addProperty("dataSetType", "evaluation");
         Document doc = Document.parse(dataSetJson.toString());
@@ -424,7 +434,7 @@ public class MongoDBJsonStore implements Serializable
         return oid;
     }
 
-    public JsonObject readDataSet(Tenant tenant,long dataSetId)
+    public JsonObject readDataSet(Tenant tenant,String dataSetId)
     {
         String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
@@ -448,7 +458,7 @@ public class MongoDBJsonStore implements Serializable
         return null;
     }
 
-    public JsonObject rollOverToTraningDataSets(Tenant tenant,long modelId)
+    public JsonObject rollOverToTraningDataSets(Tenant tenant,String modelId)
     {
         JsonObject rolledOverDataSetIds = new JsonObject();
 

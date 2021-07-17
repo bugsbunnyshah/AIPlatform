@@ -27,7 +27,7 @@ import java.util.*;
 
 public class DataStreamingTests {
 
-    @Test
+    //@Test
     public void transformTest() throws Exception{
         // Create a local StreamingContext with two working thread and batch interval of 1 second
         SparkConf sparkConf = new SparkConf().setAppName("JavaCustomReceiver").setMaster("local[2]");

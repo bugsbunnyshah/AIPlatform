@@ -138,7 +138,7 @@ public class DataBricksClientTests extends BaseTest {
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject deploymentResponse = this.packagingService.performPackaging(modelPackage);
-        long modelId = deploymentResponse.get("modelId").getAsLong();
+        String modelId = deploymentResponse.get("modelId").getAsString();
         logger.info("modelId: " + modelId);
 
         JsonObject jsonObject = new JsonObject();

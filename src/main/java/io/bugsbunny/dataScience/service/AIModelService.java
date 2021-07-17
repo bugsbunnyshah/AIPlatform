@@ -44,8 +44,8 @@ public class AIModelService
     @Inject
     private ModelDataSetService modelDataSetService;
 
-    private Map<Long, MultiLayerNetwork> activeModels;
-    private Map<Long, MultiLayerNetwork> trainingModels;
+    private Map<String, MultiLayerNetwork> activeModels;
+    private Map<String, MultiLayerNetwork> trainingModels;
 
     @Inject
     private SecurityTokenContainer securityTokenContainer;
@@ -56,7 +56,7 @@ public class AIModelService
         this.trainingModels = new HashMap<>();
     }
 
-    public String trainJava(long modelId, long[] dataSetIds) throws ModelNotFoundException, ModelIsLive
+    public String trainJava(String modelId, String[] dataSetIds) throws ModelNotFoundException, ModelIsLive
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
         if(modelPackage == null)
@@ -99,7 +99,7 @@ public class AIModelService
         }
     }
 
-    public String trainJavaFromDataLake(long modelId, long[] dataLakeIds) throws ModelNotFoundException, ModelIsLive
+    public String trainJavaFromDataLake(String modelId, String[] dataLakeIds) throws ModelNotFoundException, ModelIsLive
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(),modelId);
         if(modelPackage == null)
@@ -125,10 +125,10 @@ public class AIModelService
                 this.trainingModels.put(modelId, network);
             }
 
-            long[] dataSetIds = new long[dataLakeIds.length];
+            String[] dataSetIds = new String[dataLakeIds.length];
             for(int i=0; i<dataLakeIds.length;i++)
             {
-                long dataLakeId = dataLakeIds[i];
+                String dataLakeId = dataLakeIds[i];
                 JsonObject ingestedData = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
                 //logger.info("***************************************************");
                 //logger.info("DataLakeId: "+dataLakeId+":"+ingestedData.toString());
@@ -137,7 +137,7 @@ public class AIModelService
                 JsonObject input = new JsonObject();
                 input.addProperty("format", "csv");
                 input.addProperty("data", ingestedData.get("data").toString());
-                long dataSetId = this.modelDataSetService.storeTrainingDataSet(input);
+                String dataSetId = this.modelDataSetService.storeTrainingDataSet(input);
                 dataSetIds[i] = dataSetId;
             }
             DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
@@ -157,7 +157,7 @@ public class AIModelService
         }
     }
 
-    public void deployModel(long modelId) throws ModelNotFoundException
+    public void deployModel(String modelId) throws ModelNotFoundException
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
         if(modelPackage == null)
@@ -189,7 +189,7 @@ public class AIModelService
         }
     }
 
-    public String evalPython(long modelId, long[] dataSetIds) throws JepException
+    public String evalPython(String modelId, String[] dataSetIds) throws JepException
     {
         String output;
         JsonObject modelPackage = this.packagingService.getModelPackage(modelId);
@@ -197,7 +197,7 @@ public class AIModelService
         try (Interpreter interp = new SharedInterpreter())
         {
             JsonArray dataSetIdArray = new JsonArray();
-            for(long dataSetId:dataSetIds)
+            for(String dataSetId:dataSetIds)
             {
                 dataSetIdArray.add(dataSetId);
             }
@@ -209,7 +209,7 @@ public class AIModelService
         return output;
     }
 
-    public JsonArray rollOverToTraningDataSets(long modelId) throws ModelNotFoundException,ModelIsNotLive
+    public JsonArray rollOverToTraningDataSets(String modelId) throws ModelNotFoundException,ModelIsNotLive
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
         if(modelPackage == null)
@@ -237,7 +237,7 @@ public class AIModelService
     }
 
     //PRODUCTION_MODEL_RELATED**************************************************************************************************************************************************************************************************************************************************************************************************
-    public String evalJava(long modelId, long[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
+    public String evalJava(String modelId, String[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
 
@@ -277,7 +277,7 @@ public class AIModelService
         }
     }
 
-    public String evalJavaFromDataLake(long modelId, long[] dataLakeIds) throws ModelNotFoundException, ModelIsNotLive
+    public String evalJavaFromDataLake(String modelId, String[] dataLakeIds) throws ModelNotFoundException, ModelIsNotLive
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
 
@@ -304,10 +304,10 @@ public class AIModelService
                 this.activeModels.put(modelId, network);
             }
 
-            long[] dataSetIds = new long[dataLakeIds.length];
+            String[] dataSetIds = new String[dataLakeIds.length];
             for(int i=0; i<dataLakeIds.length;i++)
             {
-                long dataLakeId = dataLakeIds[i];
+                String dataLakeId = dataLakeIds[i];
                 JsonObject ingestedData = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
                 //logger.info("***************************************************");
                 //logger.info("DataLakeId: "+dataLakeId+":"+ingestedData.toString());
@@ -316,7 +316,7 @@ public class AIModelService
                 JsonObject input = new JsonObject();
                 input.addProperty("format", "csv");
                 input.addProperty("data", ingestedData.get("data").toString());
-                long dataSetId = this.modelDataSetService.storeTrainingDataSet(input);
+                String dataSetId = this.modelDataSetService.storeTrainingDataSet(input);
                 dataSetIds[i] = dataSetId;
             }
 

@@ -60,7 +60,7 @@ public class MapperServiceTests extends BaseTest{
         logger.info("*******");
     }*/
 
-    @Test
+    //@Test
     public void streamIngesterSubmit() throws Exception{
         System.out.println("TEST_STARTED");
 
@@ -87,13 +87,5 @@ public class MapperServiceTests extends BaseTest{
         response.getBody().prettyPrint();
 
         Thread.sleep(7*60*1000);
-    }
-
-    @Test
-    public void blah() throws Exception{
-        String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                "aviation/flights0.json"),
-                StandardCharsets.UTF_8);
-        System.out.println(sourceData);
     }
 }

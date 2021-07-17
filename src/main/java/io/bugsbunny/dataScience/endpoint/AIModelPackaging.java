@@ -41,7 +41,7 @@ public class AIModelPackaging
     @Path("model")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getModel(@QueryParam("modelId") long modelId)
+    public Response getModel(@QueryParam("modelId") String modelId)
     {
         try {
             String result = this.packagingService.getModel(modelId);

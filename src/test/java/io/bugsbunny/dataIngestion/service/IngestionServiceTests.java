@@ -26,7 +26,7 @@ public class IngestionServiceTests extends BaseTest {
     public void testGetIngestion() throws Exception
     {
         //TODO: temp code for debugging
-        long dataLakeId = -2586030430120757939l;
+        String dataLakeId = "-2586030430120757939";
         logger.info(this.ingestionService.readDataLakeData(dataLakeId).toString());
     }
 }

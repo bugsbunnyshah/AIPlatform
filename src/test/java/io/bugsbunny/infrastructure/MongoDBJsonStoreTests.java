@@ -58,7 +58,7 @@ public class MongoDBJsonStoreTests extends BaseTest {
         JsonObject dataSetJson = new JsonObject();
         dataSetJson.addProperty("format","csv");
         dataSetJson.addProperty("data", csv);
-        long oid = this.mongoDBJsonStore.storeTrainingDataSet(this.securityTokenContainer.getTenant(),dataSetJson);
+        String oid = this.mongoDBJsonStore.storeTrainingDataSet(this.securityTokenContainer.getTenant(),dataSetJson);
         logger.info("Lookup DataSetId: "+oid);
 
         JsonObject dataSet = this.mongoDBJsonStore.readDataSet(this.securityTokenContainer.getTenant(),oid);
@@ -76,7 +76,7 @@ public class MongoDBJsonStoreTests extends BaseTest {
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
-        long modelId = liveModelDeployedJson.get("modelId").getAsLong();
+        String modelId = liveModelDeployedJson.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());

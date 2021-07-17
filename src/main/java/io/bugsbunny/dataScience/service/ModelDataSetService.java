@@ -19,18 +19,18 @@ public class ModelDataSetService {
     @Inject
     private SecurityTokenContainer securityTokenContainer;
 
-    public long storeTrainingDataSet(JsonObject dataSetJson)
+    public String storeTrainingDataSet(JsonObject dataSetJson)
     {
 
         return this.mongoDBJsonStore.storeTrainingDataSet(this.securityTokenContainer.getTenant(),dataSetJson);
     }
 
-    public long storeEvalDataSet(JsonObject dataSetJson)
+    public String storeEvalDataSet(JsonObject dataSetJson)
     {
         return this.mongoDBJsonStore.storeEvalDataSet(this.securityTokenContainer.getTenant(),dataSetJson);
     }
 
-    public JsonObject readDataSet(long dataSetId)
+    public JsonObject readDataSet(String dataSetId)
     {
         return this.mongoDBJsonStore.readDataSet(this.securityTokenContainer.getTenant(),dataSetId);
     }

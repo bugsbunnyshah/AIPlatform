@@ -158,7 +158,7 @@ public class ModelTrainingProcessTests extends BaseTest
         rrTrain.initialize(new FileSplit(trainFile));
         //DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain, batchSize, 0, 2);
         DataSetIterator trainIter = this.aiPlatformDataSetIteratorFactory.getInstance(
-                new long[]{8262950843826255554l});
+                new String[]{"8262950843826255554"});
 
         model.fit(trainIter, nEpochs);
 

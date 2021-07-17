@@ -83,14 +83,14 @@ public class LiveModel
     {
         try {
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
-            long modelId = jsonInput.get("modelId").getAsLong();
+            String modelId = jsonInput.get("modelId").getAsString();
             JsonArray dataSetIdArray = jsonInput.get("dataSetIds").getAsJsonArray();
-            long[] dataSetIds = new long[dataSetIdArray.size()];
+            String[] dataSetIds = new String[dataSetIdArray.size()];
             Iterator<JsonElement> iterator = dataSetIdArray.iterator();
             int counter = 0;
             while(iterator.hasNext())
             {
-                dataSetIds[counter] = iterator.next().getAsLong();
+                dataSetIds[counter] = iterator.next().getAsString();
                 counter++;
             }
             String eval = this.aiModelService.evalJava(modelId, dataSetIds);
@@ -132,14 +132,14 @@ public class LiveModel
     {
         try {
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
-            long modelId = jsonInput.get("modelId").getAsLong();
+            String modelId = jsonInput.get("modelId").getAsString();
             JsonArray dataLakeIdsArray = jsonInput.get("dataLakeIds").getAsJsonArray();
-            long[] dataLakeIds = new long[dataLakeIdsArray.size()];
+            String[] dataLakeIds = new String[dataLakeIdsArray.size()];
             Iterator<JsonElement> iterator = dataLakeIdsArray.iterator();
             int counter = 0;
             while(iterator.hasNext())
             {
-                dataLakeIds[counter] = iterator.next().getAsLong();
+                dataLakeIds[counter] = iterator.next().getAsString();
                 counter++;
             }
             String eval = this.aiModelService.evalJavaFromDataLake(modelId, dataLakeIds);
@@ -181,7 +181,7 @@ public class LiveModel
     {
         try {
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
-            long modelId = jsonInput.get("modelId").getAsLong();
+            String modelId = jsonInput.get("modelId").getAsString();
 
             this.aiModelService.deployModel(modelId);
 
@@ -229,14 +229,14 @@ public class LiveModel
             logger.info("EVAL_PYTHON_MODEL");
             logger.info("******************");
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
-            long modelId =  jsonInput.get("modelId").getAsLong();
+            String modelId =  jsonInput.get("modelId").getAsString();
             JsonArray dataSetIdArray = jsonInput.get("dataSetIds").getAsJsonArray();
-            long[] dataSetIds = new long[dataSetIdArray.size()];
+            String[] dataSetIds = new String[dataSetIdArray.size()];
             Iterator<JsonElement> iterator = dataSetIdArray.iterator();
             int counter = 0;
             while(iterator.hasNext())
             {
-                dataSetIds[counter] = iterator.next().getAsLong();
+                dataSetIds[counter] = iterator.next().getAsString();
                 counter++;
             }
             String eval = this.aiModelService.evalPython(modelId, dataSetIds);
@@ -271,7 +271,7 @@ public class LiveModel
     {
         try {
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
-            long modelId = jsonInput.get("modelId").getAsLong();
+            String modelId = jsonInput.get("modelId").getAsString();
 
             JsonArray rollback = this.aiModelService.rollOverToTraningDataSets(modelId);
 

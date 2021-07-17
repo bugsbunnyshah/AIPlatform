@@ -45,15 +45,15 @@ public class AIModelServiceTests extends BaseTest {
         assertEquals(200, dataSetResponse.getStatusCode());
 
         JsonObject returnValue = JsonParser.parseString(dataSetResponse.body().asString()).getAsJsonObject();
-        long dataSetId = returnValue.get("dataSetId").getAsLong();
+        String dataSetId = returnValue.get("dataSetId").getAsString();
 
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject response = this.packagingService.performPackaging(modelPackage);
 
-        long modelId = response.get("modelId").getAsLong();
-        String result = this.aiModelService.trainJava(modelId, new long[]{dataSetId});
+        String modelId = response.get("modelId").getAsString();
+        String result = this.aiModelService.trainJava(modelId, new String[]{dataSetId});
         logger.info("****************");
         logger.info("ModelId: "+modelId);
         logger.info("****************");
@@ -64,7 +64,7 @@ public class AIModelServiceTests extends BaseTest {
     @Test
     public void testTrainingModelNotFound() throws Exception
     {
-        long modelId = 0l;
+        String modelId = "0";
         boolean modelNotFound = false;
         try {
             this.aiModelService.trainJava(modelId, null);
@@ -83,7 +83,7 @@ public class AIModelServiceTests extends BaseTest {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
         JsonObject response = this.packagingService.performPackaging(modelPackage);
-        long modelId = response.get("modelId").getAsLong();
+        String modelId = response.get("modelId").getAsString();
         logger.info("****************");
         logger.info("ModelId: "+modelId);
         logger.info("****************");
@@ -118,7 +118,7 @@ public class AIModelServiceTests extends BaseTest {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
         JsonObject response = this.packagingService.performPackaging(modelPackage);
-        long modelId = response.get("modelId").getAsLong();
+        String modelId = response.get("modelId").getAsString();
         logger.info("****************");
         logger.info("ModelId: "+modelId);
         logger.info("****************");
@@ -139,7 +139,7 @@ public class AIModelServiceTests extends BaseTest {
     @Test
     public void testDeployModelNotFound() throws Exception
     {
-        long modelId = 0l;
+        String modelId = "0";
         boolean modelNotFound = false;
         try {
             this.aiModelService.deployModel(modelId);
@@ -169,16 +169,16 @@ public class AIModelServiceTests extends BaseTest {
         assertEquals(200, dataSetResponse.getStatusCode());
 
         JsonObject returnValue = JsonParser.parseString(dataSetResponse.body().asString()).getAsJsonObject();
-        long dataSetId = returnValue.get("dataSetId").getAsLong();
+        String dataSetId = returnValue.get("dataSetId").getAsString();
 
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject response = this.packagingService.performPackaging(modelPackage);
 
-        long modelId = response.get("modelId").getAsLong();
+        String modelId = response.get("modelId").getAsString();
         this.aiModelService.deployModel(modelId);
-        String result = this.aiModelService.evalJava(modelId, new long[]{dataSetId});
+        String result = this.aiModelService.evalJava(modelId, new String[]{dataSetId});
         logger.info("****************");
         logger.info("ModelId: "+modelId);
         logger.info("****************");
@@ -189,7 +189,7 @@ public class AIModelServiceTests extends BaseTest {
     @Test
     public void testEvalModelNotFound() throws Exception
     {
-        long modelId = 0l;
+        String modelId = "0";
         boolean modelNotFound = false;
         try {
             this.aiModelService.evalJava(modelId, null);
@@ -219,15 +219,15 @@ public class AIModelServiceTests extends BaseTest {
         assertEquals(200, dataSetResponse.getStatusCode());
 
         JsonObject returnValue = JsonParser.parseString(dataSetResponse.body().asString()).getAsJsonObject();
-        long dataSetId = returnValue.get("dataSetId").getAsLong();
+        String dataSetId = returnValue.get("dataSetId").getAsString();
 
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject response = this.packagingService.performPackaging(modelPackage);
 
-        long modelId = response.get("modelId").getAsLong();
-        String result = this.aiModelService.trainJava(modelId, new long[]{dataSetId});
+        String modelId = response.get("modelId").getAsString();
+        String result = this.aiModelService.trainJava(modelId, new String[]{dataSetId});
         logger.info("****************");
         logger.info("ModelId: "+modelId);
         logger.info("****************");
@@ -279,9 +279,9 @@ public class AIModelServiceTests extends BaseTest {
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
         assertNotNull(ingestedData.get("dataLakeId"));
 
-        long modelId = response.get("modelId").getAsLong();
+        String modelId = response.get("modelId").getAsString();
         String result = this.aiModelService.trainJavaFromDataLake(modelId,
-                new long[]{ingestedData.get("dataLakeId").getAsLong()});
+                new String[]{ingestedData.get("dataLakeId").getAsString()});
         logger.info("****************");
         logger.info("ModelId: "+modelId);
         logger.info("****************");
@@ -322,10 +322,10 @@ public class AIModelServiceTests extends BaseTest {
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
         assertNotNull(ingestedData.get("dataLakeId"));
 
-        long modelId = response.get("modelId").getAsLong();
+        String modelId = response.get("modelId").getAsString();
         this.aiModelService.deployModel(modelId);
         String result = this.aiModelService.evalJavaFromDataLake(modelId,
-                new long[]{ingestedData.get("dataLakeId").getAsLong()});
+                new String[]{ingestedData.get("dataLakeId").getAsString()});
         logger.info("****************");
         logger.info("ModelId: "+modelId);
         logger.info("****************");

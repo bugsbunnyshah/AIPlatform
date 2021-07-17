@@ -41,7 +41,7 @@ public class RemoteModel
         try
         {
             JsonObject request = JsonParser.parseString(input).getAsJsonObject();
-            long modelId = request.get("modelId").getAsLong();
+            String modelId = request.get("modelId").getAsString();
             JsonObject remoteModelPackage = this.packagingService.getModelPackage(modelId);
 
             JsonObject data = request.get("payload").getAsJsonObject();

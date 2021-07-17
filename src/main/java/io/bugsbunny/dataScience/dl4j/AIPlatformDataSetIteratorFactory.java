@@ -36,13 +36,13 @@ public class AIPlatformDataSetIteratorFactory
         this.aiPlatformDataSetLoader = aiPlatformDataSetLoader;
     }
 
-    public DataSetIterator getInstance(long[] dataSetIds)
+    public DataSetIterator getInstance(String[] dataSetIds)
     {
         SecurityToken securityToken = this.securityTokenContainer.getSecurityToken();
         AIPlatformDataSetSourceFactory sourceFactory = new AIPlatformDataSetSourceFactory(securityToken);
 
         JsonArray array = new JsonArray();
-        for(long dataSetId:dataSetIds)
+        for(String dataSetId:dataSetIds)
         {
             array.add(dataSetId);
         }

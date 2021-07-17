@@ -54,7 +54,7 @@ public class TrainAviationAIModel
             this.aviationDataIngestionService.startIngestion();
             Thread.sleep(20000);
 
-            List<Long> dataSetIds = this.aviationDataIngestionService.getDataSetIds();
+            List<String> dataSetIds = this.aviationDataIngestionService.getDataSetIds();
             int counter = 100;
             while(dataSetIds.isEmpty() && counter > 0)
             {
@@ -62,7 +62,7 @@ public class TrainAviationAIModel
                 counter--;
             }
 
-            long[] trainingDataSets = new long[dataSetIds.size()];
+            String[] trainingDataSets = new String[dataSetIds.size()];
             for(int i=0; i<dataSetIds.size();i++)
             {
                 trainingDataSets[i] = dataSetIds.get(i);
@@ -100,7 +100,7 @@ public class TrainAviationAIModel
             jsonObject.addProperty("model", modelString);
 
             JsonObject deployedModel = this.packagingService.performPackaging(jsonObject.toString());
-            long modelId = deployedModel.get("modelId").getAsLong();
+            String modelId = deployedModel.get("modelId").getAsString();
 
             String trainingResult = this.trainingAIModelService.trainJava(modelId, trainingDataSets);
 

@@ -36,6 +36,9 @@ public class TrainModel
     @Inject
     private AITrafficContainer aiTrafficContainer;
 
+    @Inject
+    private AIModelService trainingAIModelService;
+
     static
     {
         try
@@ -63,9 +66,6 @@ public class TrainModel
         }
     }
 
-    @Inject
-    private AIModelService trainingAIModelService;
-
     @Path("trainJava")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -73,14 +73,14 @@ public class TrainModel
     {
         try {
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
-            long modelId = jsonInput.get("modelId").getAsLong();
+            String modelId = jsonInput.get("modelId").getAsString();
             JsonArray dataSetIdArray = jsonInput.get("dataSetIds").getAsJsonArray();
-            long[] dataSetIds = new long[dataSetIdArray.size()];
+            String[] dataSetIds = new String[dataSetIdArray.size()];
             Iterator<JsonElement> iterator = dataSetIdArray.iterator();
             int counter = 0;
             while(iterator.hasNext())
             {
-                dataSetIds[counter] = iterator.next().getAsLong();
+                dataSetIds[counter] = iterator.next().getAsString();
                 counter++;
             }
             String eval = this.trainingAIModelService.trainJava(modelId, dataSetIds);
@@ -122,14 +122,14 @@ public class TrainModel
     {
         try {
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
-            long modelId = jsonInput.get("modelId").getAsLong();
+            String modelId = jsonInput.get("modelId").getAsString();
             JsonArray dataLakeIdsArray = jsonInput.get("dataLakeIds").getAsJsonArray();
-            long[] dataLakeIds = new long[dataLakeIdsArray.size()];
+            String[] dataLakeIds = new String[dataLakeIdsArray.size()];
             Iterator<JsonElement> iterator = dataLakeIdsArray.iterator();
             int counter = 0;
             while(iterator.hasNext())
             {
-                dataLakeIds[counter] = iterator.next().getAsLong();
+                dataLakeIds[counter] = iterator.next().getAsString();
                 counter++;
             }
             String eval = this.trainingAIModelService.trainJavaFromDataLake(modelId, dataLakeIds);
@@ -183,14 +183,14 @@ public class TrainModel
             logger.info("TRAIN_PYTHON_MODEL");
             logger.info("******************");
             JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
-            long modelId =  jsonInput.get("modelId").getAsLong();
+            String modelId =  jsonInput.get("modelId").getAsString();
             JsonArray dataSetIdArray = jsonInput.get("dataSetIds").getAsJsonArray();
-            long[] dataSetIds = new long[dataSetIdArray.size()];
+            String[] dataSetIds = new String[dataSetIdArray.size()];
             Iterator<JsonElement> iterator = dataSetIdArray.iterator();
             int counter = 0;
             while(iterator.hasNext())
             {
-                dataSetIds[counter] = iterator.next().getAsLong();
+                dataSetIds[counter] = iterator.next().getAsString();
                 counter++;
             }
             String eval = this.trainingAIModelService.evalPython(modelId, dataSetIds);
