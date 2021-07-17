@@ -46,6 +46,9 @@ public class StreamIngester implements Serializable{
                             return;
                         }
 
+                        String dataLakeId = root.getAsJsonObject().get("dataLakeId").getAsString();
+                        root.getAsJsonObject().remove("dataLakeId");
+
                         HierarchicalSchemaInfo sourceSchemaInfo = MapperService.populateHierarchialSchema(root.toString(),
                                 root.toString(), null);
 
@@ -63,6 +66,7 @@ public class StreamIngester implements Serializable{
                         //logger.info("*************************************");
 
                         JsonObject local = MapperService.performMapping(scores, root.toString());
+                        local.addProperty("braineous_datalakeid",dataLakeId);
                         logger.info(local.toString());
                     });
                 }
@@ -102,9 +106,11 @@ public class StreamIngester implements Serializable{
                 throw new RuntimeException(e);
             }
         }
-        this.streamReceiver.receiveData(sourceData.toString());
 
-        json.addProperty("dataLakeId", UUID.randomUUID().toString());
+        String dataLakeId = UUID.randomUUID().toString();
+        this.streamReceiver.receiveData(dataLakeId,sourceData.toString());
+
+        json.addProperty("dataLakeId", dataLakeId);
         return json;
     }
 
@@ -134,8 +140,9 @@ public class StreamIngester implements Serializable{
             // is designed to stop by itself if isStopped() returns false
         }
 
-        public void receiveData(String data)
+        public void receiveData(String dataLakeId,String data)
         {
+            StreamIngesterContext.getStreamIngesterContext().setDataLakeId(dataLakeId);
             StreamIngesterContext.getStreamIngesterContext().setData(data);
         }
     }
@@ -157,10 +164,13 @@ public class StreamIngester implements Serializable{
                 while (!this.streamReceiver.isStopped()) {
                     if(StreamIngesterContext.getStreamIngesterContext().getData() != null) {
                         String data = StreamIngesterContext.getStreamIngesterContext().getData();
+                        String dataLakeId = StreamIngesterContext.getStreamIngesterContext().getDataLakeId();
                         JsonArray jsonArray = JsonParser.parseString(data).getAsJsonArray();
                         Iterator<JsonElement> iterator = jsonArray.iterator();
                         while (iterator.hasNext()) {
-                            this.streamReceiver.store(iterator.next().getAsJsonObject().toString());
+                            JsonObject jsonObject = iterator.next().getAsJsonObject();
+                            jsonObject.addProperty("dataLakeId",dataLakeId);
+                            this.streamReceiver.store(jsonObject.toString());
                         }
                         StreamIngesterContext.getStreamIngesterContext().setData(null);
                     }

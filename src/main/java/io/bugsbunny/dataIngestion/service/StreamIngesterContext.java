@@ -40,4 +40,12 @@ public class StreamIngesterContext implements Serializable {
     {
         this.streamIngesterQueue.setData(data);
     }
+
+    public String getDataLakeId(){
+        return this.streamIngesterQueue.getDataLakeId();
+    }
+
+    public void setDataLakeId(String dataLakeId){
+        this.streamIngesterQueue.setDataLakeId(dataLakeId);
+    }
 }
