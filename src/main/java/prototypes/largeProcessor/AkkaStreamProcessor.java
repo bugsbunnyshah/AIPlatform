@@ -63,11 +63,10 @@ public class AkkaStreamProcessor {
         }
 
         Source<Tweet, NotUsed> tweets = Source.from(data);
-
-        //final Source<Author, NotUsed> authors = tweets.filter(t -> t.hashtags().contains(AKKA)).map(t -> t.author);
         final Source<Author, NotUsed> authors = Source.from(authorData);
 
-        authors.runWith(Sink.foreach(a -> System.out.println(a.handle)), system);
+        //authors.runWith(Sink.foreach(a -> System.out.println(a.handle)), system);
+        //tweets.runWith(Sink.foreach(t -> System.out.println(t.body)), system);
     }
 
     public static class Author {

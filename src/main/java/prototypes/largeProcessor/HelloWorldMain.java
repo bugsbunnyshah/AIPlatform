@@ -19,12 +19,13 @@ public class HelloWorldMain extends AbstractBehavior<HelloWorldMain.SayHello> {
     }
 
     public static Behavior<SayHello> create() {
+
         return Behaviors.setup(HelloWorldMain::new);
     }
 
     private final ActorRef<HelloWorld.Greet> greeter;
 
-    private HelloWorldMain(ActorContext<SayHello> context) {
+    public HelloWorldMain(ActorContext<SayHello> context) {
         super(context);
         greeter = context.spawn(HelloWorld.create(), "greeter");
     }

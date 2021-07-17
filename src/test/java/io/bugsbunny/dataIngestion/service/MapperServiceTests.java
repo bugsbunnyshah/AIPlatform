@@ -16,13 +16,13 @@ import java.nio.charset.StandardCharsets;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
-public class MapperServiceTests extends BaseTest {
+public class MapperServiceTests extends BaseTest{
     private static Logger logger = LoggerFactory.getLogger(MapperServiceTests.class);
 
     @Inject
     private MapperService mapperService;
 
-    @Test
+    /*@Test
     public void testMapAirlineData() throws Exception
     {
         String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
@@ -43,5 +43,47 @@ public class MapperServiceTests extends BaseTest {
         assertEquals("7777777", jsonObject.get("Id").getAsString());
         assertEquals("77777", jsonObject.get("Rcvr").getAsString());
         assertEquals(Boolean.FALSE, jsonObject.get("HasSig").getAsBoolean());
+    }
+
+    @Test
+    public void testMapAirlineDataBig() throws Exception
+    {
+        String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "aviation/flights0.json"),
+                StandardCharsets.UTF_8);
+        JsonArray jsonArray = JsonParser.parseString(sourceData).getAsJsonObject().get("data").getAsJsonArray();
+        JsonArray array = this.mapperService.map(jsonArray);
+        logger.info("*******");
+        logger.info(array.toString());
+        logger.info("*******");
+    }*/
+
+    @Test
+    public void streamIngesterSubmit() throws Exception{
+        System.out.println("TEST_STARTED");
+
+
+        String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "aviation/flights0.json"),
+                StandardCharsets.UTF_8);
+        JsonArray jsonArray = JsonParser.parseString(sourceData).getAsJsonObject().get("data").getAsJsonArray();
+
+
+        System.out.println("*******************************");
+        System.out.println("STARTING_INGESTION");
+        System.out.println("*******************************");
+
+        JsonObject json = this.mapperService.map(jsonArray);
+        System.out.println(json);
+
+        Thread.sleep(7*60*1000);
+    }
+
+    @Test
+    public void blah() throws Exception{
+        String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "aviation/flights0.json"),
+                StandardCharsets.UTF_8);
+        System.out.println(sourceData);
     }
 }

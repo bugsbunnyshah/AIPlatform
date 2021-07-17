@@ -7,9 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.Serializable;
 
 @ApplicationScoped
-public class IngestionService {
+public class IngestionService implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(IngestionService.class);
 
     @Inject

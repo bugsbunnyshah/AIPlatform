@@ -1,9 +1,12 @@
 package io.bugsbunny.dataIngestion.endpoint;
 
 import com.google.gson.*;
+import io.bugsbunny.Braineous;
 import io.bugsbunny.dataIngestion.service.IngestionService;
 import io.bugsbunny.dataIngestion.service.MapperService;
+import io.bugsbunny.dataIngestion.service.StreamIngester;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.json.XML;
@@ -11,10 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.Iterator;
 
@@ -30,6 +35,7 @@ public class DataMapper {
 
     private CSVDataUtil csvDataUtil = new CSVDataUtil();
 
+
     @Path("map")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -42,8 +48,7 @@ public class DataMapper {
             String sourceData = jsonObject.get("sourceData").getAsString();
             JsonArray array = JsonParser.parseString(sourceData).getAsJsonArray();
 
-            JsonArray result = this.mapperService.map(array);
-            JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
+            JsonObject responseJson  = this.mapperService.map(array);
 
             Response response = Response.ok(responseJson.toString()).build();
             return response;
@@ -72,8 +77,7 @@ public class DataMapper {
             String json = sourceJson.toString(4);
             JsonObject sourceJsonObject = JsonParser.parseString(json).getAsJsonObject();
 
-            JsonArray result = this.mapperService.mapXml(sourceJsonObject);
-            JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
+            JsonObject responseJson = this.mapperService.mapXml(sourceJsonObject);
 
             Response response = Response.ok(responseJson.toString()).build();
             return response;
@@ -130,8 +134,7 @@ public class DataMapper {
                 }
                 array.add(row);
             }
-            JsonArray result = this.mapperService.map(array);
-            JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
+            JsonObject responseJson = this.mapperService.map(array);
 
             Response response = Response.ok(responseJson.toString()).build();
             return response;

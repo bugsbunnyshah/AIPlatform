@@ -104,7 +104,8 @@ public class MongoDBJsonStoreTests extends BaseTest {
         assertTrue(dataSetIds.contains(dataSetId));
     }
 
-    @Test
+    //TODO
+    /*@Test
     public void testIngestion() throws Exception
     {
         String csv = IOUtils.toString(
@@ -120,5 +121,5 @@ public class MongoDBJsonStoreTests extends BaseTest {
         JsonObject data = this.mongoDBJsonStore.getIngestion(dataLakeId);
         logger.info(data.toString());
         logger.info(data.get("dataLakeId").getAsString());
-    }
+    }*/
 }

@@ -143,11 +143,6 @@
       <version>${dl4j-master.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.datavec</groupId>
-      <artifactId>datavec-data-codec</artifactId>
-      <version>${dl4j-master.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>javacv-platform</artifactId>
       <version>1.5.2</version>
@@ -184,11 +179,6 @@
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-stream_${scala.binary.version}</artifactId>
       <version>${akka.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.scala-lang</groupId>
-      <artifactId>scala-library</artifactId>
-      <version>2.13.4</version>
     </dependency>
 
     <!-- Automatic Ingestion Mapping related...Very Important -->
@@ -242,6 +232,15 @@
       <artifactId>jfreechart</artifactId>
       <version>1.0.13</version>
     </dependency>
+
+
+    <!-- ObjectGraph related...I Love you gremlin -->
+    <!--
+    <dependency>
+      <groupId>org.apache.tinkerpop</groupId>
+      <artifactId>gremlin-core</artifactId>
+      <version>3.4.8</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.tinkerpop</groupId>
       <artifactId>tinkergraph-gremlin</artifactId>
@@ -252,12 +251,7 @@
       <artifactId>sparql-gremlin</artifactId>
       <version>3.4.8</version>
     </dependency>
-
-    <dependency>
-      <groupId>org.locationtech.spatial4j</groupId>
-      <artifactId>spatial4j</artifactId>
-      <version>0.7</version>
-    </dependency>
+    -->
   </dependencies>
   <build>
     <plugins>
