@@ -1,81 +1,39 @@
-import React, { useEffect, useState } from 'react';
-import './App.css';
-import List from './components/List';
-import withListLoading from './components/WithListLoading';
-import axios from 'axios'
+import React, { Component } from 'react';
+import { HashRouter, Route, Switch } from 'react-router-dom';
+import './scss/style.scss';
 
-function App() {
-  const ListLoading = withListLoading(List);
-  const [appState, setAppState] = useState({
-    loading: false,
-    repos: null,
-  });
+const loading = (
+  <div className="pt-3 text-center">
+    <div className="sk-spinner sk-spinner-pulse"></div>
+  </div>
+)
 
-  useEffect(() => {
-    setAppState({ loading: true });
-    //const apiUrl = `https://api.github.com/users/hacktivist123/repos`;
-    /*fetch(apiUrl)
-      .then((res) => res.json())
-      .then((repos) => {
-        setAppState({ loading: false, repos: repos });
-      });*/
-    const apiUrl = 'http://localhost:8080/dashboard/modelTraffic';
-    axios.get(apiUrl).then((repos) => {
-          const allRepos = repos.data;
-          setAppState({ loading: false, repos: allRepos });
-    });
-  }, [setAppState]);
-  return (
-    <div className='App'>
-      <div className='container'>
-        <h1>My Repositories</h1>
-      </div>
-      <div className='repo-container'>
-        <ListLoading isLoading={appState.loading} repos={appState.repos} />
-      </div>
-      <footer>
-        <div className='footer'>
-          Built{' '}
-          <span role='img' aria-label='love'>
-            💚
-          </span>{' '}
-          with by Shedrack Akintayo
-        </div>
-      </footer>
-    </div>
-  );
+// Containers
+const TheLayout = React.lazy(() => import('./containers/TheLayout'));
+
+// Pages
+const Login = React.lazy(() => import('./views/pages/login/Login'));
+const Register = React.lazy(() => import('./views/pages/register/Register'));
+const Page404 = React.lazy(() => import('./views/pages/page404/Page404'));
+const Page500 = React.lazy(() => import('./views/pages/page500/Page500'));
+
+class App extends Component {
+
+  render() {
+    return (
+      <HashRouter>
+          <React.Suspense fallback={loading}>
+            <Switch>
+              <Route exact path="/login" name="Login Page" render={props => <Login {...props}/>} />
+              <Route exact path="/register" name="Register Page" render={props => <Register {...props}/>} />
+              <Route exact path="/404" name="Page 404" render={props => <Page404 {...props}/>} />
+              <Route exact path="/500" name="Page 500" render={props => <Page500 {...props}/>} />
+              <Route path="/" name="Home" render={props => <TheLayout {...props}/>} />
+            </Switch>
+          </React.Suspense>
+      </HashRouter>
+    );
+  }
 }
+
 export default App;
-/*import React from 'react';
-import Container from '@material-ui/core/Container';
-import Typography from '@material-ui/core/Typography';
-import Box from '@material-ui/core/Box';
-import Link from '@material-ui/core/Link';
-import ProTip from './ProTip';
-
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-      <Link color="inherit" href="https://material-ui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
-export default function App() {
-  return (
-    <Container maxWidth="sm">
-      <Box my={4}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Create React App v4-beta example
-        </Typography>
-        <ProTip />
-        <Copyright />
-      </Box>
-    </Container>
-  );
-}*/
