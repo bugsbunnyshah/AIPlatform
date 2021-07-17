@@ -95,7 +95,7 @@ public class SparqlTest {
         }
     }
 
-    //@Test
+    @Test
     public void testRemoteQuery() throws Exception
     {
         BaseConfiguration configuration = new BaseConfiguration();
@@ -118,7 +118,7 @@ public class SparqlTest {
 
         RemoteConnection remoteConnection = RemoteConnection.from(configuration);
 
-        Graph tinkerGraph = TinkerFactory.createModern();
+        //Graph tinkerGraph = TinkerFactory.createModern();
         //Graph tinkerGraph = EmptyGraph.instance();
         //SparqlTraversalSource g = tinkerGraph.traversal(SparqlTraversalSource.class);
         //SparqlTraversalSource g = new SparqlTraversalSource(remoteConnection);
@@ -137,8 +137,9 @@ public class SparqlTest {
         peter.addEdge("created", lop, T.id, 12, "weight", 0.2d);*/
 
 
-        //TinkerGraph g = TinkerGraph.open();
-        SparqlTraversalSource server = new SparqlTraversalSource(remoteConnection);
+        TinkerGraph g = TinkerGraph.open();
+        //SparqlTraversalSource server = new SparqlTraversalSource(remoteConnection);
+        SparqlTraversalSource server = new SparqlTraversalSource(g);
         server.addV("person").property("name","marko");
 
         String query = "SELECT * WHERE { }";

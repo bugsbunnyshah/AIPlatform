@@ -4,15 +4,20 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataIngestion.service.MapperService;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.sparql.process.traversal.dsl.sparql.SparqlTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -35,8 +40,29 @@ public class ObjectGraphQueryService {
     public void start()
     {
         //TODO: instantiate with a RemoteGraphData
-        //SparqlTraversalSource server = new SparqlTraversalSource(graph);
-        //this.graphData = new LocalGraphData(server);
+        /*BaseConfiguration configuration = new BaseConfiguration();
+        configuration.addProperty("port", 8182);
+        configuration.addProperty("hosts", Arrays.asList("gremlin-server"));
+        configuration.addProperty("gremlin.remote.remoteConnectionClass","org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection");
+        configuration.addProperty("connectionPool.maxContentLength", 131072);
+        configuration.addProperty("connectionPool.enableSsl", false);
+        configuration.addProperty("connectionPool.maxSize", 80);
+        configuration.addProperty("connectionPool.minSize", 10);
+        configuration.addProperty("connectionPool.maxInProcessPerConnection", 16);
+        configuration.addProperty("connectionPool.minInProcessPerConnection", 8);
+        configuration.addProperty("connectionPool.maxWaitForConnection", 10000);
+        configuration.addProperty("connectionPool.minSimultaneousUsagePerConnection", 10);
+        configuration.addProperty("connectionPool.maxSimultaneousUsagePerConnection", 10);
+        //configuration.addProperty("serializer.className", "org.apache.tinkerpop.gremlin.driver.ser.AbstractGryoMessageSerializerV3d0");
+        //configuration.addProperty("serializer.config.serializeResultToString", "true");
+        configuration.addProperty("serializer.className",
+                "org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0");
+
+        RemoteConnection remoteConnection = RemoteConnection.from(configuration);
+        SparqlTraversalSource server = new SparqlTraversalSource(remoteConnection);*/
+        TinkerGraph g = TinkerGraph.open();
+        SparqlTraversalSource server = new SparqlTraversalSource(g);
+        this.graphData = new LocalGraphData(server);
     }
 
     public void setGraphData(GraphData graphData)

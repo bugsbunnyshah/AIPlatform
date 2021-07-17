@@ -73,8 +73,8 @@ public class MapperService {
 
     public JsonArray map(String entity,JsonArray sourceData)
     {
-        //logger.info("********SOURCE_DATA************");
-        //JsonUtil.print(sourceData);
+        logger.info("********SOURCE_DATA************");
+        JsonUtil.print(sourceData);
         JsonArray result = new JsonArray();
         try
         {
@@ -99,13 +99,15 @@ public class MapperService {
                 f2.addElements(destinationSchemaInfo.getElements(Entity.class));
 
                 Map<SchemaElement, Double> scores = this.findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
-                //logger.info("*************SCORES************************");
+                logger.info("*************SCORES************************");
                 //logger.info(scores.toString());
                 //logger.info("*************************************");
 
                 JsonObject local = this.performMapping(scores, root.toString());
 
                 //ObjectGraph/Gremlin integration
+                logger.info("OQS: "+this.objectGraphQueryService);
+                logger.info("GD: "+this.objectGraphQueryService.getGraphData());
                 Vertex vertex = this.saveObjectGraph(entity,local,null, this.
                                 objectGraphQueryService.getGraphData().getTraversalSource(),
                         false);
