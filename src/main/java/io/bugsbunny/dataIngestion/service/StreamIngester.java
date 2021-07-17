@@ -116,18 +116,23 @@ public class StreamIngester implements Serializable{
             }
         }
 
-        if(StreamIngesterContext.getStreamIngesterContext() != null){
-            StreamIngesterContext streamIngesterContext = StreamIngesterContext.getStreamIngesterContext();
-            streamIngesterContext.setSecurityTokenContainer(securityTokenContainer);
-            streamIngesterContext.setDataReplayService(dataReplayService);
-            streamIngesterContext.setMongoDBJsonStore(mongoDBJsonStore);
+        if(securityTokenContainer != null) {
+            if (StreamIngesterContext.getStreamIngesterContext() != null) {
+                StreamIngesterContext streamIngesterContext = StreamIngesterContext.getStreamIngesterContext();
+                streamIngesterContext.setSecurityTokenContainer(securityTokenContainer);
+                streamIngesterContext.setDataReplayService(dataReplayService);
+                streamIngesterContext.setMongoDBJsonStore(mongoDBJsonStore);
+            }
+
+            String dataLakeId = UUID.randomUUID().toString();
+            this.streamReceiver.receiveData(tenant.getPrincipal(), dataLakeId, sourceData.toString());
+
+            json.addProperty("dataLakeId", dataLakeId);
+            return json;
         }
-
-        String dataLakeId = UUID.randomUUID().toString();
-        this.streamReceiver.receiveData(tenant.getPrincipal(),dataLakeId, sourceData.toString());
-
-        json.addProperty("dataLakeId", dataLakeId);
-        return json;
+        else {
+            return new JsonObject();
+        }
     }
 
     private static class StreamReceiver extends Receiver<String> {
