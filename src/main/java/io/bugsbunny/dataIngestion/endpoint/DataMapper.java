@@ -40,11 +40,9 @@ public class DataMapper {
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
 
             String sourceData = jsonObject.get("sourceData").getAsString();
-            String entity = jsonObject.get("entity").getAsString();
             JsonArray array = JsonParser.parseString(sourceData).getAsJsonArray();
 
-            JsonArray result = this.mapperService.map(entity,array);
-            JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
+            JsonObject responseJson  = this.mapperService.map(array);
 
             Response response = Response.ok(responseJson.toString()).build();
             return response;
@@ -68,14 +66,12 @@ public class DataMapper {
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
 
             String xml = jsonObject.get("sourceData").getAsString();
-            String entity = jsonObject.get("entity").getAsString();
 
             JSONObject sourceJson = XML.toJSONObject(xml);
             String json = sourceJson.toString(4);
             JsonObject sourceJsonObject = JsonParser.parseString(json).getAsJsonObject();
 
-            JsonArray result = this.mapperService.mapXml(entity,sourceJsonObject);
-            JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
+            JsonObject responseJson = this.mapperService.mapXml(sourceJsonObject);
 
             Response response = Response.ok(responseJson.toString()).build();
             return response;
@@ -99,7 +95,6 @@ public class DataMapper {
             JsonObject jsonObject = JsonParser.parseString(input).getAsJsonObject();
             String sourceData = jsonObject.get("sourceData").getAsString();
             boolean hasHeader = jsonObject.get("hasHeader").getAsBoolean();
-            String entity = jsonObject.get("entity").getAsString();
 
             String[] lines = sourceData.split("\n");
             String[] columns = null;
@@ -133,8 +128,7 @@ public class DataMapper {
                 }
                 array.add(row);
             }
-            JsonArray result = this.mapperService.map(entity,array);
-            JsonObject responseJson  = this.ingestionService.ingestDevModelData(result.toString());
+            JsonObject responseJson = this.mapperService.map(array);
 
             Response response = Response.ok(responseJson.toString()).build();
             return response;

@@ -18,10 +18,11 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.Serializable;
 import java.util.*;
 
 @Singleton
-public class MongoDBJsonStore
+public class MongoDBJsonStore implements Serializable
 {
     private static Logger logger = LoggerFactory.getLogger(MongoDBJsonStore.class);
 
@@ -32,7 +33,6 @@ public class MongoDBJsonStore
     private AIPlatformConfig aiPlatformConfig;
 
     private MongoClient mongoClient;
-
     private Map<String,MongoDatabase> databaseMap;
 
     public MongoDBJsonStore()
@@ -81,8 +81,8 @@ public class MongoDBJsonStore
         this.securityTokenContainer = securityTokenContainer;
     }
 
-    //GraphData Ingestion related operations-----------------------------------------------------
-    public long storeIngestion(JsonObject jsonObject)
+    //Data Ingestion related operations-----------------------------------------------------
+    public void storeIngestion(JsonObject jsonObject)
     {
         String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
@@ -90,11 +90,7 @@ public class MongoDBJsonStore
 
         MongoCollection<Document> collection = database.getCollection("datalake");
 
-        long oid = new Random().nextLong();
-        jsonObject.addProperty("dataLakeId", oid);
         collection.insertOne(Document.parse(jsonObject.toString()));
-
-        return oid;
     }
 
     public JsonObject getIngestion(long dataLakeId)
@@ -145,7 +141,7 @@ public class MongoDBJsonStore
         }
         return ingestedDataSet;
     }
-    //GraphData History related operations-----------------------------------------------------
+    //Data History related operations-----------------------------------------------------
     public String startDiffChain(JsonObject payload)
     {
         String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();

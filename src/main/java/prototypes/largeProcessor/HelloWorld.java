@@ -44,7 +44,7 @@ public class HelloWorld extends AbstractBehavior<HelloWorld.Greet> {
     }
 
     private Behavior<Greet> onGreet(Greet command) {
-        getContext().getLog().info("Hello {}!", command.whom);
+        getContext().getLog().info("Fellow {}!", command.whom);
         command.replyTo.tell(new Greeted(command.whom, getContext().getSelf()));
         return this;
     }

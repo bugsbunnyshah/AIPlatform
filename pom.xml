@@ -185,11 +185,6 @@
       <artifactId>akka-stream_${scala.binary.version}</artifactId>
       <version>${akka.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.scala-lang</groupId>
-      <artifactId>scala-library</artifactId>
-      <version>2.13.4</version>
-    </dependency>
 
     <!-- Automatic Ingestion Mapping related...Very Important -->
     <dependency>
