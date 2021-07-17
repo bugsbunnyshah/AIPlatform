@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import io.bugsbunny.data.history.ObjectDiffAlgorithm;
 import io.bugsbunny.dataIngestion.service.ChainNotFoundException;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +24,12 @@ public class DataReplayService {
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
     public String generateDiffChain(JsonObject payload)
     {
-        String chainId = this.mongoDBJsonStore.startDiffChain(payload);
+        String chainId = this.mongoDBJsonStore.startDiffChain(this.securityTokenContainer.getTenant(),payload);
         return chainId;
     }
 
@@ -106,10 +110,10 @@ public class DataReplayService {
                 JsonElement local = itr.next();
                 if(local.isJsonObject()) {
                     JsonObject localAsJsonObject = local.getAsJsonObject();
-                    JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(chainId);
+                    JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(this.securityTokenContainer.getTenant(),chainId);
                     JsonObject objectDiff = this.objectDiffAlgorithm.diff(lastPayload, localAsJsonObject);
-                    this.mongoDBJsonStore.addToDiffChain(chainId, localAsJsonObject);
-                    this.mongoDBJsonStore.addToDiff(chainId, objectDiff);
+                    this.mongoDBJsonStore.addToDiffChain(this.securityTokenContainer.getTenant(),chainId, localAsJsonObject);
+                    this.mongoDBJsonStore.addToDiff(this.securityTokenContainer.getTenant(),chainId, objectDiff);
                 }
                 else if(local.isJsonArray())
                 {
@@ -119,10 +123,10 @@ public class DataReplayService {
                 {
                     JsonObject localAsJsonObject = new JsonObject();
                     localAsJsonObject.addProperty("value", local.getAsJsonPrimitive().toString());
-                    JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(chainId);
+                    JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(this.securityTokenContainer.getTenant(),chainId);
                     JsonObject objectDiff = this.objectDiffAlgorithm.diff(lastPayload, localAsJsonObject);
-                    this.mongoDBJsonStore.addToDiffChain(chainId, localAsJsonObject);
-                    this.mongoDBJsonStore.addToDiff(chainId, objectDiff);
+                    this.mongoDBJsonStore.addToDiffChain(this.securityTokenContainer.getTenant(),chainId, localAsJsonObject);
+                    this.mongoDBJsonStore.addToDiff(this.securityTokenContainer.getTenant(),chainId, objectDiff);
                 }
             }
         }
@@ -174,10 +178,10 @@ public class DataReplayService {
                 JsonElement local = itr.next();
                 if(local.isJsonObject()) {
                     JsonObject localAsJsonObject = local.getAsJsonObject();
-                    JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(chainId);
+                    JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(this.securityTokenContainer.getTenant(),chainId);
                     JsonObject objectDiff = this.objectDiffAlgorithm.diff(lastPayload, localAsJsonObject);
-                    this.mongoDBJsonStore.addToDiffChain(requestChainId, chainId, localAsJsonObject);
-                    this.mongoDBJsonStore.addToDiff(requestChainId, chainId, objectDiff);
+                    this.mongoDBJsonStore.addToDiffChain(this.securityTokenContainer.getTenant(),requestChainId, chainId, localAsJsonObject);
+                    this.mongoDBJsonStore.addToDiff(this.securityTokenContainer.getTenant(),requestChainId, chainId, objectDiff);
                 }
                 else if(local.isJsonArray())
                 {
@@ -187,10 +191,10 @@ public class DataReplayService {
                 {
                     JsonObject localAsJsonObject = new JsonObject();
                     localAsJsonObject.addProperty("value", local.getAsJsonPrimitive().toString());
-                    JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(chainId);
+                    JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(this.securityTokenContainer.getTenant(),chainId);
                     JsonObject objectDiff = this.objectDiffAlgorithm.diff(lastPayload, localAsJsonObject);
-                    this.mongoDBJsonStore.addToDiffChain(requestChainId, chainId, localAsJsonObject);
-                    this.mongoDBJsonStore.addToDiff(requestChainId, chainId, objectDiff);
+                    this.mongoDBJsonStore.addToDiffChain(this.securityTokenContainer.getTenant(),requestChainId, chainId, localAsJsonObject);
+                    this.mongoDBJsonStore.addToDiff(this.securityTokenContainer.getTenant(),requestChainId, chainId, objectDiff);
                 }
             }
         }
@@ -224,28 +228,28 @@ public class DataReplayService {
 
     public void addToDiffChain(String chainId, JsonObject payload)
     {
-        JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(chainId);
+        JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(this.securityTokenContainer.getTenant(),chainId);
         JsonObject objectDiff = this.objectDiffAlgorithm.diff(lastPayload,payload);
 
-        this.mongoDBJsonStore.addToDiffChain(chainId, payload);
-        this.mongoDBJsonStore.addToDiff(chainId, objectDiff);
+        this.mongoDBJsonStore.addToDiffChain(this.securityTokenContainer.getTenant(),chainId, payload);
+        this.mongoDBJsonStore.addToDiff(this.securityTokenContainer.getTenant(),chainId, objectDiff);
     }
 
     public void addToDiffChain(String requestChainId, String chainId, JsonObject payload)
     {
-        JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(chainId);
+        JsonObject lastPayload = this.mongoDBJsonStore.getLastPayload(this.securityTokenContainer.getTenant(),chainId);
         JsonObject objectDiff = this.objectDiffAlgorithm.diff(lastPayload,payload);
 
-        this.mongoDBJsonStore.addToDiffChain(requestChainId, chainId, payload);
-        this.mongoDBJsonStore.addToDiff(requestChainId, chainId, objectDiff);
+        this.mongoDBJsonStore.addToDiffChain(this.securityTokenContainer.getTenant(),requestChainId, chainId, payload);
+        this.mongoDBJsonStore.addToDiff(this.securityTokenContainer.getTenant(),requestChainId, chainId, objectDiff);
     }
 
     public List<JsonObject> replayDiffChain(String chainId) throws ChainNotFoundException
     {
         java.util.List<JsonObject> replayChain = new ArrayList<>();
 
-        List<JsonObject> diffChain = this.mongoDBJsonStore.readDiffChain(chainId);
-        List<JsonObject> objectDiffs = this.mongoDBJsonStore.readDiffs(chainId);
+        List<JsonObject> diffChain = this.mongoDBJsonStore.readDiffChain(this.securityTokenContainer.getTenant(),chainId);
+        List<JsonObject> objectDiffs = this.mongoDBJsonStore.readDiffs(this.securityTokenContainer.getTenant(),chainId);
         if (diffChain.size() == 0)
         {
             throw new ChainNotFoundException("CHAIN_NOT_FOUND: "+chainId);
@@ -262,5 +266,21 @@ public class DataReplayService {
         }
 
         return replayChain;
+    }
+
+    public ObjectDiffAlgorithm getObjectDiffAlgorithm() {
+        return objectDiffAlgorithm;
+    }
+
+    public void setObjectDiffAlgorithm(ObjectDiffAlgorithm objectDiffAlgorithm) {
+        this.objectDiffAlgorithm = objectDiffAlgorithm;
+    }
+
+    public MongoDBJsonStore getMongoDBJsonStore() {
+        return mongoDBJsonStore;
+    }
+
+    public void setMongoDBJsonStore(MongoDBJsonStore mongoDBJsonStore) {
+        this.mongoDBJsonStore = mongoDBJsonStore;
     }
 }

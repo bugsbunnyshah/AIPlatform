@@ -6,10 +6,14 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import io.bugsbunny.data.history.service.DataReplayService;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.Tenant;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.io.Serializable;
 
 public class StreamIngesterContext implements Serializable {
@@ -19,11 +23,10 @@ public class StreamIngesterContext implements Serializable {
     private static StreamIngesterContext streamIngesterContext = new StreamIngesterContext();
 
     private StreamIngesterQueue streamIngesterQueue;
-    private String mongodbHost;
-    private String mongodbPort;
-    private String mongoDbUser;
-    private String mongodbPassword;
-    private MongoClient mongoClient;
+
+    private MongoDBJsonStore mongoDBJsonStore;
+
+    private DataReplayService dataReplayService;
 
 
     private StreamIngesterContext()
@@ -56,76 +59,27 @@ public class StreamIngesterContext implements Serializable {
         return this.streamIngesterQueue.latest();
     }
 
-    public String getMongodbHost() {
-        return mongodbHost;
-    }
-
-    public void setMongodbHost(String mongodbHost) {
-        this.mongodbHost = mongodbHost;
-    }
-
-    public String getMongodbPort() {
-        return mongodbPort;
-    }
-
-    public void setMongodbPort(String mongodbPort) {
-        this.mongodbPort = mongodbPort;
-    }
-
-    public String getMongoDbUser() {
-        return mongoDbUser;
-    }
-
-    public void setMongoDbUser(String mongoDbUser) {
-        this.mongoDbUser = mongoDbUser;
-    }
-
-    public String getMongodbPassword() {
-        return mongodbPassword;
-    }
-
-    public void setMongodbPassword(String mongodbPassword) {
-        this.mongodbPassword = mongodbPassword;
-    }
 
     public void ingestData(String principal, JsonObject jsonObject)
     {
-        String databaseName = principal + "_" + "aiplatform";
-        MongoDatabase database = this.getClient().getDatabase(databaseName);
-
         logger.info("********************************************");
         logger.info(jsonObject.toString());
         logger.info("********************************************");
 
-        MongoCollection<Document> collection = database.getCollection("datalake");
-        collection.insertOne(Document.parse(jsonObject.toString()));
+        Tenant tenant = new Tenant();
+        tenant.setPrincipal(principal);
+        this.mongoDBJsonStore.storeIngestion(tenant,jsonObject);
+
+        //Add for DataReplay
+        String chainId = this.dataReplayService.generateDiffChain(jsonObject);
+        logger.info("CHAIN_ID: "+chainId);
     }
 
-    private MongoClient getClient()
-    {
-        try {
-            if(this.mongoClient != null){
-                return this.mongoClient;
-            }
+    public void setDataReplayService(DataReplayService dataReplayService){
+        this.dataReplayService = dataReplayService;
+    }
 
-            //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-            StringBuilder connectStringBuilder = new StringBuilder();
-            connectStringBuilder.append("mongodb://");
-
-            if (this.mongoDbUser!=null && this.mongodbPassword!=null) {
-                connectStringBuilder.append(this.mongoDbUser
-                        + ":" + this.mongodbPassword + "@");
-            }
-            connectStringBuilder.append(mongodbHost + ":" + mongodbPort);
-
-            String connectionString = connectStringBuilder.toString();
-            MongoClient mongoClient = MongoClients.create(connectionString);
-
-            return mongoClient;
-        }
-        catch(Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+    public void setMongoDBJsonStore(MongoDBJsonStore mongoDBJsonStore) {
+        this.mongoDBJsonStore = mongoDBJsonStore;
     }
 }

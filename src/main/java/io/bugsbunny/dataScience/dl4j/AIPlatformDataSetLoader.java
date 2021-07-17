@@ -74,7 +74,7 @@ public class AIPlatformDataSetLoader implements Loader
             while (iterator.hasNext())
             {
                 JsonObject dataSetJson = JsonParser.parseString(mongoDBJsonStore.
-                        readDataSet(iterator.next().getAsLong()).toString()).getAsJsonObject();
+                        readDataSet(this.securityTokenContainer.getTenant(),iterator.next().getAsLong()).toString()).getAsJsonObject();
                 String format = dataSetJson.get("format").getAsString();
                 if(!format.equals("csv"))
                 {

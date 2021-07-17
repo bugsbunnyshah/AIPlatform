@@ -3,6 +3,7 @@ package io.bugsbunny.dataScience.service;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import jep.Interpreter;
 import jep.JepException;
 import jep.SharedInterpreter;
@@ -46,6 +47,9 @@ public class AIModelService
     private Map<Long, MultiLayerNetwork> activeModels;
     private Map<Long, MultiLayerNetwork> trainingModels;
 
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
     public AIModelService()
     {
         this.activeModels = new HashMap<>();
@@ -54,7 +58,7 @@ public class AIModelService
 
     public String trainJava(long modelId, long[] dataSetIds) throws ModelNotFoundException, ModelIsLive
     {
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
         if(modelPackage == null)
         {
             throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
@@ -97,7 +101,7 @@ public class AIModelService
 
     public String trainJavaFromDataLake(long modelId, long[] dataLakeIds) throws ModelNotFoundException, ModelIsLive
     {
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(),modelId);
         if(modelPackage == null)
         {
             throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
@@ -125,7 +129,7 @@ public class AIModelService
             for(int i=0; i<dataLakeIds.length;i++)
             {
                 long dataLakeId = dataLakeIds[i];
-                JsonObject ingestedData = this.mongoDBJsonStore.getIngestion(dataLakeId);
+                JsonObject ingestedData = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
                 //logger.info("***************************************************");
                 //logger.info("DataLakeId: "+dataLakeId+":"+ingestedData.toString());
                 //logger.info("***************************************************");
@@ -155,7 +159,7 @@ public class AIModelService
 
     public void deployModel(long modelId) throws ModelNotFoundException
     {
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
         if(modelPackage == null)
         {
             throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
@@ -168,9 +172,9 @@ public class AIModelService
                 return;
             }
 
-            JsonObject currentModel = this.mongoDBJsonStore.getModelPackage(modelId);
+            JsonObject currentModel = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
             currentModel.addProperty("model", modelString);
-            this.mongoDBJsonStore.deployModel(modelId);
+            this.mongoDBJsonStore.deployModel(this.securityTokenContainer.getTenant(), modelId);
 
 
             ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
@@ -207,7 +211,7 @@ public class AIModelService
 
     public JsonArray rollOverToTraningDataSets(long modelId) throws ModelNotFoundException,ModelIsNotLive
     {
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
         if(modelPackage == null)
         {
             throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
@@ -217,7 +221,7 @@ public class AIModelService
             throw new ModelIsNotLive("MODEL_IS_NOT_LIVE_YET:"+modelId);
         }
 
-        JsonObject rollback = this.mongoDBJsonStore.rollOverToTraningDataSets(modelId);
+        JsonObject rollback = this.mongoDBJsonStore.rollOverToTraningDataSets(this.securityTokenContainer.getTenant(), modelId);
 
         JsonArray rollbackDataSetIds = rollback.getAsJsonArray("rolledOverDataSetIds");
         if(rollbackDataSetIds == null)
@@ -226,7 +230,7 @@ public class AIModelService
         }
 
         //Also undeploy the model
-        this.mongoDBJsonStore.undeployModel(modelId);
+        this.mongoDBJsonStore.undeployModel(this.securityTokenContainer.getTenant(), modelId);
         this.activeModels.remove(modelId);
 
         return rollbackDataSetIds;
@@ -235,7 +239,7 @@ public class AIModelService
     //PRODUCTION_MODEL_RELATED**************************************************************************************************************************************************************************************************************************************************************************************************
     public String evalJava(long modelId, long[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
     {
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
 
         if(modelPackage == null)
         {
@@ -275,7 +279,7 @@ public class AIModelService
 
     public String evalJavaFromDataLake(long modelId, long[] dataLakeIds) throws ModelNotFoundException, ModelIsNotLive
     {
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
 
         if(modelPackage == null)
         {
@@ -304,7 +308,7 @@ public class AIModelService
             for(int i=0; i<dataLakeIds.length;i++)
             {
                 long dataLakeId = dataLakeIds[i];
-                JsonObject ingestedData = this.mongoDBJsonStore.getIngestion(dataLakeId);
+                JsonObject ingestedData = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
                 //logger.info("***************************************************");
                 //logger.info("DataLakeId: "+dataLakeId+":"+ingestedData.toString());
                 //logger.info("***************************************************");

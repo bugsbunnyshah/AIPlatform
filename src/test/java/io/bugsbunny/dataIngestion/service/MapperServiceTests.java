@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 
+import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
@@ -73,8 +75,16 @@ public class MapperServiceTests extends BaseTest{
         System.out.println("STARTING_INGESTION");
         System.out.println("*******************************");
 
-        JsonObject json = this.mapperService.map("flight",jsonArray);
-        System.out.println(json);
+        //JsonObject json = this.mapperService.map("flight",jsonArray);
+        //System.out.println(json);
+        JsonObject input = new JsonObject();
+        input.addProperty("sourceSchema", "");
+        input.addProperty("destinationSchema", "");
+        input.addProperty("sourceData", jsonArray.toString());
+        input.addProperty("entity","flight");
+        Response response = given().body(input.toString()).when().post("/dataMapper/map")
+                .andReturn();
+        response.getBody().prettyPrint();
 
         Thread.sleep(7*60*1000);
     }

@@ -2,6 +2,7 @@ package io.bugsbunny.dataIngestion.service;
 
 import com.google.gson.JsonObject;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +13,9 @@ import java.io.Serializable;
 @ApplicationScoped
 public class IngestionService implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(IngestionService.class);
+
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
@@ -29,7 +33,7 @@ public class IngestionService implements Serializable {
 
     public JsonObject readDataLakeData(long dataLakeId)
     {
-        JsonObject ingestion = this.mongoDBJsonStore.getIngestion(dataLakeId);
+        JsonObject ingestion = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
         return ingestion;
     }
 }

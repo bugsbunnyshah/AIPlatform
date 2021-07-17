@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
@@ -35,6 +36,9 @@ public class RemoteModelTests extends BaseTest {
 
     @Inject
     private PackagingService packagingService;
+
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
 
 
     @Test
@@ -80,7 +84,7 @@ public class RemoteModelTests extends BaseTest {
             assertEquals(200, response.getStatusCode());
         }
 
-        JsonObject rolledOverDataSetIds = this.mongoDBJsonStore.rollOverToTraningDataSets(modelId);
+        JsonObject rolledOverDataSetIds = this.mongoDBJsonStore.rollOverToTraningDataSets(this.securityTokenContainer.getTenant(),modelId);
         logger.info(rolledOverDataSetIds.toString());
 
         //TODO: Assert

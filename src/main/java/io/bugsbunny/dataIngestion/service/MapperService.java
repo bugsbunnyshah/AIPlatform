@@ -1,7 +1,10 @@
 package io.bugsbunny.dataIngestion.service;
 
 import io.bugsbunny.configuration.AIPlatformConfig;
+import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.Tenant;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.query.ObjectGraphQueryService;
 import io.bugsbunny.util.JsonUtil;
@@ -57,7 +60,10 @@ public class MapperService {
     private SecurityTokenContainer securityTokenContainer;
 
     @Inject
-    private AIPlatformConfig aiPlatformConfig;
+    private DataReplayService dataReplayService;
+
+    @Inject
+    private MongoDBJsonStore mongoDBJsonStore;
 
     @PostConstruct
     public void start()
@@ -81,6 +87,14 @@ public class MapperService {
 
     public JsonObject map(String entity,JsonArray sourceData)
     {
+        Tenant tenant = this.securityTokenContainer.getTenant();
+        JsonObject result = StreamIngesterContext.getStreamIngester().submit(
+                tenant,
+                this.mongoDBJsonStore,
+                this.dataReplayService,
+                sourceData);
+        return result;
+
         /*logger.info("********SOURCE_DATA************");
         JsonUtil.print(sourceData);
         JsonArray result = new JsonArray();
@@ -131,11 +145,6 @@ public class MapperService {
             logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }*/
-        JsonObject result = StreamIngesterContext.getStreamIngester().submit(
-                this.securityTokenContainer.getSecurityToken().getPrincipal(),
-                this.aiPlatformConfig,
-                sourceData);
-        return result;
     }
 
 

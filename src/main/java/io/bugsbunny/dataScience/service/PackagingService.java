@@ -3,6 +3,7 @@ package io.bugsbunny.dataScience.service;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,13 +17,16 @@ public class PackagingService {
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
 
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
     public JsonObject performPackaging(String packageString)
     {
         JsonObject jsonObject = new JsonObject();
 
         JsonObject modelPackage = JsonParser.parseString(packageString).getAsJsonObject();
         modelPackage.addProperty("live", false);
-        long modelId = this.mongoDBJsonStore.storeModel(modelPackage);
+        long modelId = this.mongoDBJsonStore.storeModel(this.securityTokenContainer.getTenant(),modelPackage);
 
         jsonObject.addProperty("modelId", modelId);
         return jsonObject;
@@ -30,11 +34,11 @@ public class PackagingService {
 
     public JsonObject getModelPackage(long modelId)
     {
-        return this.mongoDBJsonStore.getModelPackage(modelId);
+        return this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(),modelId);
     }
 
     public String getModel(long modelId)
     {
-        return this.mongoDBJsonStore.getModel(modelId);
+        return this.mongoDBJsonStore.getModel(this.securityTokenContainer.getTenant(),modelId);
     }
 }

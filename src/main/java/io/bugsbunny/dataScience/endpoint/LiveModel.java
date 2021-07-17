@@ -11,6 +11,7 @@ import io.bugsbunny.dataScience.service.ModelIsNotLive;
 import io.bugsbunny.dataScience.service.ModelNotFoundException;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.preprocess.AITrafficContainer;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import jep.Interpreter;
 import jep.JepException;
 import jep.MainInterpreter;
@@ -38,6 +39,9 @@ public class LiveModel
 
     @Inject
     private AITrafficContainer aiTrafficContainer;
+
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
 
     static
     {
@@ -181,7 +185,7 @@ public class LiveModel
 
             this.aiModelService.deployModel(modelId);
 
-            JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(modelId);
+            JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(),modelId);
             modelPackage.remove("_id");
             modelPackage.remove("model");
 

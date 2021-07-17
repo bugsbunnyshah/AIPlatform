@@ -5,7 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import io.bugsbunny.configuration.AIPlatformConfig;
+import io.bugsbunny.data.history.service.DataReplayService;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.Tenant;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.StorageLevels;
@@ -92,7 +94,10 @@ public class StreamIngester implements Serializable{
         }
     }
 
-    public JsonObject submit(String principal, AIPlatformConfig aiPlatformConfig, JsonArray sourceData)
+    public JsonObject submit(Tenant tenant,
+                             MongoDBJsonStore mongoDBJsonStore,
+                             DataReplayService dataReplayService,
+                             JsonArray sourceData)
     {
         JsonObject json = new JsonObject();
 
@@ -110,30 +115,17 @@ public class StreamIngester implements Serializable{
             }
         }
 
-        if(principal != null) {
-            if(StreamIngesterContext.getStreamIngesterContext() != null){
-                JsonObject config = aiPlatformConfig.getConfiguration();
-                StreamIngesterContext streamIngesterContext = StreamIngesterContext.getStreamIngesterContext();
-                streamIngesterContext.setMongodbHost(config.get("mongodbHost").getAsString());
-                streamIngesterContext.setMongodbPort(config.get("mongodbPort").getAsString());
-                if(config.has("mongodbUser")){
-                    streamIngesterContext.setMongoDbUser(config.get("mongodbUser").getAsString());
-                }
-                if(config.has("mongodbPassword")){
-                    streamIngesterContext.setMongodbPassword(config.get("mongodbPassword").getAsString());
-                }
-            }
-
-            String dataLakeId = UUID.randomUUID().toString();
-            this.streamReceiver.receiveData(principal,dataLakeId, sourceData.toString());
-
-            json.addProperty("dataLakeId", dataLakeId);
-            return json;
+        if(StreamIngesterContext.getStreamIngesterContext() != null){
+            StreamIngesterContext streamIngesterContext = StreamIngesterContext.getStreamIngesterContext();
+            streamIngesterContext.setDataReplayService(dataReplayService);
+            streamIngesterContext.setMongoDBJsonStore(mongoDBJsonStore);
         }
-        else
-        {
-            return new JsonObject();
-        }
+
+        String dataLakeId = UUID.randomUUID().toString();
+        this.streamReceiver.receiveData(tenant.getPrincipal(),dataLakeId, sourceData.toString());
+
+        json.addProperty("dataLakeId", dataLakeId);
+        return json;
     }
 
     private static class StreamReceiver extends Receiver<String> {

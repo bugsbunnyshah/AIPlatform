@@ -1,5 +1,6 @@
 package io.bugsbunny.preprocess;
 
+import io.bugsbunny.infrastructure.Tenant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,5 +26,12 @@ public class SecurityTokenContainer
     public SecurityToken getSecurityToken()
     {
         return tokenContainer.get();
+    }
+
+    public Tenant getTenant()
+    {
+        Tenant tenant = new Tenant();
+        tenant.setPrincipal(this.getSecurityToken().getPrincipal());
+        return tenant;
     }
 }

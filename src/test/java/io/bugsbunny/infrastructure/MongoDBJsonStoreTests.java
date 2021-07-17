@@ -3,6 +3,7 @@ package io.bugsbunny.infrastructure;
 import com.google.gson.*;
 
 import io.bugsbunny.dataScience.service.PackagingService;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
@@ -36,6 +37,9 @@ public class MongoDBJsonStoreTests extends BaseTest {
     @Inject
     private PackagingService packagingService;
 
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
 
     @AfterEach
     public void tearDown()
@@ -54,10 +58,10 @@ public class MongoDBJsonStoreTests extends BaseTest {
         JsonObject dataSetJson = new JsonObject();
         dataSetJson.addProperty("format","csv");
         dataSetJson.addProperty("data", csv);
-        long oid = this.mongoDBJsonStore.storeTrainingDataSet(dataSetJson);
+        long oid = this.mongoDBJsonStore.storeTrainingDataSet(this.securityTokenContainer.getTenant(),dataSetJson);
         logger.info("Lookup DataSetId: "+oid);
 
-        JsonObject dataSet = this.mongoDBJsonStore.readDataSet(oid);
+        JsonObject dataSet = this.mongoDBJsonStore.readDataSet(this.securityTokenContainer.getTenant(),oid);
         String csvData = dataSet.get("data").getAsString();
         long storedOid = dataSet.get("dataSetId").getAsLong();
         logger.info(""+storedOid);
@@ -90,7 +94,8 @@ public class MongoDBJsonStoreTests extends BaseTest {
         long dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsLong();
 
 
-        JsonObject rolledOverDataSetIds = this.mongoDBJsonStore.rollOverToTraningDataSets(modelId);
+        JsonObject rolledOverDataSetIds = this.mongoDBJsonStore.rollOverToTraningDataSets(this.securityTokenContainer.getTenant(),
+                modelId);
         logger.info(rolledOverDataSetIds.toString());
 
         //Assert
