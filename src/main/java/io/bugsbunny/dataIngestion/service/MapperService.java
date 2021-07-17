@@ -1,6 +1,8 @@
 package io.bugsbunny.dataIngestion.service;
 
+import io.bugsbunny.configuration.AIPlatformConfig;
 import io.bugsbunny.dataIngestion.util.CSVDataUtil;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.query.ObjectGraphQueryService;
 import io.bugsbunny.util.JsonUtil;
 
@@ -51,6 +53,12 @@ public class MapperService {
     @Inject
     private ObjectGraphQueryService objectGraphQueryService;
 
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
+    @Inject
+    private AIPlatformConfig aiPlatformConfig;
+
     @PostConstruct
     public void start()
     {
@@ -71,9 +79,9 @@ public class MapperService {
         }
     }
 
-    public JsonArray map(String entity,JsonArray sourceData)
+    public JsonObject map(String entity,JsonArray sourceData)
     {
-        logger.info("********SOURCE_DATA************");
+        /*logger.info("********SOURCE_DATA************");
         JsonUtil.print(sourceData);
         JsonArray result = new JsonArray();
         try
@@ -122,18 +130,26 @@ public class MapperService {
         {
             logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
-        }
+        }*/
+        JsonObject result = StreamIngesterContext.getStreamIngester().submit(
+                this.securityTokenContainer.getSecurityToken().getPrincipal(),
+                this.aiPlatformConfig,
+                sourceData);
+        return result;
     }
 
 
-    public JsonArray mapXml(String entity,JsonObject sourceData)
+    public JsonObject mapXml(String entity,JsonObject sourceData)
     {
-        JsonArray result = new JsonArray();
+        /*JsonArray result = new JsonArray();
 
         this.traverse(sourceData, result);
 
         result = this.map(entity,result);
-        return result;
+        return result;*/
+        JsonArray result = new JsonArray();
+        this.traverse(sourceData, result);
+        return this.map(entity,result);
     }
     //---------------------------------------------------------------------------------------------------------------------
     static HierarchicalSchemaInfo createHierachialSchemaInfo(String schemaName)
