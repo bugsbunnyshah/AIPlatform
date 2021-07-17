@@ -1,24 +1,23 @@
 package io.bugsbunny.dataIngestion.service;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class StreamIngesterQueue implements Serializable {
-    private String data;
-    private String dataLakeId;
+    private Queue<StreamObject> queue;
 
-    public String getData() {
-        return data;
+    public StreamIngesterQueue(){
+        this.queue = new LinkedList<>();
     }
 
-    public void setData(String data) {
-        this.data = data;
+    public void add(StreamObject streamObject)
+    {
+        this.queue.add(streamObject);
     }
 
-    public String getDataLakeId() {
-        return dataLakeId;
-    }
-
-    public void setDataLakeId(String dataLakeId) {
-        this.dataLakeId = dataLakeId;
+    public StreamObject latest()
+    {
+        return this.queue.poll();
     }
 }

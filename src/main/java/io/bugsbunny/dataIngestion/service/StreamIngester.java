@@ -142,8 +142,10 @@ public class StreamIngester implements Serializable{
 
         public void receiveData(String dataLakeId,String data)
         {
-            StreamIngesterContext.getStreamIngesterContext().setDataLakeId(dataLakeId);
-            StreamIngesterContext.getStreamIngesterContext().setData(data);
+            StreamObject streamObject = new StreamObject();
+            streamObject.setDataLakeId(dataLakeId);
+            streamObject.setData(data);
+            StreamIngesterContext.getStreamIngesterContext().addStreamObject(streamObject);
         }
     }
 
@@ -162,9 +164,10 @@ public class StreamIngester implements Serializable{
             try {
                 // Until stopped or connection broken continue reading
                 while (!this.streamReceiver.isStopped()) {
-                    if(StreamIngesterContext.getStreamIngesterContext().getData() != null) {
-                        String data = StreamIngesterContext.getStreamIngesterContext().getData();
-                        String dataLakeId = StreamIngesterContext.getStreamIngesterContext().getDataLakeId();
+                    StreamObject streamObject = StreamIngesterContext.getStreamIngesterContext().getLatest();
+                    if(streamObject != null) {
+                        String data = streamObject.getData();
+                        String dataLakeId = streamObject.getDataLakeId();
                         JsonArray jsonArray = JsonParser.parseString(data).getAsJsonArray();
                         Iterator<JsonElement> iterator = jsonArray.iterator();
                         while (iterator.hasNext()) {
@@ -172,7 +175,6 @@ public class StreamIngester implements Serializable{
                             jsonObject.addProperty("dataLakeId",dataLakeId);
                             this.streamReceiver.store(jsonObject.toString());
                         }
-                        StreamIngesterContext.getStreamIngesterContext().setData(null);
                     }
                 }
                 this.streamReceiver.restart("RESTARTING.......");

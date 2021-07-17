@@ -31,21 +31,12 @@ public class StreamIngesterContext implements Serializable {
         return StreamIngesterContext.streamIngesterContext;
     }
 
-    public String getData()
+    public void addStreamObject(StreamObject streamObject)
     {
-        return this.streamIngesterQueue.getData();
+        this.streamIngesterQueue.add(streamObject);
     }
 
-    public void setData(String data)
-    {
-        this.streamIngesterQueue.setData(data);
-    }
-
-    public String getDataLakeId(){
-        return this.streamIngesterQueue.getDataLakeId();
-    }
-
-    public void setDataLakeId(String dataLakeId){
-        this.streamIngesterQueue.setDataLakeId(dataLakeId);
+    public StreamObject getLatest(){
+        return this.streamIngesterQueue.latest();
     }
 }
