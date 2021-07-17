@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import io.bugsbunny.configuration.AIPlatformConfig;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.StorageLevels;
@@ -47,7 +48,9 @@ public class StreamIngester implements Serializable{
                         }
 
                         String dataLakeId = root.getAsJsonObject().get("dataLakeId").getAsString();
+                        String principal = root.getAsJsonObject().get("principal").getAsString();
                         root.getAsJsonObject().remove("dataLakeId");
+                        root.getAsJsonObject().remove("principal");
 
                         HierarchicalSchemaInfo sourceSchemaInfo = MapperService.populateHierarchialSchema(root.toString(),
                                 root.toString(), null);
@@ -67,7 +70,7 @@ public class StreamIngester implements Serializable{
 
                         JsonObject local = MapperService.performMapping(scores, root.toString());
                         local.addProperty("braineous_datalakeid",dataLakeId);
-                        logger.info(local.toString());
+                        StreamIngesterContext.getStreamIngesterContext().ingestData(principal,local);
                     });
                 }
             });
@@ -89,14 +92,14 @@ public class StreamIngester implements Serializable{
         }
     }
 
-    public JsonObject submit(JsonArray sourceData)
+    public JsonObject submit(String principal, AIPlatformConfig aiPlatformConfig, JsonArray sourceData)
     {
         JsonObject json = new JsonObject();
 
         if(this.streamingContext == null){
             try {
                 // Create a local StreamingContext with two working thread and batch interval of 1 second
-                sparkConf = new SparkConf().setAppName("StreamIngester").setMaster("local[5]");
+                sparkConf = new SparkConf().setAppName("StreamIngester").setMaster("local[20]");
                 streamingContext = new JavaStreamingContext(sparkConf, new Duration(1000));
                 streamReceiver = new StreamReceiver(StorageLevels.MEMORY_AND_DISK_2);
                 startIngester();
@@ -107,11 +110,30 @@ public class StreamIngester implements Serializable{
             }
         }
 
-        String dataLakeId = UUID.randomUUID().toString();
-        this.streamReceiver.receiveData(dataLakeId,sourceData.toString());
+        if(principal != null) {
+            if(StreamIngesterContext.getStreamIngesterContext() != null){
+                JsonObject config = aiPlatformConfig.getConfiguration();
+                StreamIngesterContext streamIngesterContext = StreamIngesterContext.getStreamIngesterContext();
+                streamIngesterContext.setMongodbHost(config.get("mongodbHost").getAsString());
+                streamIngesterContext.setMongodbPort(config.get("mongodbPort").getAsString());
+                if(config.has("mongodbUser")){
+                    streamIngesterContext.setMongoDbUser(config.get("mongodbUser").getAsString());
+                }
+                if(config.has("mongodbPassword")){
+                    streamIngesterContext.setMongodbPassword(config.get("mongodbPassword").getAsString());
+                }
+            }
 
-        json.addProperty("dataLakeId", dataLakeId);
-        return json;
+            String dataLakeId = UUID.randomUUID().toString();
+            this.streamReceiver.receiveData(principal,dataLakeId, sourceData.toString());
+
+            json.addProperty("dataLakeId", dataLakeId);
+            return json;
+        }
+        else
+        {
+            return new JsonObject();
+        }
     }
 
     private static class StreamReceiver extends Receiver<String> {
@@ -140,11 +162,12 @@ public class StreamIngester implements Serializable{
             // is designed to stop by itself if isStopped() returns false
         }
 
-        public void receiveData(String dataLakeId,String data)
+        public void receiveData(String principal,String dataLakeId,String data)
         {
             StreamObject streamObject = new StreamObject();
             streamObject.setDataLakeId(dataLakeId);
             streamObject.setData(data);
+            streamObject.setPrincipal(principal);
             StreamIngesterContext.getStreamIngesterContext().addStreamObject(streamObject);
         }
     }
@@ -168,10 +191,12 @@ public class StreamIngester implements Serializable{
                     if(streamObject != null) {
                         String data = streamObject.getData();
                         String dataLakeId = streamObject.getDataLakeId();
+                        String principal = streamObject.getPrincipal();
                         JsonArray jsonArray = JsonParser.parseString(data).getAsJsonArray();
                         Iterator<JsonElement> iterator = jsonArray.iterator();
                         while (iterator.hasNext()) {
                             JsonObject jsonObject = iterator.next().getAsJsonObject();
+                            jsonObject.addProperty("principal",principal);
                             jsonObject.addProperty("dataLakeId",dataLakeId);
                             this.streamReceiver.store(jsonObject.toString());
                         }

@@ -17,7 +17,7 @@ public class Braineous {
         System.out.println("*******************************");
         JsonArray array = new JsonArray();
         array.add(new JsonObject());
-        StreamIngesterContext.getStreamIngester().submit(array);
+        StreamIngesterContext.getStreamIngester().submit(null,null,array);
 
 
         Quarkus.run(args);

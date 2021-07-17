@@ -15,12 +15,12 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-//@QuarkusTest
-public class MapperServiceTests {
+@QuarkusTest
+public class MapperServiceTests extends BaseTest{
     private static Logger logger = LoggerFactory.getLogger(MapperServiceTests.class);
 
-    //@Inject
-    //private MapperService mapperService;
+    @Inject
+    private MapperService mapperService;
 
     /*@Test
     public void testMapAirlineData() throws Exception
@@ -72,8 +72,8 @@ public class MapperServiceTests {
         System.out.println("*******************************");
         System.out.println("STARTING_INGESTION");
         System.out.println("*******************************");
-        StreamIngester streamIngester = new StreamIngester();
-        JsonObject json = streamIngester.submit(jsonArray);
+
+        JsonObject json = this.mapperService.map(jsonArray);
         System.out.println(json);
 
         Thread.sleep(7*60*1000);

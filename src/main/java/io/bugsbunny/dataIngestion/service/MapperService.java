@@ -1,27 +1,14 @@
 package io.bugsbunny.dataIngestion.service;
 
-import akka.NotUsed;
-import akka.actor.ActorSystem;
-import akka.japi.function.Procedure;
-import akka.stream.javadsl.Source;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.Braineous;
-import io.bugsbunny.data.history.service.DataReplayService;
-import io.bugsbunny.dataIngestion.util.CSVDataUtil;
+
+import io.bugsbunny.configuration.AIPlatformConfig;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
-import org.apache.commons.io.IOUtils;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.StorageLevels;
-import org.apache.spark.api.java.function.VoidFunction;
-import org.apache.spark.storage.StorageLevel;
-import org.apache.spark.streaming.Duration;
-import org.apache.spark.streaming.api.java.JavaDStream;
-import org.apache.spark.streaming.api.java.JavaStreamingContext;
-import org.apache.spark.streaming.receiver.Receiver;
+
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import org.mitre.harmony.matchers.ElementPair;
 import org.mitre.harmony.matchers.MatcherManager;
 import org.mitre.harmony.matchers.MatcherScore;
@@ -49,9 +36,19 @@ import java.util.*;
 public class MapperService implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(MapperService.class);
 
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
+    @Inject
+    private AIPlatformConfig aiPlatformConfig;
+
+
     public JsonObject map(JsonArray sourceData)
     {
-        JsonObject result = StreamIngesterContext.getStreamIngester().submit(sourceData);
+        JsonObject result = StreamIngesterContext.getStreamIngester().submit(
+                this.securityTokenContainer.getSecurityToken().getPrincipal(),
+                this.aiPlatformConfig,
+                sourceData);
         return result;
     }
 
@@ -268,58 +265,6 @@ public class MapperService implements Serializable {
             JsonObject jsonObject = new JsonObject();
             jsonObject.add(parent,jsonArray);
             result.add(jsonObject);
-        }
-    }
-
-    private static class JavaCustomReceiver extends Receiver<String> {
-        private String data;
-
-        public JavaCustomReceiver(StorageLevel storageLevel) {
-            super(storageLevel);
-        }
-
-        @Override
-        public void onStart() {
-            try {
-
-                // Start the thread that receives data over a connection
-                new Thread(this::receive).start();
-            }
-            catch (Exception e){
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        public void onStop() {
-            // There is nothing much to do as the thread calling receive()
-            // is designed to stop by itself if isStopped() returns false
-        }
-
-        void receiveData(String data)
-        {
-            this.data = data;
-        }
-
-        private void receive() {
-            try {
-                // Until stopped or connection broken continue reading
-                while (!isStopped()) {
-                    if(this.data != null) {
-                        JsonArray jsonArray = JsonParser.parseString(this.data).getAsJsonArray();
-                        Iterator<JsonElement> iterator = jsonArray.iterator();
-                        while (iterator.hasNext()) {
-                            store(iterator.next().getAsJsonObject().toString());
-                        }
-                        this.data = null;
-                    }
-                }
-                restart("RESTARTING.......");
-            } catch(Throwable t) {
-                // restart if there is any other error
-                t.printStackTrace();
-                restart("Error receiving data", t);
-            }
         }
     }
 }

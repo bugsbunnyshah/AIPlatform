@@ -3,6 +3,7 @@ package io.bugsbunny.dataIngestion.service;
 import java.io.Serializable;
 
 public class StreamObject implements Serializable {
+    private String principal;
     private String data;
     private String dataLakeId;
 
@@ -20,5 +21,13 @@ public class StreamObject implements Serializable {
 
     public void setDataLakeId(String dataLakeId) {
         this.dataLakeId = dataLakeId;
+    }
+
+    public String getPrincipal() {
+        return principal;
+    }
+
+    public void setPrincipal(String principal) {
+        this.principal = principal;
     }
 }
