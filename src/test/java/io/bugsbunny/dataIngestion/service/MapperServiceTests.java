@@ -60,7 +60,7 @@ public class MapperServiceTests extends BaseTest{
         logger.info("*******");
     }*/
 
-    //@Test
+    @Test
     public void streamIngesterSubmit() throws Exception{
         System.out.println("TEST_STARTED");
 

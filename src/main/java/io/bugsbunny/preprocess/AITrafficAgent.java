@@ -81,7 +81,7 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         //logger.info(payload);
         //logger.info("TRAFFIC***********************");
 
-        long modelId = JsonParser.parseString(payload).getAsJsonObject().get("modelId").getAsLong();
+        String modelId = JsonParser.parseString(payload).getAsJsonObject().get("modelId").getAsString();
         String key = "/"+this.securityTokenContainer.getSecurityToken().getPrincipal()+"/"+modelId;
         if(!this.diffChains.contains(key))
         {

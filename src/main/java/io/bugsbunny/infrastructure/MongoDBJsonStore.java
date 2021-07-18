@@ -92,7 +92,7 @@ public class MongoDBJsonStore implements Serializable
 
         MongoCollection<Document> collection = database.getCollection("datalake");
 
-        String queryJson = "{\"dataLakeId\":"+dataLakeId+"}";
+        String queryJson = "{\"braineous_datalakeid\":\""+dataLakeId+"\"}";
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
         MongoCursor<Document> cursor = iterable.cursor();
@@ -231,6 +231,8 @@ public class MongoDBJsonStore implements Serializable
 
         MongoCollection<Document> collection = database.getCollection("diffchain");
 
+        chainId = "/" + principal + "/" + chainId;
+
         String queryJson = "{\"chainId\":\""+chainId+"\"}";
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
@@ -286,6 +288,8 @@ public class MongoDBJsonStore implements Serializable
 
         MongoCollection<Document> collection = database.getCollection("diff");
 
+        chainId = "/" + principal + "/" + chainId;
+
         String queryJson = "{\"chainId\":\""+chainId+"\"}";
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
@@ -323,7 +327,7 @@ public class MongoDBJsonStore implements Serializable
 
         MongoCollection<Document> collection = database.getCollection("aimodels");
 
-        String queryJson = "{\"modelId\":"+modelId+"}";
+        String queryJson = "{\"modelId\":\""+modelId+"\"}";
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
         MongoCursor<Document> cursor = iterable.cursor();
@@ -344,7 +348,7 @@ public class MongoDBJsonStore implements Serializable
 
         MongoCollection<Document> collection = database.getCollection("aimodels");
 
-        String queryJson = "{\"modelId\":"+modelId+"}";
+        String queryJson = "{\"modelId\":\""+modelId+"\"}";
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
         MongoCursor<Document> cursor = iterable.cursor();
@@ -442,7 +446,7 @@ public class MongoDBJsonStore implements Serializable
 
         MongoCollection<Document> collection = database.getCollection("dataset");
 
-        String queryJson = "{\"dataSetId\":"+dataSetId+"}";
+        String queryJson = "{\"dataSetId\":\""+dataSetId+"\"}";
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
         MongoCursor<Document> cursor = iterable.cursor();
@@ -470,7 +474,7 @@ public class MongoDBJsonStore implements Serializable
 
         MongoCollection<Document> collection = database.getCollection("dataset");
 
-        String queryJson = "{\"modelId\":"+modelId+"}";
+        String queryJson = "{\"modelId\":\""+modelId+"\"}";
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);
         MongoCursor<Document> cursor = iterable.cursor();

@@ -66,9 +66,6 @@ public class StreamIngesterContext implements Serializable {
 
     public void ingestData(String principal, JsonObject jsonObject)
     {
-        logger.info("********************************************");
-        logger.info(jsonObject.toString());
-        logger.info("********************************************");
 
         Tenant tenant = new Tenant();
         tenant.setPrincipal(principal);
@@ -77,11 +74,22 @@ public class StreamIngesterContext implements Serializable {
         this.securityTokenContainer.setSecurityToken(securityToken);
 
         //Store in the DataLake
-        this.mongoDBJsonStore.storeIngestion(tenant,jsonObject);
+        String dataLakeId = jsonObject.get("braineous_datalakeid").getAsString();
+
+        //System.out.println("************PERSISTING******************");
+        //System.out.println(dataLakeId);
+        //System.out.println("****************************************");
+
+        JsonObject data = new JsonObject();
+        data.addProperty("braineous_datalakeid",jsonObject.get("braineous_datalakeid").getAsString());
+        data.addProperty("data", jsonObject.toString());
+        //logger.info("***********************");
+        //logger.info(data.toString());
+        this.mongoDBJsonStore.storeIngestion(tenant,data);
 
         //Add for DataReplay
         String chainId = this.dataReplayService.generateDiffChain(jsonObject);
-        logger.info("CHAIN_ID: "+chainId);
+        //logger.info("CHAIN_ID: "+chainId);
     }
 
     public void setDataReplayService(DataReplayService dataReplayService){

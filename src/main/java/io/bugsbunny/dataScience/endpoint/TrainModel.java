@@ -136,7 +136,10 @@ public class TrainModel
 
             JsonObject returnValue = new JsonObject();
             returnValue.add("result", JsonParser.parseString(eval));
-            returnValue.addProperty("dataHistoryId", this.aiTrafficContainer.getChainId());
+
+            //TODO: use this as chain id but once concept of data history and training history
+            //is created, this will have to change
+            returnValue.addProperty("dataHistoryId", dataLakeIds[0]);
 
             Response response = Response.ok(returnValue.toString()).build();
             return response;
