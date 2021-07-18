@@ -48,7 +48,7 @@ public class ModelDataSetTests extends BaseTest {
         assertEquals(200, response.getStatusCode());
 
         JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        long dataSetId = returnValue.get("dataSetId").getAsLong();
+        String dataSetId = returnValue.get("dataSetId").getAsString();
         response = given().get("/dataset/readDataSet/?dataSetId=" + dataSetId).andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         String storedData = returnValue.get("data").getAsString();
@@ -63,7 +63,7 @@ public class ModelDataSetTests extends BaseTest {
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
-        long modelId = liveModelDeployedJson.get("modelId").getAsLong();
+        String modelId = liveModelDeployedJson.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
@@ -80,7 +80,7 @@ public class ModelDataSetTests extends BaseTest {
         assertEquals(200, response.getStatusCode());
 
         JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        long dataSetId = returnValue.get("dataSetId").getAsLong();
+        String dataSetId = returnValue.get("dataSetId").getAsString();
         response = given().get("/dataset/readDataSet/?dataSetId="+dataSetId).andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         String storedData = returnValue.get("data").getAsString();

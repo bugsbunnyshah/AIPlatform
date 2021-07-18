@@ -50,7 +50,7 @@ public class SecurityTokenMockComponentTests extends BaseTest {
                     Thread.currentThread().getContextClassLoader());
 
             JsonObject input = this.packagingService.performPackaging(modelPackage);
-            long modelId = input.get("modelId").getAsLong();
+            String modelId = input.get("modelId").getAsString();
 
             String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
                     Thread.currentThread().getContextClassLoader());
@@ -66,7 +66,7 @@ public class SecurityTokenMockComponentTests extends BaseTest {
             logger.info("************************");
             assertEquals(200, response.getStatusCode());
             JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-            long dataSetId = returnValue.get("dataSetId").getAsLong();
+            String dataSetId = returnValue.get("dataSetId").getAsString();
             JsonArray dataSetIdArray = new JsonArray();
             dataSetIdArray.add(dataSetId);
             input = new JsonObject();

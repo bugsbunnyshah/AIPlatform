@@ -132,12 +132,14 @@ public class TrainModelTests extends BaseTest
         //assert the body
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
         assertNotNull(ingestedData.get("dataLakeId"));
+
+        Thread.sleep(2000);
+
         input = new JsonObject();
         JsonArray jsonArray = new JsonArray();
         jsonArray.add(ingestedData.get("dataLakeId").getAsString());
         input.addProperty("modelId", modelId);
         input.add("dataLakeIds", jsonArray);
-
         Response response = given().body(input.toString()).when().post("/trainModel/trainJavaFromDataLake")
 
                 .andReturn();
@@ -156,7 +158,7 @@ public class TrainModelTests extends BaseTest
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject modelDeployedJson = this.packagingService.performPackaging(modelPackage);
-        long modelId = modelDeployedJson.get("modelId").getAsLong();
+        String modelId = modelDeployedJson.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
@@ -173,7 +175,7 @@ public class TrainModelTests extends BaseTest
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
 
-        long dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsLong();
+        String dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsString();
         JsonObject training = new JsonObject();
         JsonArray dataSetIdArray = new JsonArray();
         dataSetIdArray.add(dataSetId);
@@ -284,7 +286,7 @@ public class TrainModelTests extends BaseTest
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
-        long modelId = liveModelDeployedJson.get("modelId").getAsLong();
+        String modelId = liveModelDeployedJson.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
@@ -293,7 +295,7 @@ public class TrainModelTests extends BaseTest
         input.addProperty("format", "csv");
         input.addProperty("data", data);
 
-        long[] dataIds = new long[3];
+        String[] dataIds = new String[3];
         String dataHistoryId=null;
         for(int i=0; i<dataIds.length; i++) {
             Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
@@ -302,7 +304,7 @@ public class TrainModelTests extends BaseTest
             logger.info("************************");
             assertEquals(200, response.getStatusCode());
             JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-            long dataSetId = returnValue.get("dataSetId").getAsLong();
+            String dataSetId = returnValue.get("dataSetId").getAsString();
 
             JsonObject training = new JsonObject();
             JsonArray dataSetIdArray = new JsonArray();
@@ -345,7 +347,7 @@ public class TrainModelTests extends BaseTest
             Iterator<JsonElement> cour = dataSetIds.iterator();
             while(cour.hasNext())
             {
-                long dataSetId = cour.next().getAsLong();
+                String dataSetId = cour.next().getAsString();
 
                 logger.info(""+dataSetId);
                 response = given().when().get("/dataset/readDataSet/?dataSetId="+dataSetId).andReturn();

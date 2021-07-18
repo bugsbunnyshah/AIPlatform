@@ -486,7 +486,7 @@ public class MongoDBJsonStore implements Serializable
             dataSetJson.remove("_id");
             dataSetJson.addProperty("dataSetType", "training");
             collection.insertOne(Document.parse(dataSetJson.toString()));
-            dataSetIds.add(dataSetJson.get("dataSetId").getAsLong());
+            dataSetIds.add(dataSetJson.get("dataSetId").getAsString());
         }
 
         rolledOverDataSetIds.add("rolledOverDataSetIds", dataSetIds);

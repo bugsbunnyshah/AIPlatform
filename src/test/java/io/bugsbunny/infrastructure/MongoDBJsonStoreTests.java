@@ -63,7 +63,7 @@ public class MongoDBJsonStoreTests extends BaseTest {
 
         JsonObject dataSet = this.mongoDBJsonStore.readDataSet(this.securityTokenContainer.getTenant(),oid);
         String csvData = dataSet.get("data").getAsString();
-        long storedOid = dataSet.get("dataSetId").getAsLong();
+        String storedOid = dataSet.get("dataSetId").getAsString();
         logger.info(""+storedOid);
         assertEquals(oid, storedOid);
         assertEquals(csv, csvData);
@@ -91,7 +91,7 @@ public class MongoDBJsonStoreTests extends BaseTest {
         response.body().prettyPrint();
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
-        long dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsLong();
+        String dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsString();
 
 
         JsonObject rolledOverDataSetIds = this.mongoDBJsonStore.rollOverToTraningDataSets(this.securityTokenContainer.getTenant(),
@@ -99,12 +99,12 @@ public class MongoDBJsonStoreTests extends BaseTest {
         logger.info(rolledOverDataSetIds.toString());
 
         //Assert
-        List<Long> dataSetIds = new ArrayList<>();
+        List<String> dataSetIds = new ArrayList<>();
         JsonArray array = rolledOverDataSetIds.getAsJsonArray("rolledOverDataSetIds");
         Iterator<JsonElement> iterator = array.iterator();
         while(iterator.hasNext())
         {
-            dataSetIds.add(iterator.next().getAsLong());
+            dataSetIds.add(iterator.next().getAsString());
         }
         assertTrue(dataSetIds.contains(dataSetId));
     }

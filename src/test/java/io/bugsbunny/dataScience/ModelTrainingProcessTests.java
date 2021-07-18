@@ -111,7 +111,7 @@ public class ModelTrainingProcessTests extends BaseTest
                 .andReturn();
         packageResponse.body().prettyPrint();
         JsonObject deployedModel = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
-        long modelId = deployedModel.get("modelId").getAsLong();
+        String modelId = deployedModel.get("modelId").getAsString();
 
         String tmp = "tmp";
 
@@ -124,7 +124,7 @@ public class ModelTrainingProcessTests extends BaseTest
         input.addProperty("data", data);
         Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
         JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        long evalDataSetId = returnValue.get("dataSetId").getAsLong();
+        String evalDataSetId = returnValue.get("dataSetId").getAsString();
         response = given().get("/dataset/readDataSet/?dataSetId="+evalDataSetId).andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         String storedData = returnValue.get("data").getAsString();
@@ -145,7 +145,7 @@ public class ModelTrainingProcessTests extends BaseTest
         input.addProperty("data", data);
         response = given().body(input.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        long dataSetId = returnValue.get("dataSetId").getAsLong();
+        String dataSetId = returnValue.get("dataSetId").getAsString();
         response = given().get("/dataset/readDataSet/?dataSetId="+dataSetId).andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         storedData = returnValue.get("data").getAsString();

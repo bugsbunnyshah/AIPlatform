@@ -43,7 +43,7 @@ public class LiveModelTests extends BaseTest {
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject input = this.packagingService.performPackaging(modelPackage);
-        long modelId = input.get("modelId").getAsLong();
+        String modelId = input.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
@@ -59,7 +59,7 @@ public class LiveModelTests extends BaseTest {
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
         JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        long dataSetId = returnValue.get("dataSetId").getAsLong();
+        String dataSetId = returnValue.get("dataSetId").getAsString();
         input = new JsonObject();
         JsonArray dataSetIdArray = new JsonArray();
         dataSetIdArray.add(dataSetId);
@@ -88,7 +88,7 @@ public class LiveModelTests extends BaseTest {
 
         JsonObject input = this.packagingService.performPackaging(modelPackage);
         JsonObject trainingModelDeployedJson = this.packagingService.performPackaging(modelPackage);
-        long modelId = trainingModelDeployedJson.get("modelId").getAsLong();
+        String modelId = trainingModelDeployedJson.get("modelId").getAsString();
 
         String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
                         .getResourceAsStream("dataMapper/people.xml"),
@@ -116,7 +116,7 @@ public class LiveModelTests extends BaseTest {
         assertNotNull(ingestedData.get("dataLakeId"));
         input = new JsonObject();
         JsonArray jsonArray = new JsonArray();
-        jsonArray.add(ingestedData.get("dataLakeId").getAsLong());
+        jsonArray.add(ingestedData.get("dataLakeId").getAsString());
         input.addProperty("modelId", modelId);
         input.add("dataLakeIds", jsonArray);
 
@@ -143,7 +143,7 @@ public class LiveModelTests extends BaseTest {
                 Thread.currentThread().getContextClassLoader());
 
         JsonObject input = this.packagingService.performPackaging(modelPackage);
-        long modelId = input.get("modelId").getAsLong();
+        String modelId = input.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
@@ -161,7 +161,7 @@ public class LiveModelTests extends BaseTest {
             logger.info("************************");
             assertEquals(200, response.getStatusCode());
             JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-            long dataSetId = returnValue.get("dataSetId").getAsLong();
+            String dataSetId = returnValue.get("dataSetId").getAsString();
             dataSetIdArray.add(dataSetId);
         }
 
@@ -219,7 +219,7 @@ public class LiveModelTests extends BaseTest {
         modelPackageJson.addProperty("script", pythonScript);
 
         JsonObject modelDeployedJson = this.packagingService.performPackaging(modelPackageJson.toString());
-        long modelId = modelDeployedJson.get("modelId").getAsLong();
+        String modelId = modelDeployedJson.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/numpyTest.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
@@ -236,7 +236,7 @@ public class LiveModelTests extends BaseTest {
         logger.info("************************");
         assertEquals(200, response.getStatusCode());
 
-        long dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsLong();
+        String dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsString();
         input = new JsonObject();
         input.addProperty("modelId", modelId);
         input.addProperty("dataSetId", dataSetId);
