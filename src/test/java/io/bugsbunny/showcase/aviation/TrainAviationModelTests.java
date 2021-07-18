@@ -26,7 +26,7 @@ public class TrainAviationModelTests extends BaseTest
 {
     private static Logger logger = LoggerFactory.getLogger(TrainAviationModelTests.class);
 
-    @Test
+    //@Test
     public void testTrainAviationAIModel() throws Exception
     {
         Response response = given()

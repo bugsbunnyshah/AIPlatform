@@ -111,15 +111,19 @@ public class LiveModelTests extends BaseTest {
         logger.info("****");
         assertEquals(200, ingestionResponse.getStatusCode());
 
+        Thread.sleep(2000);
+
         //assert the body
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
         assertNotNull(ingestedData.get("dataLakeId"));
+
+
+
         input = new JsonObject();
         JsonArray jsonArray = new JsonArray();
         jsonArray.add(ingestedData.get("dataLakeId").getAsString());
         input.addProperty("modelId", modelId);
         input.add("dataLakeIds", jsonArray);
-
         //Deploy the model
         JsonObject deployModel = new JsonObject();
         deployModel.addProperty("modelId", modelId);

@@ -36,7 +36,7 @@ public class AIModelPackagingTests extends BaseTest
         assertEquals(200, response.getStatusCode());
 
         JsonObject responseJson = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        long modelId = responseJson.get("modelId").getAsLong();
+        String modelId = responseJson.get("modelId").getAsString();
         Response modelResponse = given().get("/aimodel/model/?modelId="+modelId).andReturn();
         logger.info(modelResponse.body().asString());
     }
