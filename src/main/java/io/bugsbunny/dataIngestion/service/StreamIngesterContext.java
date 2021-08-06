@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class StreamIngesterContext implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(StreamIngesterContext.class);
@@ -32,10 +34,13 @@ public class StreamIngesterContext implements Serializable {
 
     private SecurityTokenContainer securityTokenContainer;
 
+    private Map<String,String> chainIds;
+
 
     private StreamIngesterContext()
     {
         this.streamIngesterQueue = new StreamIngesterQueue();
+        this.chainIds = new HashMap<>();
     }
 
     public static StreamIngester getStreamIngester()
@@ -63,6 +68,9 @@ public class StreamIngesterContext implements Serializable {
         return this.streamIngesterQueue.latest();
     }
 
+    public Map<String, String> getChainIds() {
+        return chainIds;
+    }
 
     public void ingestData(String principal, JsonObject jsonObject)
     {
@@ -76,20 +84,18 @@ public class StreamIngesterContext implements Serializable {
         //Store in the DataLake
         String dataLakeId = jsonObject.get("braineous_datalakeid").getAsString();
 
-        //System.out.println("************PERSISTING******************");
-        //System.out.println(dataLakeId);
-        //System.out.println("****************************************");
-
         JsonObject data = new JsonObject();
         data.addProperty("braineous_datalakeid",jsonObject.get("braineous_datalakeid").getAsString());
+        data.addProperty("tenant",tenant.getPrincipal());
         data.addProperty("data", jsonObject.toString());
-        //logger.info("***********************");
-        //logger.info(data.toString());
+        logger.info("************PERSISTING******************");
+        logger.info(data.toString());
+        logger.info("****************************************");
         this.mongoDBJsonStore.storeIngestion(tenant,data);
 
         //Add for DataReplay
         String chainId = this.dataReplayService.generateDiffChain(jsonObject);
-        //logger.info("CHAIN_ID: "+chainId);
+        this.chainIds.put(dataLakeId,chainId);
     }
 
     public void setDataReplayService(DataReplayService dataReplayService){

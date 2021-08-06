@@ -29,6 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class StreamIngester implements Serializable{
     private static Logger logger = LoggerFactory.getLogger(StreamIngester.class);
@@ -36,6 +39,7 @@ public class StreamIngester implements Serializable{
     private SparkConf sparkConf;
     private JavaStreamingContext streamingContext;
     private StreamReceiver streamReceiver;
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private void startIngester()
     {
@@ -127,7 +131,25 @@ public class StreamIngester implements Serializable{
             String dataLakeId = UUID.randomUUID().toString();
             this.streamReceiver.receiveData(tenant.getPrincipal(), dataLakeId, sourceData.toString());
 
+            Future<String> future =  executor.submit(() -> {
+                String chainId = null;
+                while((chainId = StreamIngesterContext.getStreamIngesterContext().getChainIds().get(dataLakeId))==null);
+                return chainId;
+            });
+
+            String chainId = null;
+            try{
+                while(!future.isDone());
+                chainId = future.get();
+            }
+            catch(Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+
             json.addProperty("dataLakeId", dataLakeId);
+            json.addProperty("chainId",chainId);
+            json.addProperty("tenant",tenant.getPrincipal());
             return json;
         }
         else {

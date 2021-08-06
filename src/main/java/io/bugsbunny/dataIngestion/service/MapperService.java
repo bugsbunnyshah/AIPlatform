@@ -44,6 +44,9 @@ import javax.inject.Inject;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @ApplicationScoped
 public class MapperService {
@@ -64,6 +67,8 @@ public class MapperService {
 
     @Inject
     private MongoDBJsonStore mongoDBJsonStore;
+
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @PostConstruct
     public void start()
@@ -88,12 +93,26 @@ public class MapperService {
     public JsonObject map(String entity,JsonArray sourceData)
     {
         Tenant tenant = this.securityTokenContainer.getTenant();
-        JsonObject result = StreamIngesterContext.getStreamIngester().submit(
-                tenant,
-                this.securityTokenContainer,
-                this.mongoDBJsonStore,
-                this.dataReplayService,
-                sourceData);
+        Future<JsonObject> future =  executor.submit(() -> {
+            JsonObject result = StreamIngesterContext.getStreamIngester().submit(
+                    tenant,
+                    this.securityTokenContainer,
+                    this.mongoDBJsonStore,
+                    this.dataReplayService,
+                    sourceData);
+            return result;
+        });
+
+        JsonObject result = null;
+        try{
+            while(!future.isDone());
+            result = future.get();
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+
         return result;
 
         /*logger.info("********SOURCE_DATA************");
@@ -146,6 +165,33 @@ public class MapperService {
             logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }*/
+    }
+
+    static JsonObject performMapping(Map<SchemaElement, Double> scores, String json) throws IOException
+    {
+        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+
+        JsonObject result = new JsonObject();
+        Set<Map.Entry<SchemaElement, Double>> entrySet = scores.entrySet();
+        for(Map.Entry<SchemaElement, Double> entry: entrySet)
+        {
+            SchemaElement schemaElement = entry.getKey();
+            Double score = entry.getValue();
+            String field = schemaElement.getName();
+            StringTokenizer tokenizer = new StringTokenizer(field, ".");
+            while(tokenizer.hasMoreTokens())
+            {
+                String local = tokenizer.nextToken();
+                if(!jsonObject.has(local))
+                {
+                    continue;
+                }
+
+                result.add(local, jsonObject.get(local));
+            }
+        }
+
+        return result;
     }
 
 
@@ -241,32 +287,6 @@ public class MapperService {
         }
 
         return schemaInfo;
-    }
-
-    static JsonObject performMapping(Map<SchemaElement, Double> scores, String json) throws IOException
-    {
-        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
-
-        JsonObject result = new JsonObject();
-        Set<Map.Entry<SchemaElement, Double>> entrySet = scores.entrySet();
-        for(Map.Entry<SchemaElement, Double> entry: entrySet)
-        {
-            SchemaElement schemaElement = entry.getKey();
-            Double score = entry.getValue();
-            String field = schemaElement.getName();
-            StringTokenizer tokenizer = new StringTokenizer(field, ".");
-            while(tokenizer.hasMoreTokens())
-            {
-                String local = tokenizer.nextToken();
-                if(!jsonObject.has(local))
-                {
-                    continue;
-                }
-                result.add(local, jsonObject.get(local));
-            }
-        }
-
-        return result;
     }
 
     static Map<SchemaElement,Double> findMatches(FilteredSchemaInfo f1, FilteredSchemaInfo f2,
