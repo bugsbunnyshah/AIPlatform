@@ -84,18 +84,19 @@ public class StreamIngesterContext implements Serializable {
         //Store in the DataLake
         String dataLakeId = jsonObject.get("braineous_datalakeid").getAsString();
 
+        //Add for DataReplay
+        String chainId = this.dataReplayService.generateDiffChain(jsonObject);
+        this.chainIds.put(dataLakeId,chainId);
+
         JsonObject data = new JsonObject();
         data.addProperty("braineous_datalakeid",jsonObject.get("braineous_datalakeid").getAsString());
         data.addProperty("tenant",tenant.getPrincipal());
         data.addProperty("data", jsonObject.toString());
+        data.addProperty("chainId",chainId);
         logger.info("************PERSISTING******************");
         logger.info(data.toString());
         logger.info("****************************************");
         this.mongoDBJsonStore.storeIngestion(tenant,data);
-
-        //Add for DataReplay
-        String chainId = this.dataReplayService.generateDiffChain(jsonObject);
-        this.chainIds.put(dataLakeId,chainId);
     }
 
     public void setDataReplayService(DataReplayService dataReplayService){

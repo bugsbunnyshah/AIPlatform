@@ -9,6 +9,7 @@ import com.mongodb.client.*;
 import io.bugsbunny.configuration.AIPlatformConfig;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 
+import io.bugsbunny.util.JsonUtil;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -126,6 +127,33 @@ public class MongoDBJsonStore implements Serializable
             JsonObject actual = new JsonObject();
             actual.addProperty("ingestionId", ingestion.get("ingestionId").getAsString());
             actual.addProperty("data", ingestion.get("data").getAsString());
+            ingestedDataSet.add(actual);
+        }
+        return ingestedDataSet;
+    }
+
+    public JsonArray getIngestedDataSetsMetaData(Tenant tenant)
+    {
+        JsonArray ingestedDataSet = new JsonArray();
+
+        String principal = tenant.getPrincipal();
+        String databaseName = principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("datalake");
+
+        String queryJson = "{\"tenant\":\""+tenant.getPrincipal()+"\"}";
+        Bson bson = Document.parse(queryJson);
+        FindIterable<Document> iterable = collection.find(bson);
+        MongoCursor<Document> cursor = iterable.cursor();
+        while(cursor.hasNext())
+        {
+            Document document = cursor.next();
+            String documentJson = document.toJson();
+            JsonObject ingestion = JsonParser.parseString(documentJson).getAsJsonObject();
+            JsonObject actual = new JsonObject();
+            actual.addProperty("dataLakeId", ingestion.get("braineous_datalakeid").getAsString());
+            actual.addProperty("chainId", ingestion.get("chainId").getAsString());
             ingestedDataSet.add(actual);
         }
         return ingestedDataSet;

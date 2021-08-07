@@ -5,6 +5,7 @@ import com.google.gson.*;
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.test.components.BaseTest;
+import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
@@ -109,22 +110,32 @@ public class MongoDBJsonStoreTests extends BaseTest {
         assertTrue(dataSetIds.contains(dataSetId));
     }
 
-    //TODO
-    /*@Test
+    @Test
     public void testIngestion() throws Exception
     {
-        String csv = IOUtils.toString(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream("dataScience/saturn_data_eval.csv"),
+        String sourceSchema = IOUtils.toString(Thread.currentThread().getContextClassLoader().
+                        getResourceAsStream("dataMapper/sourceSchema.json"),
                 StandardCharsets.UTF_8);
-        //logger.info(csv);
+        String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().
+                        getResourceAsStream("dataMapper/sourceData.json"),
+                StandardCharsets.UTF_8);
+        JsonObject input = new JsonObject();
+        input.addProperty("sourceSchema", sourceSchema);
+        input.addProperty("destinationSchema", sourceSchema);
+        input.addProperty("sourceData", sourceData);
+        input.addProperty("entity","person");
 
-        JsonObject dataSetJson = new JsonObject();
-        dataSetJson.addProperty("data", csv);
-        long dataLakeId = this.mongoDBJsonStore.storeIngestion(dataSetJson);
-        logger.info("Lookup DataLakeId: "+dataLakeId);
 
-        JsonObject data = this.mongoDBJsonStore.getIngestion(dataLakeId);
-        logger.info(data.toString());
-        logger.info(data.get("dataLakeId").getAsString());
-    }*/
+        Response response = given().body(input.toString()).when().post("/dataMapper/map")
+                .andReturn();
+
+        String jsonResponse = response.getBody().prettyPrint();
+        JsonObject json = JsonParser.parseString(jsonResponse).getAsJsonObject();
+        String tenant = json.get("tenant").getAsString();
+
+        Tenant cour = new Tenant();
+        cour.setPrincipal(tenant);
+        JsonArray metaData = this.mongoDBJsonStore.getIngestedDataSetsMetaData(cour);
+        JsonUtil.print(metaData);
+    }
 }
