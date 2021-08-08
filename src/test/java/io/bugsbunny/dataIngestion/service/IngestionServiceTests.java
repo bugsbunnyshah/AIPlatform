@@ -34,16 +34,38 @@ public class IngestionServiceTests extends BaseTest {
 
     //TODO: Investigate why multiple fetch + map is not working
     @Test
-    public void ingestData() throws Exception{
+    public void ingestFetchData() throws Exception{
         String agentId = "ian";
 
-        DataFetchAgent flightAgent = new FlightAgent();
-        this.ingestionService.ingestData(agentId,"flight",flightAgent);
+        for(int i=0; i<5; i++) {
+            DataFetchAgent flightAgent = new FlightAgent();
+            this.ingestionService.ingestData(agentId+i, "flight", flightAgent);
+        }
 
-        Thread.sleep(20000);
+        //Thread.sleep(20000);
+        Thread.sleep(7*60*1000);
     }
 
-    private static class FlightAgent implements DataFetchAgent{
+    @Test
+    public void ingestPushData() throws Exception{
+        String agentId = "ian";
+
+        String responseJson = IOUtils.resourceToString("aviation/flights0.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonArray jsonArray = JsonParser.parseString(responseJson).getAsJsonObject().getAsJsonArray("data");
+
+        for(int i=0; i<1; i++) {
+            DataFetchAgent flightAgent = new FlightAgent();
+            this.ingestionService.ingestData(agentId, "flight", (DataPushAgent) flightAgent, jsonArray);
+        }
+
+        //Thread.sleep(20000);
+        Thread.sleep(7*60*1000);
+    }
+
+
+
+    private static class FlightAgent implements DataFetchAgent,DataPushAgent{
 
         @Override
         public JsonArray fetchData() throws FetchException{
@@ -52,13 +74,16 @@ public class IngestionServiceTests extends BaseTest {
                         Thread.currentThread().getContextClassLoader());
                 JsonArray jsonArray = JsonParser.parseString(responseJson).getAsJsonObject().getAsJsonArray("data");
 
-                System.out.println("************FETCHING_DATA************");
-
                 return jsonArray;
             }
             catch(Exception e){
                 throw new FetchException(e);
             }
+        }
+
+        @Override
+        public void receiveData(JsonArray json) throws FetchException {
+            System.out.println("************PUSH_RECEIVED************");
         }
     }
 }

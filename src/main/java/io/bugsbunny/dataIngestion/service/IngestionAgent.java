@@ -27,12 +27,17 @@ public class IngestionAgent extends TimerTask implements Serializable {
     private Timer timer;
     private String entity;
     private DataFetchAgent dataFetchAgent;
+    private DataPushAgent dataPushAgent;
 
     public IngestionAgent(String entity,DataFetchAgent dataFetchAgent){
         this.entity = entity;
         this.dataFetchAgent = dataFetchAgent;
     }
 
+    public IngestionAgent(String entity,DataPushAgent dataPushAgent){
+        this.entity = entity;
+        this.dataPushAgent = dataPushAgent;
+    }
 
     public void start(){
         this.timer = new Timer(true);
@@ -82,6 +87,27 @@ public class IngestionAgent extends TimerTask implements Serializable {
         catch (Exception fetchException)
         {
             logger.error(fetchException.getMessage(),fetchException);
+        }
+    }
+
+    public void receiveData(JsonArray data){
+        try {
+            this.dataPushAgent.receiveData(data);
+
+            JsonObject input = new JsonObject();
+            input.addProperty("sourceSchema", "");
+            input.addProperty("destinationSchema", "");
+            input.addProperty("sourceData", data.toString());
+            input.addProperty("entity",entity);
+            Response response = given().body(input.toString()).when().post("/dataMapper/map/")
+                    .andReturn();
+            JsonObject ingestionResult = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+            //System.out.println("***************INGESTION_RESULT*******************");
+            //System.out.println(ingestionResult);
+            //System.out.println("**************************************************");
+        }
+        catch(Exception pushException){
+            throw new RuntimeException(pushException);
         }
     }
 }

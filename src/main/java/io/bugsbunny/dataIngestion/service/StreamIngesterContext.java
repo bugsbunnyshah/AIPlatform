@@ -17,8 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class StreamIngesterContext implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(StreamIngesterContext.class);
@@ -64,8 +63,14 @@ public class StreamIngesterContext implements Serializable {
         this.streamIngesterQueue.add(streamObject);
     }
 
-    public StreamObject getLatest(){
-        return this.streamIngesterQueue.latest();
+
+    public Queue<StreamObject> getDataLakeQueue(String dataLakeId){
+        return this.streamIngesterQueue.getDataLakeQueue(dataLakeId);
+    }
+
+    public Set<String> activeDataLakeIds()
+    {
+        return this.streamIngesterQueue.getActiveDataLakeIds();
     }
 
     public Map<String, String> getChainIds() {
@@ -86,17 +91,17 @@ public class StreamIngesterContext implements Serializable {
 
         //Add for DataReplay
         String chainId = this.dataReplayService.generateDiffChain(jsonObject);
-        this.chainIds.put(dataLakeId,chainId);
 
         JsonObject data = new JsonObject();
         data.addProperty("braineous_datalakeid",jsonObject.get("braineous_datalakeid").getAsString());
         data.addProperty("tenant",tenant.getPrincipal());
         data.addProperty("data", jsonObject.toString());
         data.addProperty("chainId",chainId);
-        logger.info("************PERSISTING******************");
+        logger.info("************PERSISTING-"+dataLakeId+"******************");
         logger.info(data.toString());
         logger.info("****************************************");
         this.mongoDBJsonStore.storeIngestion(tenant,data);
+        this.chainIds.put(dataLakeId,chainId);
     }
 
     public void setDataReplayService(DataReplayService dataReplayService){

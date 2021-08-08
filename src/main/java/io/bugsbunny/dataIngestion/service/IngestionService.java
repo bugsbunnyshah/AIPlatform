@@ -55,4 +55,11 @@ public class IngestionService implements Serializable {
             this.ingestionAgents.get(agentId).start();
         }
     }
+
+    public void ingestData(String agentId, String entity, DataPushAgent dataPushAgent,JsonArray data){
+        if(this.ingestionAgents.get(agentId)==null){
+            this.ingestionAgents.put(agentId, new IngestionAgent(entity,dataPushAgent));
+        }
+        this.ingestionAgents.get(agentId).receiveData(data);
+    }
 }

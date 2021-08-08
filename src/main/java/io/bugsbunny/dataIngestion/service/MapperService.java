@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 @ApplicationScoped
 public class MapperService {
@@ -93,26 +92,12 @@ public class MapperService {
     public JsonObject map(String entity,JsonArray sourceData)
     {
         Tenant tenant = this.securityTokenContainer.getTenant();
-        Future<JsonObject> future =  executor.submit(() -> {
-            JsonObject result = StreamIngesterContext.getStreamIngester().submit(
-                    tenant,
-                    this.securityTokenContainer,
-                    this.mongoDBJsonStore,
-                    this.dataReplayService,
-                    sourceData);
-            return result;
-        });
-
-        JsonObject result = null;
-        try{
-            while(!future.isDone());
-            result = future.get();
-        }
-        catch(Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-
+        JsonObject result = StreamIngesterContext.getStreamIngester().submit(
+                tenant,
+                this.securityTokenContainer,
+                this.mongoDBJsonStore,
+                this.dataReplayService,
+                sourceData);
         return result;
 
         /*logger.info("********SOURCE_DATA************");
