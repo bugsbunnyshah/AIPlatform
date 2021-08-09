@@ -41,7 +41,7 @@ public class IngestionAgent extends TimerTask implements Serializable {
 
     public void start(){
         this.timer = new Timer(true);
-        this.timer.schedule(this, 1000, 5000);
+        this.timer.schedule(this, 1000, 15*60*1000);
     }
 
     @Override
