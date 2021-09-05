@@ -79,10 +79,11 @@ public class IngestionAgent extends TimerTask implements Serializable {
             input.addProperty("entity",entity);
             Response response = given().body(input.toString()).when().post("/dataMapper/map/")
                     .andReturn();
-            JsonObject ingestionResult = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
-            System.out.println("***************INGESTION_RESULT*******************");
-            System.out.println(ingestionResult);
-            System.out.println("**************************************************");
+            response.getBody().prettyPrint();
+            //JsonObject ingestionResult = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+            //System.out.println("***************INGESTION_RESULT*******************");
+            //System.out.println(ingestionResult);
+            //System.out.println("**************************************************");
         }
         catch (Exception fetchException)
         {

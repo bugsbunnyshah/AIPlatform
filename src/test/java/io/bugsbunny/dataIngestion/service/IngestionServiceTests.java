@@ -42,8 +42,8 @@ public class IngestionServiceTests extends BaseTest {
             this.ingestionService.ingestData(agentId+i, "flight", flightAgent);
         }
 
-        //Thread.sleep(20000);
-        Thread.sleep(7*60*1000);
+        Thread.sleep(20000);
+        //Thread.sleep(7*60*1000);
     }
 
     @Test
@@ -59,8 +59,8 @@ public class IngestionServiceTests extends BaseTest {
             this.ingestionService.ingestData(agentId, "flight", (DataPushAgent) flightAgent, jsonArray);
         }
 
-        //Thread.sleep(20000);
-        Thread.sleep(7*60*1000);
+        Thread.sleep(20000);
+        //Thread.sleep(7*60*1000);
     }
 
 

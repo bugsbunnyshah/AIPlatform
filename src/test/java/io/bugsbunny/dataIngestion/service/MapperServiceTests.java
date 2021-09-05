@@ -86,6 +86,7 @@ public class MapperServiceTests extends BaseTest{
                 .andReturn();
         response.getBody().prettyPrint();
 
-        Thread.sleep(7*60*1000);
+        //Thread.sleep(7*60*1000);
+        Thread.sleep(20000);
     }
 }

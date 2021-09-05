@@ -48,17 +48,23 @@ public class StreamIngester implements Serializable{
     {
         JsonObject json = new JsonObject();
 
-        if(this.streamingContext == null){
-            synchronized (this) {
-                if(this.streamingContext == null) {
-                    // Create a local StreamingContext with two working thread and batch interval of 1 second
-                    this.sparkConf = new SparkConf().setAppName("StreamIngester")
-                            .set("hostname", "localhost").setMaster("local[20]");
-                    this.streamingContext = new JavaStreamingContext(sparkConf, new Duration(1000));
-                    this.streamReceiver = new StreamReceiver(StorageLevels.MEMORY_AND_DISK_2);
-                    startIngestion();
+        try {
+            if (this.streamingContext == null) {
+                synchronized (this) {
+                    if (this.streamingContext == null) {
+                        // Create a local StreamingContext with two working thread and batch interval of 1 second
+                        this.sparkConf = new SparkConf().setAppName("StreamIngester")
+                                .set("hostname", "localhost").setMaster("local[20]");
+                        this.streamingContext = new JavaStreamingContext(sparkConf, new Duration(1000));
+                        this.streamReceiver = new StreamReceiver(StorageLevels.MEMORY_AND_DISK_2);
+                        startIngestion();
+                    }
                 }
             }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         if(securityTokenContainer != null) {
