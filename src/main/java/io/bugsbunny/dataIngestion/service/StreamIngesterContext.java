@@ -1,21 +1,19 @@
 package io.bugsbunny.dataIngestion.service;
 
-import com.google.gson.JsonArray;
+
 import com.google.gson.JsonObject;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+
 import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.infrastructure.Tenant;
 import io.bugsbunny.preprocess.SecurityToken;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
-import org.bson.Document;
+import io.bugsbunny.util.BackgroundProcessListener;
+import io.bugsbunny.util.JsonUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.*;
 
@@ -58,8 +56,18 @@ public class StreamIngesterContext implements Serializable {
         return StreamIngesterContext.streamIngesterContext;
     }
 
+    public void clear(){
+        StreamIngesterContext.streamIngester = null;
+        StreamIngesterContext.streamIngesterContext = null;
+    }
+
     public void addStreamObject(StreamObject streamObject)
     {
+        //System.out.println("********ADDING_STREAM_OBJECT_FOR_STORAGE*******");
+        //System.out.println(streamObject.getData());
+        //System.out.println("************************************************");
+
+
         this.streamIngesterQueue.add(streamObject);
     }
 
@@ -79,6 +87,7 @@ public class StreamIngesterContext implements Serializable {
 
     public void ingestData(String principal, JsonObject jsonObject)
     {
+        //JsonUtil.print(jsonObject);
 
         Tenant tenant = new Tenant();
         tenant.setPrincipal(principal);
@@ -102,6 +111,8 @@ public class StreamIngesterContext implements Serializable {
         logger.info("****************************************");
         this.mongoDBJsonStore.storeIngestion(tenant,data);
         this.chainIds.put(dataLakeId,chainId);
+
+        BackgroundProcessListener.getInstance().decreaseThreshold(data);
     }
 
     public void setDataReplayService(DataReplayService dataReplayService){

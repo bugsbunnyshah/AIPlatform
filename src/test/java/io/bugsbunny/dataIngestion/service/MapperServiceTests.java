@@ -4,6 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.test.components.BaseTest;
+import io.bugsbunny.util.BGNotificationReceiver;
+import io.bugsbunny.util.BackgroundProcessListener;
+import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
@@ -59,34 +62,4 @@ public class MapperServiceTests extends BaseTest{
         logger.info(array.toString());
         logger.info("*******");
     }*/
-
-    @Test
-    public void streamIngesterSubmit() throws Exception{
-        System.out.println("TEST_STARTED");
-
-
-        String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                "aviation/flights0.json"),
-                StandardCharsets.UTF_8);
-        JsonArray jsonArray = JsonParser.parseString(sourceData).getAsJsonObject().get("data").getAsJsonArray();
-
-
-        System.out.println("*******************************");
-        System.out.println("STARTING_INGESTION");
-        System.out.println("*******************************");
-
-        //JsonObject json = this.mapperService.map("flight",jsonArray);
-        //System.out.println(json);
-        JsonObject input = new JsonObject();
-        input.addProperty("sourceSchema", "");
-        input.addProperty("destinationSchema", "");
-        input.addProperty("sourceData", jsonArray.toString());
-        input.addProperty("entity","flight");
-        Response response = given().body(input.toString()).when().post("/dataMapper/map")
-                .andReturn();
-        response.getBody().prettyPrint();
-
-        //Thread.sleep(7*60*1000);
-        Thread.sleep(20000);
-    }
 }

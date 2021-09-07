@@ -175,8 +175,6 @@ public class DataMapperTests extends BaseTest
         logger.info("****");
         assertEquals(200, response.getStatusCode());
 
-        Thread.sleep(2000);
-
         //assert the body
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
         assertNotNull(ingestedData.get("dataLakeId"));

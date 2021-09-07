@@ -4,11 +4,19 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.data.history.service.DataReplayService;
+import io.bugsbunny.dataIngestion.service.DataFetchAgent;
+import io.bugsbunny.dataIngestion.service.DataPushAgent;
+import io.bugsbunny.dataIngestion.service.IngestionServiceTests;
+import io.bugsbunny.dataIngestion.service.StreamIngesterContext;
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.preprocess.AITrafficAgent;
 import io.bugsbunny.test.components.BaseTest;
+import io.bugsbunny.util.BGNotificationReceiver;
+import io.bugsbunny.util.BackgroundProcessListener;
+import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,66 +80,6 @@ public class LiveModelTests extends BaseTest {
         given().body(deployModel.toString()).when().post("/liveModel/deployJavaModel").andReturn();
 
         response = given().body(input.toString()).when().post("/liveModel/evalJava").andReturn();
-        logger.info("************************");
-        logger.info(response.statusLine());
-        response.body().prettyPrint();
-        logger.info("************************");
-        assertEquals(200, response.getStatusCode());
-        assertNotNull(JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId"));
-    }
-
-    @Test
-    public void testEvalJavaFromDataLake() throws Exception
-    {
-        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
-                Thread.currentThread().getContextClassLoader());
-
-        JsonObject input = this.packagingService.performPackaging(modelPackage);
-        JsonObject trainingModelDeployedJson = this.packagingService.performPackaging(modelPackage);
-        String modelId = trainingModelDeployedJson.get("modelId").getAsString();
-
-        String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
-                        .getResourceAsStream("dataMapper/people.xml"),
-                StandardCharsets.UTF_8);
-
-        input = new JsonObject();
-        input.addProperty("sourceSchema", xml);
-        input.addProperty("destinationSchema", xml);
-        input.addProperty("sourceData", xml);
-        input.addProperty("entity","saturn");
-
-
-        Response ingestionResponse = given().body(input.toString()).when().post("/dataMapper/mapXml/")
-                .andReturn();
-
-        String jsonResponse = ingestionResponse.getBody().prettyPrint();
-        logger.info("****");
-        logger.info(ingestionResponse.getStatusLine());
-        logger.info(jsonResponse);
-        logger.info("****");
-        assertEquals(200, ingestionResponse.getStatusCode());
-
-        Thread.sleep(2000);
-
-        //assert the body
-        JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
-        assertNotNull(ingestedData.get("dataLakeId"));
-
-
-
-        input = new JsonObject();
-        JsonArray jsonArray = new JsonArray();
-        jsonArray.add(ingestedData.get("dataLakeId").getAsString());
-        input.addProperty("modelId", modelId);
-        input.add("dataLakeIds", jsonArray);
-        //Deploy the model
-        JsonObject deployModel = new JsonObject();
-        deployModel.addProperty("modelId", modelId);
-        given().body(deployModel.toString()).when().post("/liveModel/deployJavaModel").andReturn();
-
-        Response response = given().body(input.toString()).when().post("/liveModel/evalJavaFromDataLake")
-
-                .andReturn();
         logger.info("************************");
         logger.info(response.statusLine());
         response.body().prettyPrint();

@@ -275,8 +275,6 @@ public class AIModelServiceTests extends BaseTest {
         logger.info("****");
         assertEquals(200, ingestionResponse.getStatusCode());
 
-        Thread.sleep(2000);
-
         //assert the body
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
         assertNotNull(ingestedData.get("dataLakeId"));
@@ -319,8 +317,6 @@ public class AIModelServiceTests extends BaseTest {
         logger.info(jsonResponse);
         logger.info("****");
         assertEquals(200, ingestionResponse.getStatusCode());
-
-        Thread.sleep(2000);
 
         //assert the body
         JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();

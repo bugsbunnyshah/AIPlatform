@@ -41,31 +41,47 @@ public class StreamIngester implements Serializable{
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     private boolean isReceiverStarted = false;
 
+    public void start(){
+        try {
+            if (this.streamingContext == null) {
+                // Create a local StreamingContext with two working thread and batch interval of 1 second
+                this.sparkConf = new SparkConf().setAppName("StreamIngester")
+                        .set("hostname", "localhost").setMaster("local[20]");
+                this.streamingContext = new JavaStreamingContext(sparkConf, new Duration(1000));
+                this.streamReceiver = new StreamReceiver(StorageLevels.MEMORY_AND_DISK_2);
+                this.startIngestion();
+            }
+        }
+        catch(Exception e){
+            logger.error(e.getMessage(),e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void stop(){
+        try {
+            if (this.streamingContext != null) {
+                this.streamingContext.stop();
+                //this.streamReceiver.stop("stop");
+            }
+            this.sparkConf = null;
+            this.streamingContext = null;
+            this.streamReceiver = null;
+            this.isReceiverStarted = false;
+            StreamIngesterContext.getStreamIngesterContext().clear();
+        }
+        catch (Exception e){
+            logger.error(e.getMessage(),e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public JsonObject submit(Tenant tenant, SecurityTokenContainer securityTokenContainer,
                              MongoDBJsonStore mongoDBJsonStore,
                              DataReplayService dataReplayService,
                              JsonArray sourceData)
     {
         JsonObject json = new JsonObject();
-
-        try {
-            if (this.streamingContext == null) {
-                synchronized (this) {
-                    if (this.streamingContext == null) {
-                        // Create a local StreamingContext with two working thread and batch interval of 1 second
-                        this.sparkConf = new SparkConf().setAppName("StreamIngester")
-                                .set("hostname", "localhost").setMaster("local[20]");
-                        this.streamingContext = new JavaStreamingContext(sparkConf, new Duration(1000));
-                        this.streamReceiver = new StreamReceiver(StorageLevels.MEMORY_AND_DISK_2);
-                        startIngestion();
-                    }
-                }
-            }
-        }
-        catch(Exception e){
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
 
         if(securityTokenContainer != null) {
             if (StreamIngesterContext.getStreamIngesterContext() != null) {
@@ -74,7 +90,6 @@ public class StreamIngester implements Serializable{
                 streamIngesterContext.setDataReplayService(dataReplayService);
                 streamIngesterContext.setMongoDBJsonStore(mongoDBJsonStore);
             }
-
 
             String dataLakeId = UUID.randomUUID().toString();
             String chainId = "/" + tenant.getPrincipal() + "/" + dataLakeId;
@@ -236,9 +251,6 @@ public class StreamIngester implements Serializable{
         @Override
         public void run() {
             try {
-                if (this.queue.isEmpty()) {
-                    throw new IllegalStateException("DATA_NOT_FOUND");
-                }
                 //System.out.println("*******QUEUE_PROCESSOR********");
                 //System.out.println("DataLakeId: "+dataLakeId);
                 //System.out.println(this.queue);
@@ -246,14 +258,17 @@ public class StreamIngester implements Serializable{
                 //System.out.println("*******************************");
                 while (!this.queue.isEmpty()) {
                     StreamObject streamObject = this.queue.poll();
-                    //StreamObject streamObject = this.queue.peek();
-                    String data = streamObject.getData();
-                    String dataLakeId = streamObject.getDataLakeId();
-                    String principal = streamObject.getPrincipal();
-                    JsonObject jsonObject = JsonParser.parseString(data).getAsJsonObject();
-                    jsonObject.addProperty("principal", principal);
-                    jsonObject.addProperty("dataLakeId", dataLakeId);
-                    this.streamReceiver.store(jsonObject.toString());
+                    if(streamObject != null) {
+                        String data = streamObject.getData();
+                        String dataLakeId = streamObject.getDataLakeId();
+                        String principal = streamObject.getPrincipal();
+                        JsonObject jsonObject = JsonParser.parseString(data).getAsJsonObject();
+                        jsonObject.addProperty("principal", principal);
+                        jsonObject.addProperty("dataLakeId", dataLakeId);
+                        if(this.streamReceiver.isStarted()) {
+                            this.streamReceiver.store(jsonObject.toString());
+                        }
+                    }
                 }
             }
             finally {

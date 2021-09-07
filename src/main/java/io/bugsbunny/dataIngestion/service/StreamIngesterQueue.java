@@ -19,9 +19,19 @@ public class StreamIngesterQueue implements Serializable {
         this.activeQueues = new ConcurrentHashSet<>();
     }
 
+    public void clear(){
+        this.queue.clear();
+        this.activeQueues.clear();
+    }
+
     public void add(StreamObject streamObject)
     {
         String dataLakeId = streamObject.getDataLakeId();
+
+        //System.out.println("********ACTIVE_DATA_LAKE_ID********");
+        //System.out.println(dataLakeId);
+        //System.out.println("***********************************");
+
         Queue<StreamObject> objectQueue = this.queue.get(dataLakeId);
         if(objectQueue == null){
             this.queue.put(dataLakeId, new LinkedList<>());

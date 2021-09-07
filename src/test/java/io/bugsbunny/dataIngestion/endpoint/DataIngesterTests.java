@@ -54,7 +54,5 @@ public class DataIngesterTests extends BaseTest
         assertTrue(ingestedData.get("success").getAsBoolean());
         int statusCode = response.getStatusCode();
         assertEquals(200, statusCode);
-
-        Thread.sleep(20000);
     }
 }
