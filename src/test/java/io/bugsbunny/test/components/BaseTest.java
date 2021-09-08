@@ -32,9 +32,9 @@ public abstract class BaseTest
     {
         BackgroundProcessListener.getInstance().clear();
 
-        try {
+        /*try {
             Thread.sleep(5000);
-        }catch (Exception e){}
+        }catch (Exception e){}*/
 
         StreamIngesterContext.getStreamIngester().start();
     }

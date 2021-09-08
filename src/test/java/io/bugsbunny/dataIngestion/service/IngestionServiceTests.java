@@ -53,208 +53,8 @@ public class IngestionServiceTests extends BaseTest {
     @Inject
     private SecurityTokenContainer securityTokenContainer;
 
-    //@Test
+    @Test
     @Order(1)
-    public void ingestAndEval() throws Exception
-    {
-        try {
-            this.startIngester();
-
-            String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
-                    Thread.currentThread().getContextClassLoader());
-
-            JsonObject input = this.packagingService.performPackaging(modelPackage);
-            JsonObject trainingModelDeployedJson = this.packagingService.performPackaging(modelPackage);
-            String modelId = trainingModelDeployedJson.get("modelId").getAsString();
-
-            String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
-                            .getResourceAsStream("dataMapper/people.xml"),
-                    StandardCharsets.UTF_8);
-
-            JsonObject ingestedData = null;
-            BGNotificationReceiver receiver = new BGNotificationReceiver();
-            synchronized (receiver) {
-                BackgroundProcessListener.getInstance().setThreshold(4);
-                BackgroundProcessListener.getInstance().setReceiver(receiver);
-
-                //Perform the test
-                input = new JsonObject();
-                input.addProperty("sourceSchema", xml);
-                input.addProperty("destinationSchema", xml);
-                input.addProperty("sourceData", xml);
-                input.addProperty("entity", "saturn");
-
-                Response ingestionResponse = given().body(input.toString()).when().post("/dataMapper/mapXml/")
-                        .andReturn();
-
-                String jsonResponse = ingestionResponse.getBody().prettyPrint();
-                logger.info("****");
-                logger.info(ingestionResponse.getStatusLine());
-                logger.info(jsonResponse);
-                logger.info("****");
-                assertEquals(200, ingestionResponse.getStatusCode());
-                ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
-                assertNotNull(ingestedData.get("dataLakeId"));
-
-                receiver.wait();
-                JsonArray data = receiver.getData();
-                assertEquals(4, data.size());
-                logger.info("*******RETURNED*******");
-                JsonUtil.print(data);
-            }
-
-            input = new JsonObject();
-            JsonArray jsonArray = new JsonArray();
-            jsonArray.add(ingestedData.get("dataLakeId").getAsString());
-            input.addProperty("modelId", modelId);
-            input.add("dataLakeIds", jsonArray);
-            //Deploy the model
-            JsonObject deployModel = new JsonObject();
-            deployModel.addProperty("modelId", modelId);
-            given().body(deployModel.toString()).when().post("/liveModel/deployJavaModel").andReturn();
-
-            JsonUtil.print(input);
-            Response response = given().body(input.toString()).when().post("/liveModel/evalJavaFromDataLake")
-
-                    .andReturn();
-            logger.info("************************");
-            logger.info(response.statusLine());
-            response.body().prettyPrint();
-            logger.info("************************");
-            assertEquals(200, response.getStatusCode());
-            assertNotNull(JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId"));
-        }
-        finally {
-            this.stopIngester();
-        }
-    }
-
-    //TODO: Investigate why multiple fetch + map is not working
-    //@Test
-    @Order(2)
-    public void ingestFetchAndPush() throws Exception{
-        try {
-            this.startIngester();
-
-            String agentId = "ian";
-
-            BGNotificationReceiver receiver = new BGNotificationReceiver();
-            synchronized (receiver) {
-                BackgroundProcessListener.getInstance().setThreshold(2);
-                BackgroundProcessListener.getInstance().setReceiver(receiver);
-
-                for (int i = 0; i < 2; i++) {
-                    DataFetchAgent flightAgent = new FlightAgent();
-                    this.ingestionService.ingestData(agentId + i, "flight", flightAgent);
-                }
-
-                receiver.wait();
-            }
-
-            JsonArray data = receiver.getData();
-            assertEquals(2, data.size());
-            logger.info("*******RETURNED*******");
-            JsonUtil.print(data);
-
-
-
-            //Push Test
-            String responseJson = IOUtils.resourceToString("aviation/flights0.json", StandardCharsets.UTF_8,
-                    Thread.currentThread().getContextClassLoader());
-            JsonArray jsonArray = JsonParser.parseString(responseJson).getAsJsonObject().getAsJsonArray("data");
-            receiver = new BGNotificationReceiver();
-            synchronized (receiver) {
-                BackgroundProcessListener.getInstance().setThreshold(2);
-                BackgroundProcessListener.getInstance().setReceiver(receiver);
-
-                //Perform the test
-                DataFetchAgent flightAgent = new FlightAgent();
-                this.ingestionService.ingestData(agentId, "flight", (DataPushAgent) flightAgent, jsonArray);
-
-                receiver.wait();
-            }
-
-            data = receiver.getData();
-            assertEquals(2, data.size());
-            logger.info("*******RETURNED*******");
-            JsonUtil.print(data);
-        }
-        finally {
-            this.stopIngester();
-        }
-    }
-
-    /*@Test
-    @Order(3)
-    public void ingestPushData() throws Exception{
-        try {
-            this.startIngester();
-
-            String agentId = "ian";
-
-            String responseJson = IOUtils.resourceToString("aviation/flights0.json", StandardCharsets.UTF_8,
-                    Thread.currentThread().getContextClassLoader());
-            JsonArray jsonArray = JsonParser.parseString(responseJson).getAsJsonObject().getAsJsonArray("data");
-
-            BGNotificationReceiver receiver = new BGNotificationReceiver();
-            synchronized (receiver) {
-                BackgroundProcessListener.getInstance().setThreshold(2);
-                BackgroundProcessListener.getInstance().setReceiver(receiver);
-
-                //Perform the test
-                DataFetchAgent flightAgent = new FlightAgent();
-                this.ingestionService.ingestData(agentId, "flight", (DataPushAgent) flightAgent, jsonArray);
-
-                receiver.wait();
-            }
-
-            JsonArray data = receiver.getData();
-            assertEquals(2, data.size());
-            logger.info("*******RETURNED*******");
-            JsonUtil.print(data);
-        }
-        finally {
-            this.stopIngester();
-        }
-    }*/
-
-    //@Test
-    @Order(3)
-    public void streamIngesterSubmit() throws Exception{
-        String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                "aviation/flights0.json"),
-                StandardCharsets.UTF_8);
-        JsonArray jsonArray = JsonParser.parseString(sourceData).getAsJsonObject().get("data").getAsJsonArray();
-
-
-        System.out.println("*******************************");
-        System.out.println("STARTING_INGESTION");
-        System.out.println("*******************************");
-
-        BGNotificationReceiver receiver = new BGNotificationReceiver();
-        synchronized (receiver) {
-            BackgroundProcessListener.getInstance().setThreshold(2);
-            BackgroundProcessListener.getInstance().setReceiver(receiver);
-            JsonObject input = new JsonObject();
-            input.addProperty("sourceSchema", "");
-            input.addProperty("destinationSchema", "");
-            input.addProperty("sourceData", jsonArray.toString());
-            input.addProperty("entity", "flight");
-            Response response = given().body(input.toString()).when().post("/dataMapper/map")
-                    .andReturn();
-            response.getBody().prettyPrint();
-
-            receiver.wait();
-        }
-
-        JsonArray data = receiver.getData();
-        assertEquals(2,data.size());
-        logger.info("*******RETURNED*******");
-        JsonUtil.print(data);
-    }
-
-    //@Test
-    @Order(4)
     public void testDataHistoryFromDataLake() throws Exception
     {
         try {
@@ -294,6 +94,7 @@ public class IngestionServiceTests extends BaseTest {
                 String dataLakeId = returnValue.get("dataLakeId").getAsString();
                 dataIds[0] = dataLakeId;
                 dataLakeIdArray.add(dataLakeId);
+                BackgroundProcessListener.getInstance().setDataLakeId(dataLakeId);
 
 
             /*for(int i=0; i<dataIds.length; i++) {
@@ -364,7 +165,7 @@ public class IngestionServiceTests extends BaseTest {
     }
 
     //@Test
-    @Order(5)
+    @Order(2)
     public void testTrainJavaFromDataLake() throws Exception
     {
         try {
@@ -384,23 +185,35 @@ public class IngestionServiceTests extends BaseTest {
                             .getResourceAsStream("dataMapper/people.xml"),
                     StandardCharsets.UTF_8);
 
-            input = new JsonObject();
-            input.addProperty("sourceData", xml);
-            input.addProperty("entity", "saturn");
+            JsonObject ingestedData;
+            BGNotificationReceiver receiver = new BGNotificationReceiver();
+            synchronized (receiver) {
+                BackgroundProcessListener.getInstance().setThreshold(1);
+                BackgroundProcessListener.getInstance().setReceiver(receiver);
 
-            Response ingestionResponse = given().body(input.toString()).when().post("/dataMapper/mapXml/")
-                    .andReturn();
+                input = new JsonObject();
+                input.addProperty("sourceData", xml);
+                input.addProperty("entity", "saturn");
 
-            String jsonResponse = ingestionResponse.getBody().prettyPrint();
-            logger.info("****");
-            logger.info(ingestionResponse.getStatusLine());
-            logger.info(jsonResponse);
-            logger.info("****");
-            assertEquals(200, ingestionResponse.getStatusCode());
+                Response ingestionResponse = given().body(input.toString()).when().post("/dataMapper/mapXml/")
+                        .andReturn();
 
-            //assert the body
-            JsonObject ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
-            assertNotNull(ingestedData.get("dataLakeId"));
+                String jsonResponse = ingestionResponse.getBody().prettyPrint();
+                logger.info("****");
+                logger.info(ingestionResponse.getStatusLine());
+                logger.info(jsonResponse);
+                logger.info("****");
+                assertEquals(200, ingestionResponse.getStatusCode());
+
+                //assert the body
+                ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+                assertNotNull(ingestedData.get("dataLakeId"));
+                String dataLakeId = ingestedData.get("dataLakeId").getAsString();
+                BackgroundProcessListener.getInstance().setDataLakeId(dataLakeId);
+
+                receiver.wait();
+                JsonUtil.print(receiver.getData());
+            }
 
             input = new JsonObject();
             JsonArray jsonArray = new JsonArray();
@@ -420,6 +233,211 @@ public class IngestionServiceTests extends BaseTest {
         finally {
             this.startIngester();
         }
+    }
+
+    //@Test
+    //@Order(1)
+    public void ingestAndEval() throws Exception
+    {
+        try {
+            this.startIngester();
+
+            String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                    Thread.currentThread().getContextClassLoader());
+
+            JsonObject input = this.packagingService.performPackaging(modelPackage);
+            JsonObject trainingModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+            String modelId = trainingModelDeployedJson.get("modelId").getAsString();
+
+            String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
+                            .getResourceAsStream("dataMapper/people.xml"),
+                    StandardCharsets.UTF_8);
+
+            JsonObject ingestedData = null;
+            BGNotificationReceiver receiver = new BGNotificationReceiver();
+            synchronized (receiver) {
+                BackgroundProcessListener.getInstance().setThreshold(4);
+                BackgroundProcessListener.getInstance().setReceiver(receiver);
+
+                //Perform the test
+                input = new JsonObject();
+                input.addProperty("sourceSchema", xml);
+                input.addProperty("destinationSchema", xml);
+                input.addProperty("sourceData", xml);
+                input.addProperty("entity", "saturn");
+
+                Response ingestionResponse = given().body(input.toString()).when().post("/dataMapper/mapXml/")
+                        .andReturn();
+
+                String jsonResponse = ingestionResponse.getBody().prettyPrint();
+                logger.info("****");
+                logger.info(ingestionResponse.getStatusLine());
+                logger.info(jsonResponse);
+                logger.info("****");
+                assertEquals(200, ingestionResponse.getStatusCode());
+                ingestedData = JsonParser.parseString(jsonResponse).getAsJsonObject();
+                assertNotNull(ingestedData.get("dataLakeId"));
+                String dataLakeId = ingestedData.get("dataLakeId").getAsString();
+                BackgroundProcessListener.getInstance().setDataLakeId(dataLakeId);
+
+                receiver.wait();
+                JsonArray data = receiver.getData();
+                assertEquals(4, data.size());
+                logger.info("*******RETURNED*******");
+                JsonUtil.print(data);
+            }
+
+            input = new JsonObject();
+            JsonArray jsonArray = new JsonArray();
+            jsonArray.add(ingestedData.get("dataLakeId").getAsString());
+            input.addProperty("modelId", modelId);
+            input.add("dataLakeIds", jsonArray);
+            //Deploy the model
+            JsonObject deployModel = new JsonObject();
+            deployModel.addProperty("modelId", modelId);
+            given().body(deployModel.toString()).when().post("/liveModel/deployJavaModel").andReturn();
+
+            JsonUtil.print(input);
+            Response response = given().body(input.toString()).when().post("/liveModel/evalJavaFromDataLake")
+
+                    .andReturn();
+            logger.info("************************");
+            logger.info(response.statusLine());
+            response.body().prettyPrint();
+            logger.info("************************");
+            assertEquals(200, response.getStatusCode());
+            assertNotNull(JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId"));
+        }
+        finally {
+            this.stopIngester();
+        }
+    }
+
+    //TODO: Investigate why multiple fetch + map is not working
+    //@Test
+    //@Order(2)
+    public void ingestFetchAndPush() throws Exception{
+        try {
+            this.startIngester();
+
+            String agentId = "ian";
+
+            BGNotificationReceiver receiver = new BGNotificationReceiver();
+            synchronized (receiver) {
+                BackgroundProcessListener.getInstance().setThreshold(2);
+                BackgroundProcessListener.getInstance().setReceiver(receiver);
+
+                for (int i = 0; i < 2; i++) {
+                    DataFetchAgent flightAgent = new FlightAgent();
+                    this.ingestionService.ingestData(agentId + i, "flight", flightAgent);
+                }
+
+                receiver.wait();
+            }
+
+            JsonArray data = receiver.getData();
+            assertEquals(2, data.size());
+            logger.info("*******RETURNED*******");
+            JsonUtil.print(data);
+
+
+
+            //Push Test
+            String responseJson = IOUtils.resourceToString("aviation/flights0.json", StandardCharsets.UTF_8,
+                    Thread.currentThread().getContextClassLoader());
+            JsonArray jsonArray = JsonParser.parseString(responseJson).getAsJsonObject().getAsJsonArray("data");
+            receiver = new BGNotificationReceiver();
+            synchronized (receiver) {
+                BackgroundProcessListener.getInstance().setThreshold(2);
+                BackgroundProcessListener.getInstance().setReceiver(receiver);
+
+                //Perform the test
+                DataFetchAgent flightAgent = new FlightAgent();
+                this.ingestionService.ingestData(agentId, "flight", (DataPushAgent) flightAgent, jsonArray);
+
+                receiver.wait();
+            }
+
+            data = receiver.getData();
+            assertEquals(2, data.size());
+            logger.info("*******RETURNED*******");
+            JsonUtil.print(data);
+        }
+        finally {
+            this.stopIngester();
+        }
+    }
+
+    //@Test
+    //@Order(2)
+    public void streamIngesterSubmit() throws Exception{
+        String sourceData = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "aviation/flights0.json"),
+                StandardCharsets.UTF_8);
+        JsonArray jsonArray = JsonParser.parseString(sourceData).getAsJsonObject().get("data").getAsJsonArray();
+
+
+        System.out.println("*******************************");
+        System.out.println("STARTING_INGESTION");
+        System.out.println("*******************************");
+
+        BGNotificationReceiver receiver = new BGNotificationReceiver();
+        synchronized (receiver) {
+            BackgroundProcessListener.getInstance().setThreshold(2);
+            BackgroundProcessListener.getInstance().setReceiver(receiver);
+            JsonObject input = new JsonObject();
+            input.addProperty("sourceSchema", "");
+            input.addProperty("destinationSchema", "");
+            input.addProperty("sourceData", jsonArray.toString());
+            input.addProperty("entity", "flight");
+            Response response = given().body(input.toString()).when().post("/dataMapper/map")
+                    .andReturn();
+            response.getBody().prettyPrint();
+            JsonObject json = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+            String dataLakeId = json.get("dataLakeId").getAsString();
+            BackgroundProcessListener.getInstance().setDataLakeId(dataLakeId);
+
+            receiver.wait();
+        }
+
+        JsonArray data = receiver.getData();
+        assertEquals(2,data.size());
+        logger.info("*******RETURNED*******");
+        JsonUtil.print(data);
+    }
+
+
+
+
+
+    private static class FlightAgent implements DataFetchAgent,DataPushAgent{
+
+        @Override
+        public JsonArray fetchData() throws FetchException{
+            try {
+                String responseJson = IOUtils.resourceToString("aviation/flights0.json", StandardCharsets.UTF_8,
+                        Thread.currentThread().getContextClassLoader());
+                JsonArray jsonArray = JsonParser.parseString(responseJson).getAsJsonObject().getAsJsonArray("data");
+
+                return jsonArray;
+            }
+            catch(Exception e){
+                throw new FetchException(e);
+            }
+        }
+
+        @Override
+        public void receiveData(JsonArray json) throws FetchException {
+            System.out.println("************PUSH_RECEIVED************");
+        }
+    }
+
+    //@Test
+    public void testGetIngestion() throws Exception
+    {
+        //TODO: temp code for debugging
+        String dataLakeId = "-2586030430120757939";
+        logger.info(this.ingestionService.readDataLakeData(dataLakeId).toString());
     }
 
     //@Test
@@ -501,35 +519,5 @@ public class IngestionServiceTests extends BaseTest {
                 assertNotNull(storedData);
             }
         }
-    }
-
-    private static class FlightAgent implements DataFetchAgent,DataPushAgent{
-
-        @Override
-        public JsonArray fetchData() throws FetchException{
-            try {
-                String responseJson = IOUtils.resourceToString("aviation/flights0.json", StandardCharsets.UTF_8,
-                        Thread.currentThread().getContextClassLoader());
-                JsonArray jsonArray = JsonParser.parseString(responseJson).getAsJsonObject().getAsJsonArray("data");
-
-                return jsonArray;
-            }
-            catch(Exception e){
-                throw new FetchException(e);
-            }
-        }
-
-        @Override
-        public void receiveData(JsonArray json) throws FetchException {
-            System.out.println("************PUSH_RECEIVED************");
-        }
-    }
-
-    //@Test
-    public void testGetIngestion() throws Exception
-    {
-        //TODO: temp code for debugging
-        String dataLakeId = "-2586030430120757939";
-        logger.info(this.ingestionService.readDataLakeData(dataLakeId).toString());
     }
 }
