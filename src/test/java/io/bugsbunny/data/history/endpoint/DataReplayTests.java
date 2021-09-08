@@ -4,7 +4,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.data.history.service.DataReplayService;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
+import io.bugsbunny.infrastructure.Tenant;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.test.components.BaseTest;
+import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
@@ -13,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -27,6 +32,12 @@ public class DataReplayTests extends BaseTest {
     @Inject
     private DataReplayService dataReplayService;
 
+    @Inject
+    private MongoDBJsonStore mongoDBJsonStore;
+
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
+
     @Test
     public void testChain() throws Exception
     {
@@ -37,6 +48,10 @@ public class DataReplayTests extends BaseTest {
         modelChain.addProperty("modelId", random.nextLong());
         modelChain.add("payload",jsonArray);
         String oid = this.dataReplayService.generateDiffChain(modelChain);
+        Tenant tenant = this.securityTokenContainer.getTenant();
+        List<JsonObject> diffChain = this.mongoDBJsonStore.readDiffChain(tenant,oid);
+        logger.info("CHAIN_ID: "+oid);
+        JsonUtil.print(JsonParser.parseString(diffChain.toString()));
 
         Response response = given().get("/replay/chain/?oid="+oid).andReturn();
         logger.info("************************");

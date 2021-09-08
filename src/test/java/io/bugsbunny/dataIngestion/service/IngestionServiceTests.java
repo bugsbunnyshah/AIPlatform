@@ -80,6 +80,7 @@ public class IngestionServiceTests extends BaseTest {
             String[] dataIds = new String[3];
             String dataHistoryId = null;
             JsonArray dataLakeIdArray = new JsonArray();
+            String chainId = null;
 
             BGNotificationReceiver receiver = new BGNotificationReceiver();
             synchronized (receiver) {
@@ -92,6 +93,7 @@ public class IngestionServiceTests extends BaseTest {
                 assertEquals(200, response.getStatusCode());
                 JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
                 String dataLakeId = returnValue.get("dataLakeId").getAsString();
+                chainId = returnValue.get("chainId").getAsString();
                 dataIds[0] = dataLakeId;
                 dataLakeIdArray.add(dataLakeId);
                 BackgroundProcessListener.getInstance().setDataLakeId(dataLakeId);
@@ -128,9 +130,9 @@ public class IngestionServiceTests extends BaseTest {
 
 
             logger.info("*******");
-            logger.info("DATA_HISTORY_ID: " + dataHistoryId);
+            logger.info("CHAIN_ID: " + chainId);
             logger.info("*******");
-            String dataHistoryUrl = "/replay/chain/?oid=" + dataHistoryId;
+            String dataHistoryUrl = "/replay/chain/?oid=" + chainId;
             response = given().when().get(dataHistoryUrl).andReturn();
             logger.info("************************");
             logger.info(response.statusLine());

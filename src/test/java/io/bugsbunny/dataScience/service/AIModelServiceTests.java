@@ -246,7 +246,7 @@ public class AIModelServiceTests extends BaseTest {
         assertTrue(modelNotLive);
     }
 
-    @Test
+    //@Test
     public void testTrainJavaFromDataLake() throws Exception
     {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
@@ -289,7 +289,7 @@ public class AIModelServiceTests extends BaseTest {
         logger.info(result.toString());
     }
 
-    @Test
+    //@Test
     public void testEvalJavaFromDataLake() throws Exception
     {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
