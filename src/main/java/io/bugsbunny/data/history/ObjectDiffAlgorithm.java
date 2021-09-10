@@ -81,7 +81,7 @@ public class ObjectDiffAlgorithm
                         if (rightValue == null ||
                                 (rightValue.hashCode() != leftValue.hashCode()))
                         {
-                            diffMap.put(key, leftValue);
+                            diffMap.put(key, rightValue);
                         }
                     }
                 }
@@ -109,7 +109,14 @@ public class ObjectDiffAlgorithm
         Set<Map.Entry<String, Object>> entrySet = leftMap.entrySet();
         for (Map.Entry<String, Object> entry : entrySet)
         {
-            mergeMap.put(entry.getKey(), entry.getValue());
+            String key = entry.getKey();
+            boolean doesRightMapHaveTheKey = rightMap.containsKey(key);
+            if(entry.getValue() != null && doesRightMapHaveTheKey) {
+                mergeMap.put(entry.getKey(), entry.getValue());
+            }
+            else{
+                //THIS MEANS the FIELD WAS DELETED
+            }
         }
 
         //Process the diff
@@ -117,24 +124,33 @@ public class ObjectDiffAlgorithm
         for (Map.Entry<String, Object> entry : entrySet)
         {
             String key = entry.getKey();
-            boolean doesRightMapHaveTheKey = leftMap.containsKey(key);
+            boolean doesRightMapHaveTheKey = rightMap.containsKey(key);
+            boolean doesLeftMapHaveTheKey = leftMap.containsKey(key);
 
-            //Check for a FIELD Update
+
             if (doesRightMapHaveTheKey)
             {
-                int valueHash = entry.getValue().hashCode();
-                int compareHash = leftMap.get(key).hashCode();
-                if (valueHash != compareHash)
+                if(!leftMap.containsKey(key))
                 {
-                    mergeMap.put(key, entry.getValue());
+                    //This means a FIELD was ADDED
+                    if(rightMap.get(key) != null) {
+                        mergeMap.put(key, rightMap.get(key));
+                    }
+                }
+                else {
+                    int valueHash = entry.getValue().hashCode();
+                    int compareHash = leftMap.get(key).hashCode();
+                    if (valueHash != compareHash) {
+                        //This means a FIELD was UPDATED
+                        if (entry.getValue() != null) {
+                            mergeMap.put(key, entry.getValue());
+                        }
+                    }
                 }
             }
-            else
-            {
-                //This means a FIELD was ADDED
-                mergeMap.put(key, rightMap.get(key));
-            }
         }
+
+        System.out.println(mergeMap.toString());
 
         jsonObject = JsonParser.parseString(JsonUnflattener.unflatten(mergeMap.toString())).getAsJsonObject();
 

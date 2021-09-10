@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.bugsbunny.test.components.BaseTest;
+import io.bugsbunny.util.JsonUtil;
 import org.apache.commons.io.IOUtils;
 
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ public class DataReplayServiceTests extends BaseTest
     public void testDiffChainProcess() throws Exception
     {
         String email0 = IOUtils.toString(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/email0.json"),
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("historyEngine/diffChain/email0.json"),
                 StandardCharsets.UTF_8);
 
         String email1 = IOUtils.toString(
@@ -57,14 +58,19 @@ public class DataReplayServiceTests extends BaseTest
         jsonArray.add(next);
         jsonObject.add("payload",jsonArray);
 
-        String chainId = this.dataReplayService.generateDiffChain(jsonObject);
+        JsonUtil.print(jsonArray);
+        String chainId = this.dataReplayService.generateDiffChain(jsonArray.get(0).getAsJsonObject());
         logger.info("************************");
-        logger.info("ChainId: "+chainId);
+        logger.info("ChainId: " + chainId);
+        int size = jsonArray.size();
+        for(int i=1;i<size;i++) {
+            this.dataReplayService.addToDiffChain(chainId,jsonArray.get(i).getAsJsonObject());
+        }
 
         //Assert
         List<JsonObject> diffChain = this.dataReplayService.replayDiffChain(chainId);
         logger.info("********REPLAY_CHAIN****************");
-        logger.info(diffChain.toString());
+        JsonUtil.print(JsonParser.parseString(diffChain.toString()));
         logger.info("************************");
     }
 

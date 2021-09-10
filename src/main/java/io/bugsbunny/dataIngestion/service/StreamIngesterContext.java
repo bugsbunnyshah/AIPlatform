@@ -85,7 +85,7 @@ public class StreamIngesterContext implements Serializable {
         return chainIds;
     }
 
-    public void ingestData(String principal, JsonObject jsonObject)
+    public void ingestData(String principal,String dataLakeId, String chainId, JsonObject jsonObject)
     {
         //JsonUtil.print(jsonObject);
 
@@ -95,14 +95,9 @@ public class StreamIngesterContext implements Serializable {
         securityToken.setPrincipal(principal);
         this.securityTokenContainer.setSecurityToken(securityToken);
 
-        //Store in the DataLake
-        String dataLakeId = jsonObject.get("braineous_datalakeid").getAsString();
-
-        //Add for DataReplay
-        String chainId = this.dataReplayService.generateDiffChain(jsonObject);
 
         JsonObject data = new JsonObject();
-        data.addProperty("braineous_datalakeid",jsonObject.get("braineous_datalakeid").getAsString());
+        data.addProperty("braineous_datalakeid",dataLakeId);
         data.addProperty("tenant",tenant.getPrincipal());
         data.addProperty("data", jsonObject.toString());
         data.addProperty("chainId",chainId);

@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 
 import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.test.components.BaseTest;
+import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.*;
@@ -224,5 +225,136 @@ public class ObjectDiffAlgorithmTests extends BaseTest {
         logger.info("ChainId: "+ chainId);
         logger.info("ChainId: "+ diffChain.toString());
         logger.info("****************************");
+    }
+
+    @Test
+    public void testDiffReal() throws Exception
+    {
+        logger.info("****************");
+
+        String flight0 = "{\n" +
+                "  \"flight\": {\n" +
+                "    \"number\": \"204\",\n" +
+                "    \"iata\": \"LM204\",\n" +
+                "    \"icao\": \"LOG204\"\n" +
+                "  },\n" +
+                "  \"departure\": {\n" +
+                "    \"airport\": \"Donegal\",\n" +
+                "    \"timezone\": \"Europe/Dublin\",\n" +
+                "    \"iata\": \"CFN\",\n" +
+                "    \"icao\": \"EIDL\",\n" +
+                "    \"scheduled\": \"2020-09-25T12:05:00+00:00\",\n" +
+                "    \"estimated\": \"2020-09-25T12:05:00+00:00\"\n" +
+                "  },\n" +
+                "  \"arrival\": {\n" +
+                "    \"airport\": \"Glasgow International\",\n" +
+                "    \"timezone\": \"Europe/London\",\n" +
+                "    \"iata\": \"GLA\",\n" +
+                "    \"icao\": \"EGPF\",\n" +
+                "    \"terminal\": \"M\",\n" +
+                "    \"scheduled\": \"2020-09-25T13:05:00+00:00\",\n" +
+                "    \"estimated\": \"2020-09-25T13:05:00+00:00\"\n" +
+                "  },\n" +
+                "  \"flight_status\": \"scheduled\",\n" +
+                "  \"index\": 0,\n" +
+                "  \"flight_date\": \"2020-09-25\",\n" +
+                "  \"airline\": {\n" +
+                "    \"name\": \"Loganair\",\n" +
+                "    \"iata\": \"LM\",\n" +
+                "    \"icao\": \"LOG\"\n" +
+                "  },\n" +
+                "  \"chainId\": \"/-2061008798/e35b8ba8-b269-481d-832a-05fee9832930\",\n" +
+                "  \"braineous_datalakeid\": \"e35b8ba8-b269-481d-832a-05fee9832930\"\n" +
+                "}";
+
+        String flight1 = "{\n" +
+                "  \"airline\": {\n" +
+                "    \"name\": \"British Airways\",\n" +
+                "    \"iata\": \"BA\",\n" +
+                "    \"icao\": \"BAW\"\n" +
+                "  },\n" +
+                "  \"departure\": {\n" +
+                "    \"airport\": \"Donegal\",\n" +
+                "    \"timezone\": \"Europe/Dublin\",\n" +
+                "    \"iata\": \"CFN\",\n" +
+                "    \"icao\": \"EIDL\",\n" +
+                "    \"scheduled\": \"2020-09-25T12:05:00+00:00\",\n" +
+                "    \"estimated\": \"2020-09-25T12:05:00+00:00\"\n" +
+                "  },\n" +
+                "  \"flight\": {\n" +
+                "    \"number\": \"4086\",\n" +
+                "    \"iata\": \"BA4086\",\n" +
+                "    \"icao\": \"BAW4086\",\n" +
+                "    \"codeshared\": {\n" +
+                "      \"airline_name\": \"loganair\",\n" +
+                "      \"airline_iata\": \"lm\",\n" +
+                "      \"airline_icao\": \"log\",\n" +
+                "      \"flight_number\": \"204\",\n" +
+                "      \"flight_iata\": \"lm204\",\n" +
+                "      \"flight_icao\": \"log204\"\n" +
+                "    }\n" +
+                "  },\n" +
+                "  \"arrival\": {\n" +
+                "    \"airport\": \"Glasgow International\",\n" +
+                "    \"timezone\": \"Europe/London\",\n" +
+                "    \"iata\": \"GLA\",\n" +
+                "    \"icao\": \"EGPF\",\n" +
+                "    \"terminal\": \"M\",\n" +
+                "    \"scheduled\": \"2020-09-25T13:05:00+00:00\",\n" +
+                "    \"estimated\": \"2020-09-25T13:05:00+00:00\"\n" +
+                "  },\n" +
+                "  \"braineous_datalakeid\": \"e35b8ba8-b269-481d-832a-05fee9832930\",\n" +
+                "  \"chainId\": \"/-2061008798/e35b8ba8-b269-481d-832a-05fee9832930\",\n" +
+                "  \"flight_date\": \"2020-09-25\",\n" +
+                "  \"flight_status\": \"scheduled\"\n" +
+                "}";
+
+        flight0 = "{\"flight_date\": \"2020-09-25\",\n" +
+                "    \"index\": \"0\",\n" +
+                "  \"flight\": {\n" +
+                "    \"number\": \"204\",\n" +
+                "    \"iata\": \"LM204\",\n" +
+                "    \"icao\": \"LOG204\"\n" +
+                "  },\n" +
+                "    \"flight_status\": \"scheduled\"}";
+        flight1 = "{\"flight\": {\n" +
+                "    \"number\": \"4086\",\n" +
+                "    \"iata\": \"BA4086\",\n" +
+                "    \"icao\": \"BAW4086\",\n" +
+                "    \"codeshared\": {\n" +
+                "      \"airline_name\": \"loganair\",\n" +
+                "      \"airline_iata\": \"lm\",\n" +
+                "      \"airline_icao\": \"log\",\n" +
+                "      \"flight_number\": \"204\",\n" +
+                "      \"flight_iata\": \"lm204\",\n" +
+                "      \"flight_icao\": \"log204\"\n" +
+                "    }\n" +
+                "  }," +
+                "  \"flight_date\": \"2020-09-25\",\n" +
+                "  \"flight_status\": \"scheduled\"\n" +
+                "}";
+
+        //JsonObject left = new JsonObject();
+        //System.out.println(flight0);
+        JsonObject left = JsonParser.parseString(flight0).getAsJsonObject();
+        //left.add("object",JsonParser.parseString(email0).getAsJsonObject());
+        JsonUtil.print(left);
+
+        //JsonObject right = new JsonObject();
+        //System.out.println(flight1);
+        JsonObject right = JsonParser.parseString(flight1).getAsJsonObject();
+        //right.add("object",JsonParser.parseString(email1).getAsJsonObject());
+        JsonUtil.print(right);
+
+        logger.info("************DIFF***********");
+
+        JsonObject diff = this.objectDiffAlgorithm.diff(left, right);
+        JsonUtil.print(diff);
+
+        JsonObject merge = this.objectDiffAlgorithm.merge(left,diff);
+        JsonUtil.print(merge);
+
+        //assert
+        //assertEquals("5129151162", diff.getAsJsonObject("profile").get("mobile").getAsString());
     }
 }

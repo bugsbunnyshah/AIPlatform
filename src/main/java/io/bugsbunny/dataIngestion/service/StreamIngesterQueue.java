@@ -45,6 +45,7 @@ public class StreamIngesterQueue implements Serializable {
             StreamObject cour = new StreamObject();
             cour.setPrincipal(streamObject.getPrincipal());
             cour.setDataLakeId(streamObject.getDataLakeId());
+            cour.setChainId(streamObject.getChainId());
             cour.setData(jsonObject.toString());
             objectQueue.add(cour);
         }

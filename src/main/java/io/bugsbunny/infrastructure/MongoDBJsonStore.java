@@ -314,8 +314,6 @@ public class MongoDBJsonStore implements Serializable
 
         MongoCollection<Document> collection = database.getCollection("diff");
 
-        chainId = "/" + principal + "/" + chainId;
-
         String queryJson = "{\"chainId\":\""+chainId+"\"}";
         Bson bson = Document.parse(queryJson);
         FindIterable<Document> iterable = collection.find(bson);

@@ -9,6 +9,7 @@ import io.bugsbunny.data.history.service.DataReplayService;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.infrastructure.Tenant;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
+import io.bugsbunny.util.JsonUtil;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.StorageLevels;
@@ -40,6 +41,7 @@ public class StreamIngester implements Serializable{
     private StreamReceiver streamReceiver;
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     private boolean isReceiverStarted = false;
+
 
     public void start(){
         try {
@@ -76,6 +78,7 @@ public class StreamIngester implements Serializable{
         }
     }
 
+    //TODO: test ingesting XML and CSV
     public JsonObject submit(Tenant tenant, SecurityTokenContainer securityTokenContainer,
                              MongoDBJsonStore mongoDBJsonStore,
                              DataReplayService dataReplayService,
@@ -91,10 +94,12 @@ public class StreamIngester implements Serializable{
                 streamIngesterContext.setMongoDBJsonStore(mongoDBJsonStore);
             }
 
-            String dataLakeId = UUID.randomUUID().toString();
+            String dataLakeId = UUID.randomUUID().toString();;
             String chainId = "/" + tenant.getPrincipal() + "/" + dataLakeId;
+
             StreamObject streamObject = new StreamObject();
             streamObject.setDataLakeId(dataLakeId);
+            streamObject.setChainId(chainId);
             streamObject.setData(sourceData.toString());
             streamObject.setPrincipal(tenant.getPrincipal());
             StreamIngesterContext.getStreamIngesterContext().addStreamObject(streamObject);
@@ -116,37 +121,52 @@ public class StreamIngester implements Serializable{
             dataStream.foreachRDD(new VoidFunction<JavaRDD<String>>() {
                 @Override
                 public void call(JavaRDD<String> stringJavaRDD) throws Exception {
-                    stringJavaRDD.foreach(s -> {
-                        JsonElement root = JsonParser.parseString(s);
-                        if (root.isJsonPrimitive()) {
-                            return;
-                        }
+                    try {
+                        stringJavaRDD.foreach(s -> {
+                                    try {
+                                        JsonObject streamObject = JsonParser.parseString(s).getAsJsonObject();
+                                        //System.out.println("*****CALL*******");
+                                        //JsonUtil.print(streamObject);
+                                        String dataLakeId = streamObject.get("dataLakeId").getAsString();
+                                        String principal = streamObject.get("principal").getAsString();
+                                        String chainId = streamObject.get("chainId").getAsString();
+                                        String data = streamObject.get("data").getAsString();
 
-                        String dataLakeId = root.getAsJsonObject().get("dataLakeId").getAsString();
-                        String principal = root.getAsJsonObject().get("principal").getAsString();
-                        root.getAsJsonObject().remove("dataLakeId");
-                        root.getAsJsonObject().remove("principal");
+                                        JsonElement root = JsonParser.parseString(data);
+                                        //JsonUtil.print(root);
 
-                        HierarchicalSchemaInfo sourceSchemaInfo = MapperService.populateHierarchialSchema(root.toString(),
-                                root.toString(), null);
+                                        if (root.isJsonPrimitive()) {
+                                            return;
+                                        }
 
-                        HierarchicalSchemaInfo destinationSchemaInfo = MapperService.populateHierarchialSchema(root.toString(),
-                                root.toString(), null);
+                                        HierarchicalSchemaInfo sourceSchemaInfo = MapperService.populateHierarchialSchema(root.toString(),
+                                                root.toString(), null);
+
+                                        HierarchicalSchemaInfo destinationSchemaInfo = MapperService.populateHierarchialSchema(root.toString(),
+                                                root.toString(), null);
 
 
-                        FilteredSchemaInfo f1 = new FilteredSchemaInfo(sourceSchemaInfo);
-                        f1.addElements(sourceSchemaInfo.getElements(Entity.class));
-                        FilteredSchemaInfo f2 = new FilteredSchemaInfo(destinationSchemaInfo);
-                        f2.addElements(destinationSchemaInfo.getElements(Entity.class));
-                        Map<SchemaElement, Double> scores = MapperService.findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
-                        //logger.info("*************************************");
-                        //logger.info(scores.toString());
-                        //logger.info("*************************************");
+                                        FilteredSchemaInfo f1 = new FilteredSchemaInfo(sourceSchemaInfo);
+                                        f1.addElements(sourceSchemaInfo.getElements(Entity.class));
+                                        FilteredSchemaInfo f2 = new FilteredSchemaInfo(destinationSchemaInfo);
+                                        f2.addElements(destinationSchemaInfo.getElements(Entity.class));
+                                        Map<SchemaElement, Double> scores = MapperService.findMatches(f1, f2, sourceSchemaInfo.getElements(Entity.class));
+                                        //logger.info("*************************************");
+                                        //logger.info(scores.toString());
+                                        //logger.info("*************************************");
 
-                        JsonObject local = MapperService.performMapping(scores, root.toString());
-                        local.addProperty("braineous_datalakeid",dataLakeId);
-                        StreamIngesterContext.getStreamIngesterContext().ingestData(principal,local);
-                    });
+                                        JsonObject local = MapperService.performMapping(scores, root.toString());
+                                        StreamIngesterContext.getStreamIngesterContext().ingestData(principal, dataLakeId, chainId, local);
+                                    }
+                                    catch (Exception e){
+                                        logger.error(e.getMessage(),e);
+                                    }
+                                }
+                        );
+                    }
+                    catch (Exception e){
+                        logger.error(e.getMessage(),e);
+                    }
                 }
             });
 
@@ -258,13 +278,9 @@ public class StreamIngester implements Serializable{
                 //System.out.println("*******************************");
                 while (!this.queue.isEmpty()) {
                     StreamObject streamObject = this.queue.poll();
+                    //JsonUtil.print(streamObject.toJson());
                     if(streamObject != null) {
-                        String data = streamObject.getData();
-                        String dataLakeId = streamObject.getDataLakeId();
-                        String principal = streamObject.getPrincipal();
-                        JsonObject jsonObject = JsonParser.parseString(data).getAsJsonObject();
-                        jsonObject.addProperty("principal", principal);
-                        jsonObject.addProperty("dataLakeId", dataLakeId);
+                        JsonObject jsonObject = streamObject.toJson();
                         if(this.streamReceiver.isStarted()) {
                             this.streamReceiver.store(jsonObject.toString());
                         }
