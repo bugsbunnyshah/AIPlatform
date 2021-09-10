@@ -62,7 +62,7 @@ public class ModelDataSetTests extends BaseTest {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+        JsonObject liveModelDeployedJson = this.packagingService.performPackagingForLiveDeployment(modelPackage);
         String modelId = liveModelDeployedJson.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,

@@ -30,7 +30,7 @@ public class PackagingServiceTests extends BaseTest
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        JsonObject response = this.packagingService.performPackagingForLiveDeployment(modelPackage);
         logger.info(response.toString());
     }
 
@@ -40,7 +40,7 @@ public class PackagingServiceTests extends BaseTest
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-remote-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        JsonObject response = this.packagingService.performPackagingForLiveDeployment(modelPackage);
         logger.info(response.toString());
     }
 }

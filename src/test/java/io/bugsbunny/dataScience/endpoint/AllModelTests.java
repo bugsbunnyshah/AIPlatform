@@ -4,27 +4,18 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.data.history.service.DataReplayService;
-import io.bugsbunny.dataIngestion.service.DataFetchAgent;
-import io.bugsbunny.dataIngestion.service.DataPushAgent;
-import io.bugsbunny.dataIngestion.service.IngestionServiceTests;
-import io.bugsbunny.dataIngestion.service.StreamIngesterContext;
 import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.preprocess.AITrafficAgent;
+import io.bugsbunny.query.ObjectGraphQueryService;
 import io.bugsbunny.test.components.BaseTest;
-import io.bugsbunny.util.BGNotificationReceiver;
-import io.bugsbunny.util.BackgroundProcessListener;
-import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.restassured.response.Response;
-
 import javax.inject.Inject;
-
 import java.nio.charset.StandardCharsets;
 
 import static io.restassured.RestAssured.given;
@@ -32,8 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
-public class LiveModelTests extends BaseTest {
-    private static Logger logger = LoggerFactory.getLogger(LiveModelTests.class);
+public class AllModelTests extends BaseTest
+{
+    private static Logger logger = LoggerFactory.getLogger(AllModelTests.class);
 
     @Inject
     private DataReplayService dataReplayService;
@@ -44,13 +36,103 @@ public class LiveModelTests extends BaseTest {
     @Inject
     private PackagingService packagingService;
 
+    @Inject
+    private ObjectGraphQueryService objectGraphQueryService;
+
+    /*@BeforeEach
+    public void setUp()
+    {
+        TinkerGraph graph = TinkerGraph.open();
+        SparqlTraversalSource server = new SparqlTraversalSource(graph);
+        GraphData graphData = new LocalGraphData(server);
+        this.objectGraphQueryService.setGraphData(graphData);
+    }*/
+
+    @Test
+    public void testTrainJava() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject input = this.packagingService.performPackagingForLiveDeployment(modelPackage);
+        JsonObject liveModelDeployedJson = this.packagingService.performPackagingForLiveDeployment(modelPackage);
+        String modelId = liveModelDeployedJson.get("modelId").getAsString();
+
+        String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("format", "csv");
+        input.addProperty("data", data);
+
+        Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+        JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+        String dataSetId = returnValue.get("dataSetId").getAsString();
+        input = new JsonObject();
+        JsonArray dataSetIdArray = new JsonArray();
+        dataSetIdArray.add(dataSetId);
+        input.addProperty("modelId", modelId);
+        input.add("dataSetIds", dataSetIdArray);
+
+        response = given().body(input.toString()).when().post("/trainModel/trainJava").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+        assertNotNull(JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataHistoryId"));
+    }
+
+    @Test
+    public void testEvalPythonTraining() throws Exception
+    {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-python-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonObject modelDeployedJson = this.packagingService.performPackagingForLiveDeployment(modelPackage);
+        String modelId = modelDeployedJson.get("modelId").getAsString();
+
+        String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonObject input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("format", "csv");
+        input.addProperty("data", data);
+
+        Response response = given().body(input.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("modelId: "+modelId);
+        logger.info("************************");
+        assertEquals(200, response.getStatusCode());
+
+        String dataSetId = JsonParser.parseString(response.body().asString()).getAsJsonObject().get("dataSetId").getAsString();
+        JsonObject training = new JsonObject();
+        JsonArray dataSetIdArray = new JsonArray();
+        dataSetIdArray.add(dataSetId);
+        training.addProperty("modelId", modelId);
+        training.add("dataSetIds", dataSetIdArray);
+        logger.info(input.toString());
+        response = given().body(training.toString()).when().post("/trainModel/trainPython/").andReturn();
+        logger.info("************************");
+        logger.info(response.statusLine());
+        response.body().prettyPrint();
+        logger.info("************************");
+    }
+
     @Test
     public void testEvalJava() throws Exception
     {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject input = this.packagingService.performPackaging(modelPackage);
+        JsonObject input = this.packagingService.performPackagingForLiveDeployment(modelPackage);
         String modelId = input.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
@@ -94,7 +176,7 @@ public class LiveModelTests extends BaseTest {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject input = this.packagingService.performPackaging(modelPackage);
+        JsonObject input = this.packagingService.performPackagingForLiveDeployment(modelPackage);
         String modelId = input.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
@@ -160,7 +242,7 @@ public class LiveModelTests extends BaseTest {
     }
 
     @Test
-    public void testEvalPython() throws Exception
+    public void testEvalPythonLive() throws Exception
     {
         String pythonScript = IOUtils.resourceToString("dataScience/train.py", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
@@ -170,7 +252,7 @@ public class LiveModelTests extends BaseTest {
         JsonObject modelPackageJson = JsonParser.parseString(modelPackage).getAsJsonObject();
         modelPackageJson.addProperty("script", pythonScript);
 
-        JsonObject modelDeployedJson = this.packagingService.performPackaging(modelPackageJson.toString());
+        JsonObject modelDeployedJson = this.packagingService.performPackagingForLiveDeployment(modelPackageJson.toString());
         String modelId = modelDeployedJson.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/numpyTest.csv", StandardCharsets.UTF_8,

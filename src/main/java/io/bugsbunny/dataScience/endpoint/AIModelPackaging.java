@@ -25,7 +25,7 @@ public class AIModelPackaging
     public Response performPackaging(@RequestBody String input)
     {
         try {
-            JsonObject result = this.packagingService.performPackaging(input);
+            JsonObject result = this.packagingService.performPackagingForLiveDeployment(input);
             Response response = Response.ok(result.toString()).build();
             return response;
         }

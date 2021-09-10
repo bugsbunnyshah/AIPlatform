@@ -20,7 +20,7 @@ public class PackagingService {
     @Inject
     private SecurityTokenContainer securityTokenContainer;
 
-    public JsonObject performPackaging(String packageString)
+    public JsonObject performPackagingForLiveDeployment(String packageString)
     {
         JsonObject jsonObject = new JsonObject();
 

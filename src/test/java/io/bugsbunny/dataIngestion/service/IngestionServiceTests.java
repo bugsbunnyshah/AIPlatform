@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
-import java.util.TimerTask;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,7 +67,7 @@ public class IngestionServiceTests extends BaseTest {
             String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                     Thread.currentThread().getContextClassLoader());
 
-            JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+            JsonObject liveModelDeployedJson = this.packagingService.performPackagingForLiveDeployment(modelPackage);
             String modelId = liveModelDeployedJson.get("modelId").getAsString();
 
             String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
@@ -236,8 +235,8 @@ public class IngestionServiceTests extends BaseTest {
             String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                     Thread.currentThread().getContextClassLoader());
 
-            JsonObject input = this.packagingService.performPackaging(modelPackage);
-            JsonObject trainingModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+            JsonObject input = this.packagingService.performPackagingForLiveDeployment(modelPackage);
+            JsonObject trainingModelDeployedJson = this.packagingService.performPackagingForLiveDeployment(modelPackage);
             String modelId = trainingModelDeployedJson.get("modelId").getAsString();
 
             String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
@@ -304,8 +303,8 @@ public class IngestionServiceTests extends BaseTest {
             String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                     Thread.currentThread().getContextClassLoader());
 
-            JsonObject input = this.packagingService.performPackaging(modelPackage);
-            JsonObject trainingModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+            JsonObject input = this.packagingService.performPackagingForLiveDeployment(modelPackage);
+            JsonObject trainingModelDeployedJson = this.packagingService.performPackagingForLiveDeployment(modelPackage);
             String modelId = trainingModelDeployedJson.get("modelId").getAsString();
 
             String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
@@ -505,7 +504,7 @@ public class IngestionServiceTests extends BaseTest {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject liveModelDeployedJson = this.packagingService.performPackaging(modelPackage);
+        JsonObject liveModelDeployedJson = this.packagingService.performPackagingForLiveDeployment(modelPackage);
         String modelId = liveModelDeployedJson.get("modelId").getAsString();
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,

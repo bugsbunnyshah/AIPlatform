@@ -50,7 +50,7 @@ public class AIModelServiceTests extends BaseTest {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        JsonObject response = this.packagingService.performPackagingForLiveDeployment(modelPackage);
 
         String modelId = response.get("modelId").getAsString();
         String result = this.aiModelService.trainJava(modelId, new String[]{dataSetId});
@@ -82,7 +82,7 @@ public class AIModelServiceTests extends BaseTest {
     {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
-        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        JsonObject response = this.packagingService.performPackagingForLiveDeployment(modelPackage);
         String modelId = response.get("modelId").getAsString();
         logger.info("****************");
         logger.info("ModelId: "+modelId);
@@ -117,7 +117,7 @@ public class AIModelServiceTests extends BaseTest {
     {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
-        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        JsonObject response = this.packagingService.performPackagingForLiveDeployment(modelPackage);
         String modelId = response.get("modelId").getAsString();
         logger.info("****************");
         logger.info("ModelId: "+modelId);
@@ -174,7 +174,7 @@ public class AIModelServiceTests extends BaseTest {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        JsonObject response = this.packagingService.performPackagingForLiveDeployment(modelPackage);
 
         String modelId = response.get("modelId").getAsString();
         this.aiModelService.deployModel(modelId);
@@ -224,7 +224,7 @@ public class AIModelServiceTests extends BaseTest {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        JsonObject response = this.packagingService.performPackagingForLiveDeployment(modelPackage);
 
         String modelId = response.get("modelId").getAsString();
         String result = this.aiModelService.trainJava(modelId, new String[]{dataSetId});
@@ -252,7 +252,7 @@ public class AIModelServiceTests extends BaseTest {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        JsonObject response = this.packagingService.performPackagingForLiveDeployment(modelPackage);
 
         String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
                         .getResourceAsStream("dataMapper/people.xml"),
@@ -295,7 +295,7 @@ public class AIModelServiceTests extends BaseTest {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject response = this.packagingService.performPackaging(modelPackage);
+        JsonObject response = this.packagingService.performPackagingForLiveDeployment(modelPackage);
 
         String xml = IOUtils.toString(Thread.currentThread().getContextClassLoader()
                         .getResourceAsStream("dataMapper/people.xml"),

@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,7 +48,7 @@ public class SecurityTokenMockComponentTests extends BaseTest {
             String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                     Thread.currentThread().getContextClassLoader());
 
-            JsonObject input = this.packagingService.performPackaging(modelPackage);
+            JsonObject input = this.packagingService.performPackagingForLiveDeployment(modelPackage);
             String modelId = input.get("modelId").getAsString();
 
             String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,

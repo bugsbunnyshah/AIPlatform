@@ -59,7 +59,7 @@ public class RemoteModelTests extends BaseTest {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-remote-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
-        JsonObject deploymentResponse = this.packagingService.performPackaging(modelPackage);
+        JsonObject deploymentResponse = this.packagingService.performPackagingForLiveDeployment(modelPackage);
         String modelId = deploymentResponse.get("modelId").getAsString();
         logger.info("modelId: " + modelId);
 

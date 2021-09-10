@@ -99,7 +99,7 @@ public class TrainAviationAIModel
             jsonObject.addProperty("name", UUID.randomUUID().toString());
             jsonObject.addProperty("model", modelString);
 
-            JsonObject deployedModel = this.packagingService.performPackaging(jsonObject.toString());
+            JsonObject deployedModel = this.packagingService.performPackagingForLiveDeployment(jsonObject.toString());
             String modelId = deployedModel.get("modelId").getAsString();
 
             String trainingResult = this.trainingAIModelService.trainJava(modelId, trainingDataSets);
