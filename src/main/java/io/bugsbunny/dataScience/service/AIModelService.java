@@ -129,14 +129,14 @@ public class AIModelService
             for(int i=0; i<dataLakeIds.length;i++)
             {
                 String dataLakeId = dataLakeIds[i];
-                JsonObject ingestedData = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
+                JsonArray ingestedData = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
                 //logger.info("***************************************************");
                 //logger.info("DataLakeId: "+dataLakeId+":"+ingestedData.toString());
                 //logger.info("***************************************************");
 
                 JsonObject input = new JsonObject();
                 input.addProperty("format", "csv");
-                input.addProperty("data", ingestedData.get("data").toString());
+                input.addProperty("data", ingestedData.toString());
                 String dataSetId = this.modelDataSetService.storeTrainingDataSet(input);
                 dataSetIds[i] = dataSetId;
             }
@@ -308,14 +308,14 @@ public class AIModelService
             for(int i=0; i<dataLakeIds.length;i++)
             {
                 String dataLakeId = dataLakeIds[i];
-                JsonObject ingestedData = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
+                JsonArray ingestedData = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
                 //logger.info("***************************************************");
                 //logger.info("DataLakeId: "+dataLakeId+":"+ingestedData.toString());
                 //logger.info("***************************************************");
 
                 JsonObject input = new JsonObject();
                 input.addProperty("format", "csv");
-                input.addProperty("data", ingestedData.get("data").toString());
+                input.addProperty("data", ingestedData.toString());
                 String dataSetId = this.modelDataSetService.storeTrainingDataSet(input);
                 dataSetIds[i] = dataSetId;
             }

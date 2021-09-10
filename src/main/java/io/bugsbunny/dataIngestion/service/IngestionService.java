@@ -43,9 +43,9 @@ public class IngestionService implements Serializable {
         return jsonObject;
     }
 
-    public JsonObject readDataLakeData(String dataLakeId)
+    public JsonArray readDataLakeData(String dataLakeId)
     {
-        JsonObject ingestion = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
+        JsonArray ingestion = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
         return ingestion;
     }
 

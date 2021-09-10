@@ -156,11 +156,19 @@ public class DataMapper {
     public Response readDataLakeObject(@QueryParam("dataLakeId") String dataLakeId)
     {
         try {
-            JsonObject jsonInput = this.ingestionService.readDataLakeData(dataLakeId);
+            JsonArray storedJson = this.ingestionService.readDataLakeData(dataLakeId);
 
             Response response = null;
-            if(jsonInput != null) {
-                response = Response.ok(jsonInput.toString()).build();
+            if(storedJson != null) {
+                JsonArray data = new JsonArray();
+
+                for(int i=0; i<storedJson.size();i++){
+                    JsonObject json = storedJson.get(i).getAsJsonObject();
+                    String jsonString = json.get("data").getAsString();
+                    data.add(JsonParser.parseString(jsonString).getAsJsonObject());
+                }
+
+                response = Response.ok(data.toString()).build();
             }
             else
             {

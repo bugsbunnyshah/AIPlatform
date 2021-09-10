@@ -83,9 +83,9 @@ public class MongoDBJsonStore implements Serializable
         collection.insertOne(Document.parse(jsonObject.toString()));
     }
 
-    public JsonObject getIngestion(Tenant tenant,String dataLakeId)
+    public JsonArray getIngestion(Tenant tenant,String dataLakeId)
     {
-        JsonObject ingestion = null;
+        JsonArray ingestion = new JsonArray();
 
         String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
@@ -101,8 +101,8 @@ public class MongoDBJsonStore implements Serializable
         {
             Document document = cursor.next();
             String documentJson = document.toJson();
-            ingestion = JsonParser.parseString(documentJson).getAsJsonObject();
-            return ingestion;
+            JsonObject storedJson = JsonParser.parseString(documentJson).getAsJsonObject();
+            ingestion.add(storedJson);
         }
         return ingestion;
     }
