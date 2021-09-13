@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Scientist implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(Team.class);
@@ -48,5 +49,18 @@ public class Scientist implements Serializable {
         }
 
         return scientist;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Scientist scientist = (Scientist) o;
+        return email.equals(scientist.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(email);
     }
 }
