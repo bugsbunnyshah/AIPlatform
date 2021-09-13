@@ -3,11 +3,15 @@ package io.bugsbunny.dataScience.model;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import io.bugsbunny.util.JsonUtil;
-import io.quarkus.test.junit.QuarkusTest;
+
 import org.junit.jupiter.api.Test;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,6 +49,23 @@ public class AllModelTests {
         assertTrue(deser.getScientists().contains(original));
     }
 
+    @Test
+    public void testDataItemSer() throws Exception{
+        DataItem dataItem = this.mockDataItem();
+
+        JsonObject json = dataItem.toJson();
+        JsonUtil.print(json);
+        String dataLakeIdOriginal = json.get("dataLakeId").getAsString();
+        assertEquals(dataItem.getDataLakeId(),dataLakeIdOriginal);
+
+        DataItem deser = DataItem.parse(json.toString());
+        deser.setData("Different");
+        logger.info(deser.toString());
+        assertEquals(dataItem.getDataLakeId(),deser.getDataLakeId());
+        assertNotEquals(dataItem.getData(),deser.getData());
+        assertEquals(dataItem,deser);
+    }
+
     private Scientist mockScientist(){
         String email = "test@test.io";
         Scientist scientist = new Scientist();
@@ -60,5 +81,16 @@ public class AllModelTests {
             team.addScientist(scientist);
         }
         return team;
+    }
+
+    private DataItem mockDataItem(){
+        DataItem dataItem = new DataItem();
+
+        dataItem.setTenantId(UUID.randomUUID().toString());
+        dataItem.setDataLakeId(UUID.randomUUID().toString());
+        dataItem.setData(UUID.randomUUID().toString());
+        dataItem.setChainId(UUID.randomUUID().toString());
+
+        return dataItem;
     }
 }
