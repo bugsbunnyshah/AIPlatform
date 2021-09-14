@@ -7,6 +7,8 @@ import com.google.gson.JsonParser;
 import com.mongodb.client.*;
 
 import io.bugsbunny.configuration.AIPlatformConfig;
+import io.bugsbunny.dataScience.model.Artifact;
+import io.bugsbunny.dataScience.model.Project;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 
 import io.bugsbunny.util.JsonUtil;
@@ -29,6 +31,9 @@ public class MongoDBJsonStore implements Serializable
 
     @Inject
     private AIPlatformConfig aiPlatformConfig;
+
+    @Inject
+    private ProjectStore projectStore;
 
     private MongoClient mongoClient;
     private Map<String,MongoDatabase> databaseMap;
@@ -516,5 +521,15 @@ public class MongoDBJsonStore implements Serializable
         rolledOverDataSetIds.add("rolledOverDataSetIds", dataSetIds);
         return rolledOverDataSetIds;
     }
+    //------
+    public Project readProject(Tenant tenant, String projectId){
+        return this.projectStore.readProject(tenant,this.mongoClient,projectId);
+    }
 
+    public void addProject(Tenant tenant,Project project){
+        this.projectStore.addProject(tenant,this.mongoClient,project);
+    }
+    public void addArtifact(Tenant tenant, String projectId,Artifact artifact){
+        this.projectStore.addArtifact(tenant, this.mongoClient,projectId,artifact);
+    }
 }

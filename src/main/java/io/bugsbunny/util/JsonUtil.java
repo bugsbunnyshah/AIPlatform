@@ -19,4 +19,15 @@ public class JsonUtil {
         }
         logger.info(gson.toJson(jsonElement));
     }
+
+    public static void print(Class caller,JsonElement jsonElement)
+    {
+        logger.info("*****JSONUtil*********************");
+        logger.info("CALLER: "+caller.toString());
+        if(jsonElement.isJsonArray())
+        {
+            logger.info("******ARRAY_SIZE: "+jsonElement.getAsJsonArray().size()+"**********");
+        }
+        logger.info(gson.toJson(jsonElement));
+    }
 }

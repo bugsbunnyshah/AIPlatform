@@ -20,7 +20,7 @@ public class AllModelTests {
 
     @Test
     public void testScientistSer() throws Exception{
-        Scientist scientist = this.mockScientist();
+        Scientist scientist = mockScientist();
         String email = scientist.getEmail();
 
         JsonObject json = scientist.toJson();
@@ -35,7 +35,7 @@ public class AllModelTests {
 
     @Test
     public void testTeamSer() throws Exception{
-        Team team = this.mockTeam();
+        Team team = mockTeam();
 
         JsonObject json = team.toJson();
         JsonUtil.print(json);
@@ -51,7 +51,7 @@ public class AllModelTests {
 
     @Test
     public void testDataItemSer() throws Exception{
-        DataItem dataItem = this.mockDataItem();
+        DataItem dataItem = mockDataItem();
 
         JsonObject json = dataItem.toJson();
         JsonUtil.print(json);
@@ -68,7 +68,7 @@ public class AllModelTests {
 
     @Test
     public void testDataSetSer() throws Exception{
-        DataSet dataSet = this.mockDataSet();
+        DataSet dataSet = mockDataSet();
 
         JsonObject json = dataSet.toJson();
         JsonUtil.print(json);
@@ -83,7 +83,7 @@ public class AllModelTests {
 
     @Test
     public void testArtifactSer() throws Exception{
-        Artifact artifact = this.mockArtifact();
+        Artifact artifact = mockArtifact();
 
         JsonObject json = artifact.toJson();
         JsonUtil.print(json);
@@ -114,14 +114,14 @@ public class AllModelTests {
         assertEquals(project.getArtifacts(),deser.getArtifacts());
     }
 
-    private Scientist mockScientist(){
+    public static Scientist mockScientist(){
         String email = "test@test.io";
         Scientist scientist = new Scientist();
         scientist.setEmail(email);
         return scientist;
     }
 
-    private Team mockTeam(){
+    public static Team mockTeam(){
         Team team = new Team();
         for(int i=0; i<3; i++) {
             Scientist scientist = new Scientist();
@@ -131,7 +131,7 @@ public class AllModelTests {
         return team;
     }
 
-    private DataItem mockDataItem(){
+    public static DataItem mockDataItem(){
         DataItem dataItem = new DataItem();
 
         dataItem.setTenantId(UUID.randomUUID().toString());
@@ -142,35 +142,35 @@ public class AllModelTests {
         return dataItem;
     }
 
-    private DataSet mockDataSet(){
+    public static DataSet mockDataSet(){
         DataSet dataSet = new DataSet();
 
         dataSet.setDataSetId(UUID.randomUUID().toString());
         for(int i=0; i<3; i++){
-            dataSet.addDataItem(this.mockDataItem());
+            dataSet.addDataItem(mockDataItem());
         }
 
         return dataSet;
     }
 
-    private Artifact mockArtifact(){
+    public static  Artifact mockArtifact(){
         Artifact artifact = new Artifact();
         artifact.setArtifactId(UUID.randomUUID().toString());
 
         AIModel aiModel = new AIModel();
         aiModel.setModelId(UUID.randomUUID().toString());
-        artifact.setDataSet(this.mockDataSet());
+        artifact.setDataSet(mockDataSet());
         artifact.setAiModel(aiModel);
 
         return artifact;
     }
 
-    private Project mockProject(){
+    public static Project mockProject(){
         Project project = new Project();
         project.setProjectId(UUID.randomUUID().toString());
-        project.setTeam(this.mockTeam());
+        project.setTeam(mockTeam());
         for(int i=0; i<3; i++){
-            project.addArtifact(this.mockArtifact());
+            project.addArtifact(mockArtifact());
         }
         return project;
     }
