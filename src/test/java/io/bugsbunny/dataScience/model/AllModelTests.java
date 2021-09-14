@@ -115,7 +115,8 @@ public class AllModelTests {
     }
 
     public static Scientist mockScientist(){
-        String email = "test@test.io";
+        String username = UUID.randomUUID().toString();
+        String email = username+"@test.io";
         Scientist scientist = new Scientist();
         scientist.setEmail(email);
         return scientist;

@@ -9,6 +9,7 @@ import com.mongodb.client.*;
 import io.bugsbunny.configuration.AIPlatformConfig;
 import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.dataScience.model.Project;
+import io.bugsbunny.dataScience.model.Scientist;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 
 import io.bugsbunny.util.JsonUtil;
@@ -529,7 +530,12 @@ public class MongoDBJsonStore implements Serializable
     public void addProject(Tenant tenant,Project project){
         this.projectStore.addProject(tenant,this.mongoClient,project);
     }
+
     public void addArtifact(Tenant tenant, String projectId,Artifact artifact){
         this.projectStore.addArtifact(tenant, this.mongoClient,projectId,artifact);
+    }
+
+    public void addScientist(Tenant tenant, String projectId, Scientist scientist){
+        this.projectStore.addScientist(tenant, this.mongoClient,projectId,scientist);
     }
 }

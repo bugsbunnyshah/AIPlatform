@@ -2,6 +2,7 @@ package io.bugsbunny.dataScience.service;
 
 import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.dataScience.model.Project;
+import io.bugsbunny.dataScience.model.Scientist;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.util.JsonUtil;
@@ -38,5 +39,10 @@ public class ProjectService {
 
     public void addArtifact(String projectId,Artifact artifact){
         this.mongoDBJsonStore.addArtifact(this.securityTokenContainer.getTenant(),projectId,artifact);
+    }
+
+    public void addScientist(String projectId,Scientist scientist)
+    {
+        this.mongoDBJsonStore.addScientist(this.securityTokenContainer.getTenant(),projectId,scientist);
     }
 }

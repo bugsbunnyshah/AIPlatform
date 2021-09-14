@@ -3,6 +3,7 @@ package io.bugsbunny.dataScience.service;
 import io.bugsbunny.dataScience.model.AllModelTests;
 import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.dataScience.model.Project;
+import io.bugsbunny.dataScience.model.Scientist;
 import io.bugsbunny.test.components.BaseTest;
 import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
@@ -36,5 +37,20 @@ public class ProjectServiceTests extends BaseTest {
         Project stored = this.projectService.readProject(projectId);
         JsonUtil.print(stored.toJson());
         assertEquals(stored.getProjectId(),project.getProjectId());
+        assertTrue(stored.getArtifacts().contains(artifact));
+    }
+
+    @Test
+    public void addScientist() throws Exception{
+        Project project = AllModelTests.mockProject();
+        String projectId = project.getProjectId();
+        Scientist scientist = AllModelTests.mockScientist();
+        this.projectService.addProject(project);
+
+        this.projectService.addScientist(project.getProjectId(),scientist);
+
+        Project stored = this.projectService.readProject(projectId);
+        JsonUtil.print(ProjectServiceTests.class,stored.toJson());
+        assertTrue(stored.getTeam().getScientists().contains(scientist));
     }
 }

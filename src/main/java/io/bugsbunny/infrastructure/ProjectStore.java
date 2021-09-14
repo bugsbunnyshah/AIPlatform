@@ -7,6 +7,7 @@ import com.mongodb.client.*;
 
 import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.dataScience.model.Project;
+import io.bugsbunny.dataScience.model.Scientist;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -70,4 +71,18 @@ class ProjectStore {
         collection.replaceOne(bson,Document.parse(project.toString()));
     }
 
+    public void addScientist(Tenant tenant, MongoClient mongoClient, String projectId, Scientist scientist){
+        String principal = tenant.getPrincipal();
+        String databaseName = principal + "_" + "aiplatform";
+
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+        MongoCollection<Document> collection = database.getCollection("project");
+
+        Project project = this.readProject(tenant,mongoClient,projectId);
+        project.getTeam().addScientist(scientist);
+
+        String queryJson = "{\"projectId\":\""+projectId+"\"}";
+        Bson bson = Document.parse(queryJson);
+        collection.replaceOne(bson,Document.parse(project.toString()));
+    }
 }
