@@ -98,6 +98,22 @@ public class AllModelTests {
         assertEquals(artifact.getDataSet().getData(),deser.getDataSet().getData());
     }
 
+    @Test
+    public void testProject() throws Exception{
+        Project project = this.mockProject();
+
+        JsonObject json = project.toJson();
+        JsonUtil.print(json);
+        String idOriginal = json.get("projectId").getAsString();
+        assertEquals(project.getProjectId(),idOriginal);
+
+        Project deser = Project.parse(json.toString());
+        JsonUtil.print(deser.toJson());
+        assertEquals(project.getProjectId(),deser.getProjectId());
+        assertEquals(project.getTeam().getScientists(),deser.getTeam().getScientists());
+        assertEquals(project.getArtifacts(),deser.getArtifacts());
+    }
+
     private Scientist mockScientist(){
         String email = "test@test.io";
         Scientist scientist = new Scientist();
@@ -147,5 +163,15 @@ public class AllModelTests {
         artifact.setAiModel(aiModel);
 
         return artifact;
+    }
+
+    private Project mockProject(){
+        Project project = new Project();
+        project.setProjectId(UUID.randomUUID().toString());
+        project.setTeam(this.mockTeam());
+        for(int i=0; i<3; i++){
+            project.addArtifact(this.mockArtifact());
+        }
+        return project;
     }
 }

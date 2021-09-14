@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Artifact implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(Team.class);
@@ -44,6 +45,19 @@ public class Artifact implements Serializable {
     @Override
     public String toString() {
         return this.toJson().toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Artifact artifact = (Artifact) o;
+        return artifactId.equals(artifact.artifactId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(artifactId);
     }
 
     public JsonObject toJson(){
