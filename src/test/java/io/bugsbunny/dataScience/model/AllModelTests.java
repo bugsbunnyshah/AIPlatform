@@ -66,6 +66,21 @@ public class AllModelTests {
         assertEquals(dataItem,deser);
     }
 
+    @Test
+    public void testDataSetSer() throws Exception{
+        DataSet dataSet = this.mockDataSet();
+
+        JsonObject json = dataSet.toJson();
+        JsonUtil.print(json);
+        String dataSetIdOriginal = json.get("dataSetId").getAsString();
+        assertEquals(dataSet.getDataSetId(),dataSetIdOriginal);
+
+        DataSet deser = DataSet.parse(json.toString());
+        logger.info(deser.toString());
+        assertEquals(dataSet.getDataSetId(),deser.getDataSetId());
+        assertEquals(dataSet.getData(),deser.getData());
+    }
+
     private Scientist mockScientist(){
         String email = "test@test.io";
         Scientist scientist = new Scientist();
@@ -92,5 +107,16 @@ public class AllModelTests {
         dataItem.setChainId(UUID.randomUUID().toString());
 
         return dataItem;
+    }
+
+    private DataSet mockDataSet(){
+        DataSet dataSet = new DataSet();
+
+        dataSet.setDataSetId(UUID.randomUUID().toString());
+        for(int i=0; i<3; i++){
+            dataSet.addDataItem(this.mockDataItem());
+        }
+
+        return dataSet;
     }
 }
