@@ -9,6 +9,7 @@ import java.util.List;
 public class Project implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(Team.class);
 
+    private String projectId;
     private Team team;
     private List<Artifact> artifacts;
 
@@ -29,5 +30,13 @@ public class Project implements Serializable {
 
     public void setArtifacts(List<Artifact> artifacts) {
         this.artifacts = artifacts;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 }
