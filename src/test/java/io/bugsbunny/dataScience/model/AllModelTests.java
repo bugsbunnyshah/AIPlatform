@@ -11,6 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -99,7 +102,7 @@ public class AllModelTests {
     }
 
     @Test
-    public void testProject() throws Exception{
+    public void testProjectSer() throws Exception{
         Project project = this.mockProject();
 
         JsonObject json = project.toJson();
@@ -112,6 +115,28 @@ public class AllModelTests {
         assertEquals(project.getProjectId(),deser.getProjectId());
         assertEquals(project.getTeam().getScientists(),deser.getTeam().getScientists());
         assertEquals(project.getArtifacts(),deser.getArtifacts());
+    }
+
+    @Test
+    public void testDataSetSerWithActualData() throws Exception{
+        String[] data = new String[]{"0","1","2"};
+        DataSet dataSet = mockDataSet(data);
+
+        JsonObject json = dataSet.toJson();
+        JsonUtil.print(json);
+        String dataSetIdOriginal = json.get("dataSetId").getAsString();
+        assertEquals(dataSet.getDataSetId(),dataSetIdOriginal);
+
+        DataSet deser = DataSet.parse(json.toString());
+        JsonUtil.print(deser.toJson());
+        assertEquals(dataSet.getDataSetId(),deser.getDataSetId());
+        assertEquals(dataSet.getData(),deser.getData());
+
+        List<String> original = Arrays.asList(data);
+        List<String> deserData = deser.getDataList();
+
+        logger.info(deserData.toString());
+        assertEquals(original,deserData);
     }
 
     public static Scientist mockScientist(){
@@ -141,6 +166,30 @@ public class AllModelTests {
         dataItem.setChainId(UUID.randomUUID().toString());
 
         return dataItem;
+    }
+
+    public static List<DataItem> mockDataItems(String[] data){
+        List<DataItem> items = new ArrayList<>();
+
+        for(String cour:data) {
+            DataItem dataItem = new DataItem();
+            dataItem.setDataLakeId("braineous_null");
+            dataItem.setTenantId(UUID.randomUUID().toString());
+            dataItem.setData(cour);
+            items.add(dataItem);
+        }
+
+        return items;
+    }
+
+    public static DataSet mockDataSet(String[] data){
+        DataSet dataSet = new DataSet();
+
+        dataSet.setDataSetId(UUID.randomUUID().toString());
+        List<DataItem> dataItems = mockDataItems(data);
+        dataSet.setData(dataItems);
+
+        return dataSet;
     }
 
     public static DataSet mockDataSet(){

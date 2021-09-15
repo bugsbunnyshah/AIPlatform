@@ -38,11 +38,17 @@ public class ProjectService {
     }
 
     public void addArtifact(String projectId,Artifact artifact){
-        this.mongoDBJsonStore.addArtifact(this.securityTokenContainer.getTenant(),projectId,artifact);
+        Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
+        project.addArtifact(artifact);
+        this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
     }
 
     public void addScientist(String projectId,Scientist scientist)
     {
-        this.mongoDBJsonStore.addScientist(this.securityTokenContainer.getTenant(),projectId,scientist);
+        Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
+        project.getTeam().addScientist(scientist);
+        this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
     }
+
+
 }

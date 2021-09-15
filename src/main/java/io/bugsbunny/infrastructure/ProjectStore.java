@@ -5,9 +5,7 @@ import com.google.gson.JsonParser;
 
 import com.mongodb.client.*;
 
-import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.dataScience.model.Project;
-import io.bugsbunny.dataScience.model.Scientist;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -56,31 +54,14 @@ class ProjectStore {
         collection.insertOne(Document.parse(json.toString()));
     }
 
-    public void addArtifact(Tenant tenant, MongoClient mongoClient,String projectId, Artifact artifact){
+    public void updateProject(Tenant tenant, MongoClient mongoClient, Project project){
         String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
 
         MongoDatabase database = mongoClient.getDatabase(databaseName);
         MongoCollection<Document> collection = database.getCollection("project");
 
-        Project project = this.readProject(tenant,mongoClient,projectId);
-        project.addArtifact(artifact);
-
-        String queryJson = "{\"projectId\":\""+projectId+"\"}";
-        Bson bson = Document.parse(queryJson);
-        collection.replaceOne(bson,Document.parse(project.toString()));
-    }
-
-    public void addScientist(Tenant tenant, MongoClient mongoClient, String projectId, Scientist scientist){
-        String principal = tenant.getPrincipal();
-        String databaseName = principal + "_" + "aiplatform";
-
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-        MongoCollection<Document> collection = database.getCollection("project");
-
-        Project project = this.readProject(tenant,mongoClient,projectId);
-        project.getTeam().addScientist(scientist);
-
+        String projectId = project.getProjectId();
         String queryJson = "{\"projectId\":\""+projectId+"\"}";
         Bson bson = Document.parse(queryJson);
         collection.replaceOne(bson,Document.parse(project.toString()));

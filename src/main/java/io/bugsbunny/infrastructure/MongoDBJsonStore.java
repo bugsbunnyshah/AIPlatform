@@ -531,11 +531,7 @@ public class MongoDBJsonStore implements Serializable
         this.projectStore.addProject(tenant,this.mongoClient,project);
     }
 
-    public void addArtifact(Tenant tenant, String projectId,Artifact artifact){
-        this.projectStore.addArtifact(tenant, this.mongoClient,projectId,artifact);
-    }
-
-    public void addScientist(Tenant tenant, String projectId, Scientist scientist){
-        this.projectStore.addScientist(tenant, this.mongoClient,projectId,scientist);
+    public void updateProject(Tenant tenant, Project project){
+        this.projectStore.updateProject(tenant,this.mongoClient,project);
     }
 }

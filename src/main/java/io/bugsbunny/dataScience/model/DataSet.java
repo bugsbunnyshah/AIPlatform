@@ -40,6 +40,16 @@ public class DataSet implements Serializable {
         this.dataSetId = dataSetId;
     }
 
+    public List<String> getDataList(){
+        List<String> dataList = new ArrayList<>();
+
+        for(DataItem dataItem:this.data){
+            dataList.add(dataItem.getData());
+        }
+
+        return dataList;
+    }
+
     public JsonObject toJson(){
         JsonObject json = new JsonObject();
 
