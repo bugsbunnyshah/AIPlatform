@@ -2,6 +2,7 @@ package io.bugsbunny.dataScience.model;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,7 @@ public class AIModel implements PortableAIModelInterface{
     private static Logger logger = LoggerFactory.getLogger(Team.class);
 
     private String modelId;
+    private String language;
 
     public AIModel() {
     }
@@ -21,6 +23,14 @@ public class AIModel implements PortableAIModelInterface{
 
     public void setModelId(String modelId) {
         this.modelId = modelId;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
     @Override
@@ -48,12 +58,12 @@ public class AIModel implements PortableAIModelInterface{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AIModel aiModel = (AIModel) o;
-        return modelId.equals(aiModel.modelId);
+        return modelId.equals(aiModel.modelId) && language.equals(aiModel.language);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(modelId);
+        return Objects.hash(modelId, language);
     }
 
     public JsonObject toJson(){
@@ -61,6 +71,10 @@ public class AIModel implements PortableAIModelInterface{
 
         if(this.modelId != null){
             json.addProperty("modelId", this.modelId);
+        }
+
+        if(this.language != null){
+            json.addProperty("language", this.language);
         }
 
         return json;
@@ -71,10 +85,15 @@ public class AIModel implements PortableAIModelInterface{
 
         JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
 
-
         if(json.has("modelId")){
             aiModel.modelId = json.get("modelId").getAsString();
         }
+
+        if(json.has("language")){
+            aiModel.language = json.get("language").getAsString();
+        }
+
+        JsonUtil.print(AIModel.class,aiModel.toJson());
 
         return aiModel;
     }

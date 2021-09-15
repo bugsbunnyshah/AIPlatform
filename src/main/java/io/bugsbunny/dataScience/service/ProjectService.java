@@ -50,5 +50,7 @@ public class ProjectService {
         this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
     }
 
+    public void evalModel(){
 
+    }
 }

@@ -89,14 +89,15 @@ public class AllModelTests {
         Artifact artifact = mockArtifact();
 
         JsonObject json = artifact.toJson();
-        JsonUtil.print(json);
+        JsonUtil.print(AllModelTests.class,json);
         String artifactIdOriginal = json.get("artifactId").getAsString();
         assertEquals(artifact.getArtifactId(),artifactIdOriginal);
 
         Artifact deser = Artifact.parse(json.toString());
-        logger.info(deser.toString());
+        JsonUtil.print(AllModelTests.class,deser.toJson());
         assertEquals(artifact.getArtifactId(),deser.getArtifactId());
         assertEquals(artifact.getAiModel().getModelId(),deser.getAiModel().getModelId());
+        assertEquals(artifact.getAiModel(),deser.getAiModel());
         assertEquals(artifact.getDataSet().getDataSetId(),deser.getDataSet().getDataSetId());
         assertEquals(artifact.getDataSet().getData(),deser.getDataSet().getData());
     }
@@ -209,6 +210,7 @@ public class AllModelTests {
 
         AIModel aiModel = new AIModel();
         aiModel.setModelId(UUID.randomUUID().toString());
+        aiModel.setLanguage("java");
         artifact.setDataSet(mockDataSet());
         artifact.setAiModel(aiModel);
 

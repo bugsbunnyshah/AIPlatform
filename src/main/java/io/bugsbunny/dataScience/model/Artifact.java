@@ -92,8 +92,7 @@ public class Artifact implements Serializable {
         }
 
         if(json.has("aiModel") && json.get("aiModel").getAsJsonObject().has("modelId")){
-            AIModel aiModel = new AIModel();
-            aiModel.setModelId(json.get("aiModel").getAsJsonObject().get("modelId").getAsString());
+            AIModel aiModel = AIModel.parse(json.get("aiModel").getAsJsonObject().toString());
             artifact.aiModel = aiModel;
         }
 
