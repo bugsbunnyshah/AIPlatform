@@ -1,8 +1,8 @@
 package io.bugsbunny.dataScience.service;
 
-import io.bugsbunny.dataScience.model.Artifact;
-import io.bugsbunny.dataScience.model.Project;
-import io.bugsbunny.dataScience.model.Scientist;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import io.bugsbunny.dataScience.model.*;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.util.JsonUtil;
@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.List;
+import java.util.UUID;
 
 @ApplicationScoped
 public class ProjectService {
@@ -22,6 +24,15 @@ public class ProjectService {
 
     @Inject
     private SecurityTokenContainer securityTokenContainer;
+
+    @Inject
+    private AIModelService aiModelService;
+
+    @Inject
+    private PackagingService packagingService;
+
+    @Inject
+    private ModelDataSetService modelDataSetService;
 
     @PostConstruct
     public void onStart(){
@@ -37,10 +48,34 @@ public class ProjectService {
         this.mongoDBJsonStore.addProject(this.securityTokenContainer.getTenant(),project);
     }
 
-    public void addArtifact(String projectId,Artifact artifact){
+    public String addArtifact(String projectId, JsonObject aiModelJson, JsonArray modelInput, Artifact artifact){
+        //Store Model
+        JsonObject deploymentJson = this.packagingService.performPackagingForDevelopment(aiModelJson.toString());
+        String modelId = deploymentJson.get("modelId").getAsString();
+        artifact.getAiModel().setModelId(modelId);
+
+        //Store Model Input data..//TODO
+        DataSet dataSet = new DataSet();
+        dataSet.setDataSetId(UUID.randomUUID().toString());
+        for(int i=0; i<modelInput.size();i++){
+            JsonObject dataSetItemJson = modelInput.get(0).getAsJsonObject();
+
+            String dataSetId = this.modelDataSetService.storeTrainingDataSet(dataSetItemJson);
+
+            DataItem dataItem = new DataItem();
+            dataItem.setDataSetId(dataSetId);
+            dataItem.setDataLakeId("braineous_null");
+            dataItem.setTenantId(this.securityTokenContainer.getTenant().getPrincipal());
+            dataItem.setData(dataSetItemJson.toString());
+            dataSet.addDataItem(dataItem);
+        }
+        artifact.setDataSet(dataSet);
+
         Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
         project.addArtifact(artifact);
         this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
+
+        return modelId;
     }
 
     public void addScientist(String projectId,Scientist scientist)
@@ -50,7 +85,42 @@ public class ProjectService {
         this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
     }
 
-    public void evalModel(){
+    public void evalModel(String projectId,String artifactId){
+        try {
+            Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(), projectId);
+            //JsonUtil.print(ProjectService.class, project.toJson());
+
+            List<Artifact> artifacts = project.getArtifacts();
+            Artifact artifact = null;
+            //TODO: very minor maybe pull using a MongoQuery. This is perfectly fine also
+            for (Artifact cour : artifacts) {
+                if (cour.getArtifactId().equals(artifactId)) {
+                    artifact = cour;
+                    break;
+                }
+            }
+
+            PortableAIModelInterface aiModel = artifact.getAiModel();
+            String modelId = aiModel.getModelId();
+            String[] dataSetIds = artifact.getDataSet().getDataSetIds();
+
+            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopment(modelId, dataSetIds);
+            JsonUtil.print(evaluation);
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void trainModel(){
+
+    }
+
+    public void deployModel(){
+
+    }
+
+    public void verifyDeployment(){
 
     }
 }

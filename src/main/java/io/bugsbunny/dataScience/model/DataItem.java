@@ -14,6 +14,7 @@ public class DataItem implements Serializable {
     private String tenantId;
     private String dataLakeId;
     private String chainId;
+    private String dataSetId;
     private String data;
 
     public DataItem() {
@@ -51,6 +52,14 @@ public class DataItem implements Serializable {
         this.data = data;
     }
 
+    public String getDataSetId() {
+        return dataSetId;
+    }
+
+    public void setDataSetId(String dataSetId) {
+        this.dataSetId = dataSetId;
+    }
+
     @Override
     public String toString() {
         return this.toJson().toString();
@@ -70,6 +79,10 @@ public class DataItem implements Serializable {
 
         if(this.chainId != null){
             json.addProperty("chainId", this.chainId);
+        }
+
+        if(this.dataSetId != null){
+            json.addProperty("dataSetId", this.dataSetId);
         }
 
         if(this.data != null){
@@ -94,6 +107,10 @@ public class DataItem implements Serializable {
 
         if(json.has("chainId")){
             dataItem.chainId = json.get("chainId").getAsString();
+        }
+
+        if(json.has("dataSetId")){
+            dataItem.dataSetId = json.get("dataSetId").getAsString();
         }
 
         if(json.has("data")){

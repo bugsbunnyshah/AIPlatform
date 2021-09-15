@@ -32,6 +32,20 @@ public class PackagingService {
         return jsonObject;
     }
 
+    public JsonObject performPackagingForDevelopment(String packageString)
+    {
+        JsonObject modelPackage = JsonParser.parseString(packageString).getAsJsonObject();
+        modelPackage.addProperty("live", false);
+        modelPackage.addProperty("development",true);
+        String modelId = this.mongoDBJsonStore.storeModel(this.securityTokenContainer.getTenant(),modelPackage);
+
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("modelId", modelId);
+
+        return jsonObject;
+    }
+
     public JsonObject getModelPackage(String modelId)
     {
         return this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(),modelId);

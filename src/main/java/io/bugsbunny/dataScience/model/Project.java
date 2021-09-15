@@ -49,6 +49,15 @@ public class Project implements Serializable {
         this.projectId = projectId;
     }
 
+    public boolean containsModel(String modelId){
+        for(Artifact cour:this.artifacts){
+            if(cour.getAiModel().getModelId().equals(modelId)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public JsonObject toJson(){
         JsonObject json = new JsonObject();
 

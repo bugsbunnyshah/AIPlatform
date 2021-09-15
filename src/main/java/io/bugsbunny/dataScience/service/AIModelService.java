@@ -3,6 +3,7 @@ package io.bugsbunny.dataScience.service;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import com.google.gson.JsonParser;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import jep.Interpreter;
 import jep.JepException;
@@ -325,6 +326,42 @@ public class AIModelService
             Evaluation evaluation = network.evaluate(dataSetIterator);
 
             return evaluation.toJson();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public JsonObject evalJavaDuringDevelopment(String modelId, String[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
+    {
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
+
+        if(modelPackage == null)
+        {
+            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
+        }
+        String modelString = modelPackage.get("model").getAsString();
+        try
+        {
+            MultiLayerNetwork network = this.activeModels.get(modelId);
+
+            if(network == null)
+            {
+                //logger.info("******************************************");
+                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
+                //logger.info("******************************************");
+                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
+                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
+                this.activeModels.put(modelId, network);
+            }
+
+            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
+                    getInstance(dataSetIds);
+            Evaluation evaluation = network.evaluate(dataSetIterator);
+
+            return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();
         }
         catch(Exception e)
         {

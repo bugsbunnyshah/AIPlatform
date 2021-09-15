@@ -93,8 +93,6 @@ public class AIModel implements PortableAIModelInterface{
             aiModel.language = json.get("language").getAsString();
         }
 
-        JsonUtil.print(AIModel.class,aiModel.toJson());
-
         return aiModel;
     }
 }
