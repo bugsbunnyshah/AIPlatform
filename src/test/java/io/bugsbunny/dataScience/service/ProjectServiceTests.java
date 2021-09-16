@@ -3,10 +3,7 @@ package io.bugsbunny.dataScience.service;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.dataScience.model.AllModelTests;
-import io.bugsbunny.dataScience.model.Artifact;
-import io.bugsbunny.dataScience.model.Project;
-import io.bugsbunny.dataScience.model.Scientist;
+import io.bugsbunny.dataScience.model.*;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.infrastructure.Tenant;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
@@ -38,6 +35,21 @@ public class ProjectServiceTests extends BaseTest {
     @Inject
     private SecurityTokenContainer securityTokenContainer;
 
+
+    @Test
+    public void addScientist() throws Exception{
+        Project project = AllModelTests.mockProject();
+        String projectId = project.getProjectId();
+        Scientist scientist = AllModelTests.mockScientist();
+        this.projectService.addProject(project);
+
+        this.projectService.addScientist(project.getProjectId(),scientist);
+
+        Project stored = this.projectService.readProject(projectId);
+        JsonUtil.print(ProjectServiceTests.class,stored.toJson());
+        assertTrue(stored.getTeam().getScientists().contains(scientist));
+    }
+
     @Test
     public void addArtifact() throws Exception{
         Artifact artifact = AllModelTests.mockArtifact();
@@ -54,24 +66,10 @@ public class ProjectServiceTests extends BaseTest {
         logger.info("MODEL_ID: "+modelId);
 
         Project stored = this.projectService.readProject(projectId);
-        JsonUtil.print(stored.toJson());
+        JsonUtil.print(ProjectServiceTests.class,stored.toJson());
         assertEquals(stored.getProjectId(),project.getProjectId());
         assertTrue(stored.getArtifacts().contains(artifact));
         assertTrue(stored.containsModel(modelId));
-    }
-
-    @Test
-    public void addScientist() throws Exception{
-        Project project = AllModelTests.mockProject();
-        String projectId = project.getProjectId();
-        Scientist scientist = AllModelTests.mockScientist();
-        this.projectService.addProject(project);
-
-        this.projectService.addScientist(project.getProjectId(),scientist);
-
-        Project stored = this.projectService.readProject(projectId);
-        JsonUtil.print(ProjectServiceTests.class,stored.toJson());
-        assertTrue(stored.getTeam().getScientists().contains(scientist));
     }
 
     @Test
@@ -99,7 +97,9 @@ public class ProjectServiceTests extends BaseTest {
         logger.info("MODEL_ID: "+modelId);
         assertTrue(project.containsModel(modelId));
 
-        this.projectService.evalModelFromData(project.getProjectId(),artifact.getArtifactId());
+        JsonObject eval = this.projectService.evalModelFromData(project.getProjectId(),artifact.getArtifactId());
+        JsonUtil.print(ProjectServiceTests.class,eval);
+        assertTrue(eval.has("@class"));
     }
 
     @Test
@@ -114,7 +114,7 @@ public class ProjectServiceTests extends BaseTest {
                 Thread.currentThread().getContextClassLoader());
         JsonObject modelJson = JsonParser.parseString(modelPackage).getAsJsonObject();
 
-        String data = IOUtils.toString(Thread.currentThread().
+        /*String data = IOUtils.toString(Thread.currentThread().
                         getContextClassLoader().
                         getResourceAsStream("aviation/flights0.json"),
                 StandardCharsets.UTF_8);
@@ -131,24 +131,34 @@ public class ProjectServiceTests extends BaseTest {
             cour.addProperty("data", cour.toString());
             cour.addProperty("chainId",chainId);
             this.mongoDBJsonStore.storeIngestion(tenant,cour);
-        }
-
-        JsonArray ingestion = this.mongoDBJsonStore.getIngestion(tenant,dataLakeId);
+        }*/
         //JsonUtil.print(ingestion);
 
-        data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
+        String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
-        JsonObject input = new JsonObject();
-        input.addProperty("format", "csv");
-        input.addProperty("data", data);
-        JsonArray modelInput = new JsonArray();
-        modelInput.add(input);
+        String dataLakeId = UUID.randomUUID().toString();
+        Tenant tenant = this.securityTokenContainer.getTenant();
+        String chainId = "/" + tenant.getPrincipal() + "/" + dataLakeId;
+        JsonObject cour = new JsonObject();
+        cour.addProperty("braineous_datalakeid",dataLakeId);
+        cour.addProperty("tenant",tenant.getPrincipal());
+        cour.addProperty("data", data);
+        cour.addProperty("chainId",chainId);
+        this.mongoDBJsonStore.storeIngestion(tenant,cour);
 
-        String modelId = this.projectService.addLakeArtifact(project.getProjectId(),modelJson,modelInput,artifact);
+        DataItem dataItem = new DataItem();
+        dataItem.setDataSetId("braineous_null");
+        dataItem.setDataLakeId(dataLakeId);
+        dataItem.setTenantId(tenant.getPrincipal());
+        dataItem.setChainId(chainId);
+
+        String modelId = this.projectService.addLakeArtifact(project.getProjectId(),modelJson,dataItem.toJson(),artifact);
         project = this.projectService.readProject(project.getProjectId());
         logger.info("MODEL_ID: "+modelId);
         assertTrue(project.containsModel(modelId));
 
-        this.projectService.evalModelDataFromLake(project.getProjectId(),artifact.getArtifactId());
+        JsonObject eval = this.projectService.evalModelDataFromLake(project.getProjectId(),artifact.getArtifactId());
+        JsonUtil.print(ProjectServiceTests.class,eval);
+        assertTrue(eval.has("@class"));
     }
 }

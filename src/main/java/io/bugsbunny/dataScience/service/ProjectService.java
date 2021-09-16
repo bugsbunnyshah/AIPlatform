@@ -55,28 +55,17 @@ public class ProjectService {
         this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
     }
 
-    public String addLakeArtifact(String projectId, JsonObject aiModelJson, JsonArray modelInput, Artifact artifact){
+    public String addLakeArtifact(String projectId, JsonObject aiModelJson, JsonObject modelInput, Artifact artifact){
         //Store Model
         JsonObject deploymentJson = this.packagingService.performPackagingForDevelopment(aiModelJson.toString());
         String modelId = deploymentJson.get("modelId").getAsString();
         artifact.getAiModel().setModelId(modelId);
 
-        //Store Model Input data..//TODO
+        //Store Model Input data..
         DataSet dataSet = new DataSet();
         dataSet.setDataSetId(UUID.randomUUID().toString());
-        for(int i=0; i<modelInput.size();i++){
-            JsonObject dataSetItemJson = modelInput.get(i).getAsJsonObject();
-            JsonUtil.print(ProjectService.class,dataSetItemJson);
-
-            String dataSetId = this.modelDataSetService.storeTrainingDataSet(dataSetItemJson);
-
-            DataItem dataItem = new DataItem();
-            dataItem.setDataSetId("braineous_null");
-            dataItem.setDataLakeId(dataSetId);
-            dataItem.setTenantId(this.securityTokenContainer.getTenant().getPrincipal());
-            dataItem.setData(dataSetItemJson.toString());
-            dataSet.addDataItem(dataItem);
-        }
+        DataItem dataItem = DataItem.parse(modelInput.toString());
+        dataSet.addDataItem(dataItem);
         artifact.setDataSet(dataSet);
 
         Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
@@ -92,7 +81,7 @@ public class ProjectService {
         String modelId = deploymentJson.get("modelId").getAsString();
         artifact.getAiModel().setModelId(modelId);
 
-        //Store Model Input data..//TODO
+        //Store Model Input data
         DataSet dataSet = new DataSet();
         dataSet.setDataSetId(UUID.randomUUID().toString());
         for(int i=0; i<modelInput.size();i++){
@@ -117,7 +106,7 @@ public class ProjectService {
         return modelId;
     }
 
-    public void evalModelFromData(String projectId,String artifactId){
+    public JsonObject evalModelFromData(String projectId,String artifactId){
         try {
             Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(), projectId);
             //JsonUtil.print(ProjectService.class, project.toJson());
@@ -137,14 +126,14 @@ public class ProjectService {
             String[] dataSetIds = artifact.getDataSet().getDataSetIds();
 
             JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromData(modelId, dataSetIds);
-            JsonUtil.print(evaluation);
+            return evaluation;
         }
         catch(Exception e){
             throw new RuntimeException(e);
         }
     }
 
-    public void evalModelDataFromLake(String projectId,String artifactId){
+    public JsonObject evalModelDataFromLake(String projectId,String artifactId){
         try {
             Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(), projectId);
             //JsonUtil.print(ProjectService.class, project.toJson());
@@ -164,7 +153,7 @@ public class ProjectService {
             String[] dataLakeIds = artifact.getDataSet().getDataLakeIds();
 
             JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromLake(modelId, dataLakeIds);
-            JsonUtil.print(evaluation);
+            return evaluation;
         }
         catch(Exception e){
             throw new RuntimeException(e);
