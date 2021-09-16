@@ -25,6 +25,11 @@ public class ModelDataSetService {
         return this.mongoDBJsonStore.storeTrainingDataSet(this.securityTokenContainer.getTenant(),dataSetJson);
     }
 
+    public String storeTrainingDataSetInLake(JsonObject dataSetJson)
+    {
+        return this.mongoDBJsonStore.storeTrainingDataSetInLake(this.securityTokenContainer.getTenant(),dataSetJson);
+    }
+
     public String storeEvalDataSet(JsonObject dataSetJson)
     {
         return this.mongoDBJsonStore.storeEvalDataSet(this.securityTokenContainer.getTenant(),dataSetJson);

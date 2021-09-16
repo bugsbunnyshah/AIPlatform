@@ -62,6 +62,18 @@ public class DataSet implements Serializable {
         return dataSetIds;
     }
 
+    public String[] getDataLakeIds(){
+        String[] dataLakeIds = new String[this.data.size()];
+
+        int size = this.data.size();
+        for(int i=0;i<size;i++){
+            DataItem cour = this.data.get(i);
+            dataLakeIds[i] = cour.getDataLakeId();
+        }
+
+        return dataLakeIds;
+    }
+
     public JsonObject toJson(){
         JsonObject json = new JsonObject();
 

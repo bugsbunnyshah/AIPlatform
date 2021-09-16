@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import com.google.gson.JsonParser;
+import io.bugsbunny.dataScience.dl4j.AIPlatformDataLakeIteratorFactory;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import jep.Interpreter;
 import jep.JepException;
@@ -41,6 +42,9 @@ public class AIModelService
 
     @Inject
     private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
+
+    @Inject
+    private AIPlatformDataLakeIteratorFactory aiPlatformDataLakeIteratorFactory;
 
     @Inject
     private ModelDataSetService modelDataSetService;
@@ -334,7 +338,7 @@ public class AIModelService
         }
     }
 
-    public JsonObject evalJavaDuringDevelopment(String modelId, String[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
+    public JsonObject evalJavaDuringDevelopmentFromData(String modelId, String[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
 
@@ -358,6 +362,42 @@ public class AIModelService
             }
 
             DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
+                    getInstance(dataSetIds);
+            Evaluation evaluation = network.evaluate(dataSetIterator);
+
+            return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public JsonObject evalJavaDuringDevelopmentFromLake(String modelId, String[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
+    {
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
+
+        if(modelPackage == null)
+        {
+            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
+        }
+        String modelString = modelPackage.get("model").getAsString();
+        try
+        {
+            MultiLayerNetwork network = this.activeModels.get(modelId);
+
+            if(network == null)
+            {
+                //logger.info("******************************************");
+                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
+                //logger.info("******************************************");
+                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
+                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
+                this.activeModels.put(modelId, network);
+            }
+
+            DataSetIterator dataSetIterator = this.aiPlatformDataLakeIteratorFactory.
                     getInstance(dataSetIds);
             Evaluation evaluation = network.evaluate(dataSetIterator);
 

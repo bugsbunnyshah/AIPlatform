@@ -48,7 +48,14 @@ public class ProjectService {
         this.mongoDBJsonStore.addProject(this.securityTokenContainer.getTenant(),project);
     }
 
-    public String addArtifact(String projectId, JsonObject aiModelJson, JsonArray modelInput, Artifact artifact){
+    public void addScientist(String projectId,Scientist scientist)
+    {
+        Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
+        project.getTeam().addScientist(scientist);
+        this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
+    }
+
+    public String addLakeArtifact(String projectId, JsonObject aiModelJson, JsonArray modelInput, Artifact artifact){
         //Store Model
         JsonObject deploymentJson = this.packagingService.performPackagingForDevelopment(aiModelJson.toString());
         String modelId = deploymentJson.get("modelId").getAsString();
@@ -58,7 +65,39 @@ public class ProjectService {
         DataSet dataSet = new DataSet();
         dataSet.setDataSetId(UUID.randomUUID().toString());
         for(int i=0; i<modelInput.size();i++){
-            JsonObject dataSetItemJson = modelInput.get(0).getAsJsonObject();
+            JsonObject dataSetItemJson = modelInput.get(i).getAsJsonObject();
+            JsonUtil.print(ProjectService.class,dataSetItemJson);
+
+            String dataSetId = this.modelDataSetService.storeTrainingDataSet(dataSetItemJson);
+
+            DataItem dataItem = new DataItem();
+            dataItem.setDataSetId("braineous_null");
+            dataItem.setDataLakeId(dataSetId);
+            dataItem.setTenantId(this.securityTokenContainer.getTenant().getPrincipal());
+            dataItem.setData(dataSetItemJson.toString());
+            dataSet.addDataItem(dataItem);
+        }
+        artifact.setDataSet(dataSet);
+
+        Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
+        project.addArtifact(artifact);
+        this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
+
+        return modelId;
+    }
+
+    public String addDataArtifact(String projectId, JsonObject aiModelJson, JsonArray modelInput, Artifact artifact){
+        //Store Model
+        JsonObject deploymentJson = this.packagingService.performPackagingForDevelopment(aiModelJson.toString());
+        String modelId = deploymentJson.get("modelId").getAsString();
+        artifact.getAiModel().setModelId(modelId);
+
+        //Store Model Input data..//TODO
+        DataSet dataSet = new DataSet();
+        dataSet.setDataSetId(UUID.randomUUID().toString());
+        for(int i=0; i<modelInput.size();i++){
+            JsonObject dataSetItemJson = modelInput.get(i).getAsJsonObject();
+            JsonUtil.print(ProjectService.class,dataSetItemJson);
 
             String dataSetId = this.modelDataSetService.storeTrainingDataSet(dataSetItemJson);
 
@@ -78,14 +117,7 @@ public class ProjectService {
         return modelId;
     }
 
-    public void addScientist(String projectId,Scientist scientist)
-    {
-        Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
-        project.getTeam().addScientist(scientist);
-        this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
-    }
-
-    public void evalModel(String projectId,String artifactId){
+    public void evalModelFromData(String projectId,String artifactId){
         try {
             Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(), projectId);
             //JsonUtil.print(ProjectService.class, project.toJson());
@@ -104,7 +136,34 @@ public class ProjectService {
             String modelId = aiModel.getModelId();
             String[] dataSetIds = artifact.getDataSet().getDataSetIds();
 
-            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopment(modelId, dataSetIds);
+            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromData(modelId, dataSetIds);
+            JsonUtil.print(evaluation);
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void evalModelDataFromLake(String projectId,String artifactId){
+        try {
+            Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(), projectId);
+            //JsonUtil.print(ProjectService.class, project.toJson());
+
+            List<Artifact> artifacts = project.getArtifacts();
+            Artifact artifact = null;
+            //TODO: very minor maybe pull using a MongoQuery. This is perfectly fine also
+            for (Artifact cour : artifacts) {
+                if (cour.getArtifactId().equals(artifactId)) {
+                    artifact = cour;
+                    break;
+                }
+            }
+
+            PortableAIModelInterface aiModel = artifact.getAiModel();
+            String modelId = aiModel.getModelId();
+            String[] dataLakeIds = artifact.getDataSet().getDataLakeIds();
+
+            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromLake(modelId, dataLakeIds);
             JsonUtil.print(evaluation);
         }
         catch(Exception e){

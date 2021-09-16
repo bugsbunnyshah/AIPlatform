@@ -451,6 +451,23 @@ public class MongoDBJsonStore implements Serializable
         return oid;
     }
 
+    public String storeTrainingDataSetInLake(Tenant tenant,JsonObject dataSetJson)
+    {
+        String principal = tenant.getPrincipal();
+        String databaseName = principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("datalake");
+
+        String oid = UUID.randomUUID().toString();
+        dataSetJson.addProperty("dataSetId", oid);
+        dataSetJson.addProperty("dataSetType", "training");
+        Document doc = Document.parse(dataSetJson.toString());
+        collection.insertOne(doc);
+
+        return oid;
+    }
+
     public String storeEvalDataSet(Tenant tenant,JsonObject dataSetJson)
     {
         String principal = tenant.getPrincipal();
