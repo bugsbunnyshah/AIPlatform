@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataLakeIteratorFactory;
+import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import jep.Interpreter;
 import jep.JepException;
@@ -374,7 +375,7 @@ public class AIModelService
         }
     }
 
-    public JsonObject evalJavaDuringDevelopmentFromLake(String modelId, String[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
+    public JsonObject evalJavaDuringDevelopmentFromLake(String modelId, Artifact artifact, String[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
 
@@ -398,7 +399,7 @@ public class AIModelService
             }
 
             DataSetIterator dataSetIterator = this.aiPlatformDataLakeIteratorFactory.
-                    getInstance(dataSetIds);
+                    getInstance(artifact,dataSetIds);
             Evaluation evaluation = network.evaluate(dataSetIterator);
 
             return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();

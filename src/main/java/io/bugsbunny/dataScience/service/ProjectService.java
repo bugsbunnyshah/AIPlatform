@@ -152,7 +152,7 @@ public class ProjectService {
             String modelId = aiModel.getModelId();
             String[] dataLakeIds = artifact.getDataSet().getDataLakeIds();
 
-            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromLake(modelId, dataLakeIds);
+            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromLake(modelId, artifact, dataLakeIds);
             return evaluation;
         }
         catch(Exception e){

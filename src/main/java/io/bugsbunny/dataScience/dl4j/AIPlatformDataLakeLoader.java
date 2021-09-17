@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.preprocess.SecurityToken;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
@@ -58,9 +59,10 @@ public class AIPlatformDataLakeLoader implements Loader
     @Override
     public Object load(Source source) throws IOException
     {
-        DataSet dataSet = null;
+        DataSet dataSet = new DataSet();
         try {
             String path = source.getPath();
+            Artifact artifact = ((AIPlatformDataLakeSource)source).getArtifact();
             JsonArray dataSetArray = JsonParser.parseString(path).getAsJsonArray();
             SecurityToken securityToken = ((AIPlatformDataLakeSource) source).getSecurityToken();
             this.securityTokenContainer.setSecurityToken(securityToken);
@@ -68,8 +70,17 @@ public class AIPlatformDataLakeLoader implements Loader
             String id = dataSetArray.get(0).getAsString();
             JsonArray dataLakeArray = mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), id);
 
-            JsonObject dataLakeObject = dataLakeArray.get(0).getAsJsonObject();
-            String csvData = dataLakeObject.get("data").getAsString();
+            //Get the Data
+            JsonArray dataArray = new JsonArray();
+            int size = dataLakeArray.size();
+            for(int i=0; i<size; i++){
+                JsonObject cour = dataLakeArray.get(i).getAsJsonObject();
+                String data = cour.get("data").getAsString();
+                dataArray.add(JsonParser.parseString(data).getAsJsonObject());
+            }
+
+            //Convert To Csv
+            String csvData = artifact.convertJsonToCsv(dataArray);
             logger.info("CSVData: "+csvData);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             byteArrayOutputStream.writeBytes(csvData.getBytes(StandardCharsets.UTF_8));

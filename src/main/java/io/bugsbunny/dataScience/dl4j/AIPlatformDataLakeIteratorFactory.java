@@ -1,6 +1,7 @@
 package io.bugsbunny.dataScience.dl4j;
 
 import com.google.gson.JsonArray;
+import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.preprocess.SecurityToken;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import org.deeplearning4j.datasets.iterator.loader.DataSetLoaderIterator;
@@ -36,10 +37,10 @@ public class AIPlatformDataLakeIteratorFactory
         this.aiPlatformDataLakeLoader = aiPlatformDataLakeLoader;
     }
 
-    public DataSetIterator getInstance(String[] dataSetIds)
+    public DataSetIterator getInstance(Artifact artifact,String[] dataSetIds)
     {
         SecurityToken securityToken = this.securityTokenContainer.getSecurityToken();
-        AIPlatformDataLakeSourceFactory sourceFactory = new AIPlatformDataLakeSourceFactory(securityToken);
+        AIPlatformDataLakeSourceFactory sourceFactory = new AIPlatformDataLakeSourceFactory(securityToken, artifact);
 
         JsonArray array = new JsonArray();
         for(String dataSetId:dataSetIds)

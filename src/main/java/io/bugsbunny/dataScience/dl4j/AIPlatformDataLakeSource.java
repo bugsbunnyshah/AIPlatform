@@ -1,6 +1,7 @@
 //
 package io.bugsbunny.dataScience.dl4j;
 
+import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.preprocess.SecurityToken;
 import org.nd4j.common.loader.Source;
 import org.slf4j.Logger;
@@ -14,17 +15,23 @@ public class AIPlatformDataLakeSource implements Source
     private static Logger logger = LoggerFactory.getLogger(AIPlatformDataLakeSource.class);
 
     private String dataLakeIds;
+    private Artifact artifact;
     private SecurityToken securityToken;
 
-    public AIPlatformDataLakeSource(SecurityToken securityToken, String dataLakeIds)
+    public AIPlatformDataLakeSource(SecurityToken securityToken,Artifact artifact, String dataLakeIds)
     {
         this.securityToken = securityToken;
+        this.artifact = artifact;
         this.dataLakeIds = dataLakeIds;
     }
 
     public SecurityToken getSecurityToken()
     {
         return securityToken;
+    }
+
+    public Artifact getArtifact() {
+        return artifact;
     }
 
     @Override

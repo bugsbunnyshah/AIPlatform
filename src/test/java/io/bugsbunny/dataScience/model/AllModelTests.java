@@ -6,15 +6,14 @@ import com.google.gson.JsonParser;
 
 import io.bugsbunny.util.JsonUtil;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -100,6 +99,19 @@ public class AllModelTests {
         assertEquals(artifact.getAiModel(),deser.getAiModel());
         assertEquals(artifact.getDataSet().getDataSetId(),deser.getDataSet().getDataSetId());
         assertEquals(artifact.getDataSet().getData(),deser.getDataSet().getData());
+        assertEquals(artifact.getLabels(),deser.getLabels());
+        assertEquals(artifact.getFeatures(),deser.getFeatures());
+
+        String data = IOUtils.toString(Thread.currentThread().
+                        getContextClassLoader().
+                        getResourceAsStream("aviation/flights0.json"),
+                StandardCharsets.UTF_8);
+
+        JsonArray dataJson = JsonParser.parseString(data).getAsJsonObject().get("data").getAsJsonArray();
+        String csv = deser.convertJsonToCsv(dataJson);
+        logger.info("*****CSV******");
+        logger.info(csv);
+        assertNotNull(csv);
     }
 
     @Test
@@ -139,6 +151,7 @@ public class AllModelTests {
         logger.info(deserData.toString());
         assertEquals(original,deserData);
     }
+
 
     public static Scientist mockScientist(){
         String username = UUID.randomUUID().toString();
@@ -213,6 +226,19 @@ public class AllModelTests {
         aiModel.setLanguage("java");
         artifact.setDataSet(mockDataSet());
         artifact.setAiModel(aiModel);
+
+        for(int i=0; i<2; i++){
+            if(i==0) {
+                artifact.addLabel(new Label("l" + i, "flight_date"));
+            }
+            else if(i==1){
+                artifact.addLabel(new Label("l" + i, "flight_status"));
+            }
+        }
+
+        for(int i=0; i<3; i++){
+            artifact.addFeature(new Feature("f"+i));
+        }
 
         return artifact;
     }
