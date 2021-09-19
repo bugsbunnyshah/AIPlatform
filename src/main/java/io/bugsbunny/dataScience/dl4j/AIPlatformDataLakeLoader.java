@@ -9,6 +9,8 @@ import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.preprocess.SecurityToken;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.util.JsonUtil;
+import org.json.JSONObject;
+import org.json.XML;
 import org.nd4j.common.loader.Loader;
 import org.nd4j.common.loader.Source;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -71,16 +73,44 @@ public class AIPlatformDataLakeLoader implements Loader
             JsonArray dataLakeArray = mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), id);
 
             //Get the Data
+            boolean isJson = false;
+            boolean isXml = false;
             JsonArray dataArray = new JsonArray();
             int size = dataLakeArray.size();
             for(int i=0; i<size; i++){
                 JsonObject cour = dataLakeArray.get(i).getAsJsonObject();
                 String data = cour.get("data").getAsString();
-                dataArray.add(JsonParser.parseString(data).getAsJsonObject());
+                if(data.startsWith("{") || data.startsWith("[")) {
+                    //Its json
+                    dataArray.add(JsonParser.parseString(data).getAsJsonObject());
+                    isJson = true;
+                }
+                else if(data.contains("<") && data.contains(">")){
+                    //Its xml
+                    JSONObject sourceJson = XML.toJSONObject(data);
+                    String json = sourceJson.toString(4);
+                    JsonObject sourceJsonObject = JsonParser.parseString(json).getAsJsonObject();
+                    dataArray.add(sourceJsonObject);
+                    isXml = true;
+                }
+                else {
+                    //Its CSV
+                    dataArray.add(data);
+                }
             }
 
             //Convert To Csv
-            String csvData = artifact.convertJsonToCsv(dataArray);
+            String csvData;
+            if(isJson){
+                csvData = artifact.convertJsonToCsv(dataArray);
+            }
+            else if(isXml){
+                csvData = artifact.convertXmlToCsv(dataArray);
+            }
+            else{
+                csvData = dataArray.get(0).getAsString();
+            }
+
             logger.info("CSVData: "+csvData);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             byteArrayOutputStream.writeBytes(csvData.getBytes(StandardCharsets.UTF_8));

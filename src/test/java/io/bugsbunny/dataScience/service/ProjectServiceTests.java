@@ -103,7 +103,7 @@ public class ProjectServiceTests extends BaseTest {
     }
 
     @Test
-    public void evalModelFromLake() throws Exception{
+    public void evalModelFromLakeCSV() throws Exception{
         Project project = AllModelTests.mockProject();
         project.getArtifacts().clear();
         this.projectService.addProject(project);
@@ -143,7 +143,7 @@ public class ProjectServiceTests extends BaseTest {
     }
 
     @Test
-    public void evalAviationModelFromLake() throws Exception{
+    public void evalModelFromLakeJson() throws Exception{
         Project project = AllModelTests.mockProject();
         project.getArtifacts().clear();
         this.projectService.addProject(project);
@@ -194,5 +194,60 @@ public class ProjectServiceTests extends BaseTest {
         JsonObject eval = this.projectService.evalModelDataFromLake(project.getProjectId(),artifact.getArtifactId());
         JsonUtil.print(ProjectServiceTests.class,eval);
         assertTrue(eval.has("@class"));
+    }
+
+    @Test
+    public void evalModelFromLakeXml() throws Exception{
+        Project project = AllModelTests.mockProject();
+        project.getArtifacts().clear();
+        this.projectService.addProject(project);
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        artifact.getLabels().clear();
+        artifact.getFeatures().clear();
+
+        artifact.addLabel(new Label("firstname","persons.person.firstname"));
+        artifact.addLabel(new Label("lastname","persons.person.lastname"));
+
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonObject modelJson = JsonParser.parseString(modelPackage).getAsJsonObject();
+
+        String data = IOUtils.toString(Thread.currentThread().
+                        getContextClassLoader().
+                        getResourceAsStream("dataMapper/people.xml"),
+                StandardCharsets.UTF_8);
+
+        String dataLakeId = UUID.randomUUID().toString();
+        Tenant tenant = this.securityTokenContainer.getTenant();
+        String chainId = "/" + tenant.getPrincipal() + "/" + dataLakeId;
+        JsonObject cour = new JsonObject();
+        cour.addProperty("braineous_datalakeid",dataLakeId);
+        cour.addProperty("tenant",tenant.getPrincipal());
+        cour.addProperty("data", data);
+        cour.addProperty("chainId",chainId);
+        this.mongoDBJsonStore.storeIngestion(tenant,cour);
+
+        DataItem dataItem = new DataItem();
+        dataItem.setDataSetId("braineous_null");
+        dataItem.setDataLakeId(dataLakeId);
+        dataItem.setTenantId(tenant.getPrincipal());
+        dataItem.setChainId(chainId);
+
+        String modelId = this.projectService.addLakeArtifact(project.getProjectId(),modelJson,dataItem.toJson(),artifact);
+        project = this.projectService.readProject(project.getProjectId());
+        logger.info("MODEL_ID: "+modelId);
+        assertTrue(project.containsModel(modelId));
+
+        JsonObject eval = this.projectService.evalModelDataFromLake(project.getProjectId(),artifact.getArtifactId());
+        JsonUtil.print(ProjectServiceTests.class,eval);
+        assertTrue(eval.has("@class"));
+    }
+
+    @Test
+    public void blah(){
+        String key = "persons.person[0].firstname.id";
+        String variable = "persons.person.[";
+        System.out.println(key.startsWith(variable));
     }
 }

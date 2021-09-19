@@ -2,6 +2,7 @@ package io.bugsbunny.dataScience.model;
 
 import com.github.wnameless.json.flattener.JsonFlattener;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.util.JsonUtil;
@@ -9,10 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class Artifact implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(Team.class);
@@ -80,25 +78,91 @@ public class Artifact implements Serializable {
     public String convertJsonToCsv(JsonArray jsonArray){
         StringBuilder csvBuilder = new StringBuilder();
         csvBuilder.append(this.getHeader()+"\n");
-        int size = jsonArray.size();
         int labelSize = this.labels.size();
-        for(int i=0; i<size; i++) {
-            JsonObject json = jsonArray.get(i).getAsJsonObject();
-            Map<String, Object> fieldMap = JsonFlattener.flattenAsMap(json.toString());
-            for(int j=0; j<labelSize;j++) {
-                Label label = this.labels.get(j);
-                String value = fieldMap.get(label.getField()).toString();
-                if(j != labelSize-1) {
-                    csvBuilder.append(value + ",");
+        Map<String, Object> fieldMap = JsonFlattener.flattenAsMap(jsonArray.get(0).getAsJsonObject().toString());
+
+        Map<String,List<String>> conversion = new HashMap<>();
+        for(int i=0; i<labelSize;i++) {
+            Label label = this.labels.get(i);
+            String labelValue = label.getValue();
+            String field = label.getField();
+            Object value = fieldMap.get(field);
+            if(value != null) {
+                List<String> column = conversion.get(labelValue);
+                if(column == null){
+                    column = new ArrayList<>();
+                    conversion.put(labelValue,column);
                 }
-                else{
-                    csvBuilder.append(value);
+                column.add(value.toString());
+            }else{
+                //Array
+                String[] tokens = field.split("\\.");
+
+                String realField = tokens[tokens.length-1];
+
+                Set<String> fieldKeys = fieldMap.keySet();
+                String variable=null;
+                for(String token:tokens)
+                {
+                    String latestPath = variable;
+                    if(latestPath == null || latestPath.trim().length() == 0) {
+                        variable = token + "[";
+                    }
+                    else{
+                        String temp = latestPath.substring(0, latestPath.length() - 1);
+                        variable = temp + "." + token + "[";
+                    }
+                    for(String key:fieldKeys)
+                    {
+                        if(key.startsWith(variable) && (key.endsWith(realField) || key.endsWith(realField+".content"))){
+                            value = fieldMap.get(key);
+                            List<String> column = conversion.get(labelValue);
+                            if(column == null){
+                                column = new ArrayList<>();
+                                conversion.put(labelValue,column);
+                            }
+                            column.add(value.toString());
+                        }
+                    }
                 }
             }
-            csvBuilder.append("\n");
+        }
+        //Prepare the cols
+        Collection<List<String>> tmp = conversion.values();
+        List<List<String>> cols = new ArrayList<>();
+        for(List<String> cour:tmp){
+            cols.add(cour);
+        }
+
+        //Prepare the rows
+        List<Row> rows = new ArrayList<>();
+        for(int i=0; i< cols.get(0).size();i++){
+            rows.add(new Row());
+        }
+
+        for(int fieldsCount=0; fieldsCount<cols.size();fieldsCount++){
+            List<String> fields = cols.get(fieldsCount);
+            for(int i=0; i<fields.size();i++){
+                String value = fields.get(i);
+                Row row = rows.get(i);
+                row.columns.add(value);
+            }
+        }
+
+        for(Row row: rows){
+            csvBuilder.append(row.toCsv()+"\n");
         }
 
         return csvBuilder.toString();
+    }
+
+    public String convertXmlToCsv(JsonArray jsonArray){
+        JsonObject json = jsonArray.get(0).getAsJsonObject();
+        json = json.get("rootXml").getAsJsonObject();
+
+        JsonArray array = new JsonArray();
+        array.add(json);
+        return this.convertJsonToCsv(array);
     }
 
     private String getHeader(){
@@ -191,5 +255,28 @@ public class Artifact implements Serializable {
         }
 
         return artifact;
+    }
+
+    private static class Row{
+        List<String> columns;
+
+        private Row(){
+            this.columns = new ArrayList<>();
+        }
+
+        @Override
+        public String toString() {
+            return "Row{" +
+                    "columns=" + columns +
+                    '}';
+        }
+
+        public String toCsv(){
+            StringBuilder csv = new StringBuilder();
+            for(String column:columns){
+                csv.append(column+",");
+            }
+            return csv.substring(0,csv.toString().length()-1);
+        }
     }
 }
