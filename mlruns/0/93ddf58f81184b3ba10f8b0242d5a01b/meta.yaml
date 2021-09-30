@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/babyboy/mamasboy/appgallabsForProfit/aiplatform/master/AIPlatform/mlruns/0/93ddf58f81184b3ba10f8b0242d5a01b/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+name: ''
+run_id: 93ddf58f81184b3ba10f8b0242d5a01b
+run_uuid: 93ddf58f81184b3ba10f8b0242d5a01b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1631272890333
+status: 1
+tags: []
+user_id: babyboy
