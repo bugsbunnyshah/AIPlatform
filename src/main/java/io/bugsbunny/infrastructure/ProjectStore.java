@@ -14,10 +14,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
+import java.util.List;
 
 @ApplicationScoped
 class ProjectStore {
     private Logger logger = LoggerFactory.getLogger(ProjectStore.class);
+
+    public List<Project> readProjects(Tenant tenant, MongoClient mongoClient)
+    {
+        List<Project> projects = new ArrayList<>();
+
+        System.out.println(tenant);
+
+        //String principal = tenant.getPrincipal();
+        String principal = "-2061008798";
+        String databaseName = principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("project");
+
+        FindIterable<Document> iterable = collection.find();
+        MongoCursor<Document> cursor = iterable.cursor();
+        if(cursor.hasNext())
+        {
+            Document document = cursor.next();
+            String documentJson = document.toJson();
+            JsonObject cour = JsonParser.parseString(documentJson).getAsJsonObject();
+            projects.add(Project.parse(cour.toString()));
+        }
+
+        return projects;
+    }
 
     public Project readProject(Tenant tenant, MongoClient mongoClient,String projectId)
     {

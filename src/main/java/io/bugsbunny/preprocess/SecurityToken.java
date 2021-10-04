@@ -49,4 +49,13 @@ public class SecurityToken implements Serializable {
         securityToken.token = jsonObject.get("access_token").getAsString();
         return securityToken;
     }
+
+    @Override
+    public String toString() {
+        return "SecurityToken{" +
+                "principal='" + principal + '\'' +
+                ", token='" + token + '\'' +
+                ", clientId='" + clientId + '\'' +
+                '}';
+    }
 }

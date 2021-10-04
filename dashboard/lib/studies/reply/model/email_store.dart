@@ -8,28 +8,22 @@ class EmailStore with ChangeNotifier {
   static final _inbox = <Email>[
     InboxEmail(
       id: 1,
-      sender: 'Google Express',
-      time: '15 minutes ago',
-      subject: 'Package shipped!',
-      message: 'Cucumber Mask Facial has shipped.\n\n'
-          'Keep an eye out for a package to arrive between this Thursday and next Tuesday. If for any reason you don\'t receive your package before the end of next week, please reach out to us for details on your shipment.\n\n'
-          'As always, thank you for shopping with us and we hope you love our specially formulated Cucumber Mask!',
+      sender: 'Project 1',
+      time: '3 Artifacts',
+      subject: 'Aviation AI Model',
+      message: 'Status: Development -> QA',
       avatar: '$_avatarsLocation/avatar_express.png',
-      recipients: 'Jeff',
+      recipients: '',
       containsPictures: false,
     ),
     InboxEmail(
       id: 2,
-      sender: 'Ali Connors',
-      time: '4 hrs ago',
-      subject: 'Brunch this weekend?',
-      message:
-          'I\'ll be in your neighborhood doing errands and was hoping to catch you for a coffee this Saturday. If you don\'t have anything scheduled, it would be great to see you! It feels like its been forever.\n\n'
-          'If we do get a chance to get together, remind me to tell you about Kim. She stopped over at the house to say hey to the kids and told me all about her trip to Mexico.\n\n'
-          'Talk to you soon,\n\n'
-          'Ali',
+      sender: 'Project 2',
+      time: '5 Artifacts',
+      subject: 'Finance AI Model',
+      message:'Status: Development -> QA -> Production',
       avatar: '$_avatarsLocation/avatar_5.jpg',
-      recipients: 'Jeff',
+      recipients: '',
       containsPictures: false,
     ),
     InboxEmail(
@@ -71,7 +65,7 @@ class EmailStore with ChangeNotifier {
     ),
     InboxEmail(
       id: 6,
-      sender: 'Google Express',
+      sender: 'Google Express(DATA_CHANGED)',
       time: '12 hrs ago',
       subject: 'Delivered',
       message: 'Your shoes should be waiting for you at home!',
@@ -166,13 +160,14 @@ class EmailStore with ChangeNotifier {
       ];
 
   List<Email> get inboxEmails {
-    return _inbox.where((email) {
+    /*return _inbox.where((email) {
       if (email is InboxEmail) {
         return email.inboxType == InboxType.normal &&
             !trashEmailIds.contains(email.id);
       }
       return false;
-    }).toList();
+    }).toList();*/
+    return _inbox.toList();
   }
 
   List<Email> get spamEmails {

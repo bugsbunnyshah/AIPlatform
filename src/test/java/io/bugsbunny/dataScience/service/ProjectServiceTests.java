@@ -35,6 +35,11 @@ public class ProjectServiceTests extends BaseTest {
     @Inject
     private SecurityTokenContainer securityTokenContainer;
 
+    @Test
+    public void readProjects() throws Exception{
+        System.out.println(this.projectService.readProjects());
+    }
+
 
     @Test
     public void addScientist() throws Exception{
@@ -242,12 +247,5 @@ public class ProjectServiceTests extends BaseTest {
         JsonObject eval = this.projectService.evalModelDataFromLake(project.getProjectId(),artifact.getArtifactId());
         JsonUtil.print(ProjectServiceTests.class,eval);
         assertTrue(eval.has("@class"));
-    }
-
-    @Test
-    public void blah(){
-        String key = "persons.person[0].firstname.id";
-        String variable = "persons.person.[";
-        System.out.println(key.startsWith(variable));
     }
 }

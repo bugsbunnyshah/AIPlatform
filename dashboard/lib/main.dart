@@ -61,14 +61,14 @@ class GalleryApp extends StatelessWidget {
               ...GalleryLocalizations.localizationsDelegates,
               LocaleNamesLocalizationsDelegate()
             ],
-            //initialRoute: initialRoute,
-            //supportedLocales: GalleryLocalizations.supportedLocales,
-            //locale: GalleryOptions.of(context).locale,
-            //localeResolutionCallback: (locale, supportedLocales) {
-            //  deviceLocale = locale;
-            //  return locale;
-            //},
-            //onGenerateRoute: RouteConfiguration.onGenerateRoute,
+            initialRoute: initialRoute,
+            supportedLocales: GalleryLocalizations.supportedLocales,
+            locale: GalleryOptions.of(context).locale,
+            localeResolutionCallback: (locale, supportedLocales) {
+              deviceLocale = locale;
+              return locale;
+            },
+            onGenerateRoute: RouteConfiguration.onGenerateRoute,
           );
         },
       ),

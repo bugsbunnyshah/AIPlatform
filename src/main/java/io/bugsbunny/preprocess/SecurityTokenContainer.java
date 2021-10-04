@@ -34,4 +34,9 @@ public class SecurityTokenContainer
         tenant.setPrincipal(this.getSecurityToken().getPrincipal());
         return tenant;
     }
+
+    @Override
+    public String toString() {
+        return "SecurityTokenContainer{}";
+    }
 }

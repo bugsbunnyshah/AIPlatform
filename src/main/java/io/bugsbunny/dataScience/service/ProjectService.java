@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +38,10 @@ public class ProjectService {
     @PostConstruct
     public void onStart(){
 
+    }
+
+    public List<Project> readProjects(){
+        return this.mongoDBJsonStore.readProjects(this.securityTokenContainer.getTenant());
     }
 
     public Project readProject(String projectId)

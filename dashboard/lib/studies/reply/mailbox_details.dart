@@ -5,8 +5,8 @@ import 'package:gallery/studies/reply/model/email_model.dart';
 import 'package:gallery/studies/reply/model/email_store.dart';
 import 'package:provider/provider.dart';
 
-class MailboxBody extends StatelessWidget {
-  const MailboxBody({Key key}) : super(key: key);
+class MailboxDetails extends StatelessWidget {
+  const MailboxDetails({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +74,7 @@ class MailboxBody extends StatelessWidget {
                 child: emails.isEmpty
                     ? Center(child: Text('Empty in $destinationString'))
                     : ListView.separated(
-                        itemCount: 2,
+                        itemCount: 3,
                         padding: EdgeInsetsDirectional.only(
                           start: startPadding,
                           end: endPadding,

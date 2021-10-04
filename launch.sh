@@ -1,0 +1,1 @@
+mvn clean package -DskipTests && java -jar -Dquarkus.http.port=80 target/*runner.jar

@@ -1,12 +1,15 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery/layout/adaptive.dart';
+import 'package:gallery/studies/rally/finance.dart';
 import 'package:gallery/studies/reply/colors.dart';
 import 'package:gallery/studies/reply/mail_view_page.dart';
 import 'package:gallery/studies/reply/model/email_model.dart';
 import 'package:gallery/studies/reply/model/email_store.dart';
 import 'package:gallery/studies/reply/profile_avatar.dart';
 import 'package:provider/provider.dart';
+
+import 'mailbox_details.dart';
 
 const _assetsPackage = 'flutter_gallery_assets';
 const _iconAssetLocation = 'reply/icons';
@@ -40,7 +43,9 @@ class MailPreviewCard extends StatelessWidget {
     // See https://github.com/flutter/flutter/issues/69924.
     return OpenContainer(
       openBuilder: (context, closedContainer) {
-        return MailViewPage(id: id, email: email);
+        //return MailViewPage(id: id, email: email);
+        //return MailboxDetails(key: key,);
+        return FinancialEntityCategoryDetailsPage();
       },
       openColor: theme.cardColor,
       closedShape: const RoundedRectangleBorder(

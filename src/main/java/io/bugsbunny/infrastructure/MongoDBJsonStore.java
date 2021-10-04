@@ -540,6 +540,10 @@ public class MongoDBJsonStore implements Serializable
         return rolledOverDataSetIds;
     }
     //------
+    public List<Project> readProjects(Tenant tenant){
+        return this.projectStore.readProjects(tenant,this.mongoClient);
+    }
+
     public Project readProject(Tenant tenant, String projectId){
         return this.projectStore.readProject(tenant,this.mongoClient,projectId);
     }

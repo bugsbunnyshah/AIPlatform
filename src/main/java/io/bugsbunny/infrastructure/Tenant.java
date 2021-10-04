@@ -12,4 +12,11 @@ public class Tenant implements Serializable {
     public void setPrincipal(String principal) {
         this.principal = principal;
     }
+
+    @Override
+    public String toString() {
+        return "Tenant{" +
+                "principal='" + principal + '\'' +
+                '}';
+    }
 }
