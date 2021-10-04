@@ -44,3 +44,4 @@ src/main/resources/META-INF/resources/
 /tmp/
 /src/main/resources/tensorflow/mlruns/
 remember.txt
+/mlruns/
