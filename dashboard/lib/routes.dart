@@ -4,6 +4,7 @@ import 'package:gallery/deferred_widget.dart';
 import 'package:gallery/main.dart';
 import 'package:gallery/pages/demo.dart';
 import 'package:gallery/pages/home.dart';
+import 'package:gallery/studies/braineous/app.dart';
 import 'package:gallery/studies/crane/app.dart' deferred as crane;
 import 'package:gallery/studies/crane/routes.dart' as crane_routes;
 import 'package:gallery/studies/fortnightly/app.dart' deferred as fortnightly;
@@ -83,7 +84,7 @@ class RouteConfiguration {
     Path(
         r'^' + reply_routes.homeRoute,
         // ignore: prefer_const_constructors
-        (context, match) => StudyWrapper(study: reply.ReplyApp())),
+        (context, match) => StudyWrapper(study: BraineousApp())),
     Path(
       r'^' + starter_app_routes.defaultRoute,
       (context, match) => const StudyWrapper(
