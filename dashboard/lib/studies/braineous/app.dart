@@ -3,15 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/gallery_localizations.dart';
 import 'package:gallery/data/gallery_options.dart';
 import 'package:gallery/layout/letter_spacing.dart';
-import 'package:gallery/studies/reply/adaptive_nav.dart';
 import 'package:gallery/studies/reply/app.dart';
 import 'package:gallery/studies/reply/colors.dart';
 import 'package:gallery/studies/reply/compose_page.dart';
-import 'package:gallery/studies/reply/model/email_model.dart';
-import 'package:gallery/studies/reply/model/email_store.dart';
 import 'package:gallery/studies/reply/routes.dart' as routes;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
+import 'adaptive_nav.dart';
+import 'model/project_model.dart';
+import 'model/project_store.dart';
 
 final rootNavKey = GlobalKey<NavigatorState>();
 
@@ -71,7 +72,7 @@ class _BraineousAppState extends State<BraineousApp> with RestorationMixin {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<EmailStore>.value(
+        ChangeNotifierProvider<ProjectStore>.value(
           value: _appState.value,
         ),
       ],
@@ -104,15 +105,15 @@ class _BraineousAppState extends State<BraineousApp> with RestorationMixin {
   }
 }
 
-class _RestorableEmailState extends RestorableListenable<EmailStore> {
+class _RestorableEmailState extends RestorableListenable<ProjectStore> {
   @override
-  EmailStore createDefaultValue() {
-    return EmailStore();
+  ProjectStore createDefaultValue() {
+    return ProjectStore();
   }
 
   @override
-  EmailStore fromPrimitives(Object data) {
-    final appState = EmailStore();
+  ProjectStore fromPrimitives(Object data) {
+    final appState = ProjectStore();
     final appData = Map<String, dynamic>.from(data as Map);
     appState.selectedEmailId = appData['selectedEmailId'] as int;
     appState.onSearchPage = appData['onSearchPage'] as bool;
