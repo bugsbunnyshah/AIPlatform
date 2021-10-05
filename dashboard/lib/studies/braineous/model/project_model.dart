@@ -10,14 +10,14 @@ class Project {
     this.containsPictures,
   });
 
-  final int id;
-  final String sender;
-  final String time;
-  final String subject;
-  final String message;
-  final String avatar;
-  final String recipients;
-  final bool containsPictures;
+  int id;
+  String sender;
+  String time;
+  String subject;
+  String message;
+  String avatar;
+  String recipients;
+  bool containsPictures;
 }
 
 class ProjectDetails extends Project {

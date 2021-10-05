@@ -248,7 +248,7 @@ class _DesktopNavState extends State<_DesktopNav>
                 constraints: const BoxConstraints(maxWidth: 1340),
                 child: _SharedAxisTransitionSwitcher(
                   defaultChild: _MailNavigator(
-                    child: ProjectBody(key: widget.inboxKey),
+                    child: ProjectBody(),
                   ),
                 ),
               ),
@@ -627,9 +627,7 @@ class _MobileNavState extends State<_MobileNav> with TickerProviderStateMixin {
         NotificationListener<ScrollNotification>(
           onNotification: _handleScrollNotification,
           child: _MailNavigator(
-            child: ProjectBody(
-              key: widget.inboxKey,
-            ),
+            child: ProjectBody(),
           ),
         ),
         GestureDetector(
@@ -829,11 +827,11 @@ class _BottomAppBarActionItems extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ProjectStore>(
       builder: (context, model, child) {
-        final onMailView = model.onMailView;
+        final onMailView = false;
         Color starIconColor;
 
         if (onMailView) {
-          starIconColor = model.isCurrentEmailStarred
+          starIconColor = null
               ? Theme.of(context).colorScheme.secondary
               : ReplyColors.white50;
         }
@@ -865,17 +863,6 @@ class _BottomAppBarActionItems extends StatelessWidget {
                             color: starIconColor,
                           ),
                           onPressed: () {
-                            final currentEmail = model.currentEmail;
-                            if (model.isCurrentEmailStarred) {
-                              model.unstarEmail(currentEmail.id);
-                            } else {
-                              model.starEmail(currentEmail.id);
-                            }
-                            if (model.selectedMailboxPage ==
-                                MailboxPageType.starred) {
-                              mobileMailNavKey.currentState.pop();
-                              model.selectedEmailId = -1;
-                            }
                           },
                           color: ReplyColors.white50,
                         ),
@@ -887,12 +874,6 @@ class _BottomAppBarActionItems extends StatelessWidget {
                             ),
                           ),
                           onPressed: () {
-                            model.deleteEmail(
-                              model.selectedEmailId,
-                            );
-
-                            mobileMailNavKey.currentState.pop();
-                            model.selectedEmailId = -1;
                           },
                           color: ReplyColors.white50,
                         ),

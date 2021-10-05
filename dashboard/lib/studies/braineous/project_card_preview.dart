@@ -6,8 +6,6 @@ import 'package:gallery/studies/rally/finance.dart';
 import 'package:gallery/studies/reply/colors.dart';
 import 'package:gallery/studies/reply/profile_avatar.dart';
 import 'package:provider/provider.dart';
-
-import 'project_details.dart';
 import 'model/project_store.dart';
 
 const _assetsPackage = 'flutter_gallery_assets';
@@ -228,7 +226,7 @@ class _MailPreview extends StatelessWidget {
                       ),
                       _MailPreviewActionBar(
                         avatar: email.avatar,
-                        isStarred: emailStore.isEmailStarred(email.id),
+                        isStarred: false,
                         onStar: onStar,
                         onDelete: onDelete,
                       ),

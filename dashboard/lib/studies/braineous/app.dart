@@ -123,13 +123,6 @@ class _RestorableEmailState extends RestorableListenable<ProjectStore> {
     appState.selectedMailboxPage = MailboxPageType.values[mailboxPageIndex];
 
     final starredEmailIdsList = appData['starredEmailIds'] as List<dynamic>;
-    appState.starredEmailIds = {
-      ...starredEmailIdsList.map<int>((dynamic id) => id as int),
-    };
-    final trashEmailIdsList = appData['trashEmailIds'] as List<dynamic>;
-    appState.trashEmailIds = {
-      ...trashEmailIdsList.map<int>((dynamic id) => id as int),
-    };
     return appState;
   }
 
@@ -141,8 +134,8 @@ class _RestorableEmailState extends RestorableListenable<ProjectStore> {
       // has to be serializable.
       'selectedMailboxPage': value.selectedMailboxPage.index,
       'onSearchPage': value.onSearchPage,
-      'starredEmailIds': value.starredEmailIds.toList(),
-      'trashEmailIds': value.trashEmailIds.toList(),
+      'starredEmailIds': null,
+      'trashEmailIds': null,
     };
   }
 }

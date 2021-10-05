@@ -7,65 +7,47 @@ import 'project_card_preview.dart';
 import 'model/project_model.dart';
 
 class ProjectBody extends StatelessWidget {
-  const ProjectBody({Key key}) : super(key: key);
+  Future<List<Project>> future;
+
+  ProjectBody(){
+    ProjectStore store = new ProjectStore();
+    this.future = store.getProjects();
+  }
 
   @override
   Widget build(BuildContext context) {
-    print("*******MAIL_BOX_INVOKED*******");
+    FutureBuilder<List<Project>> builder = FutureBuilder(
+      future: this.future,
+      builder: (context, AsyncSnapshot<List<Project>> snapshot) {
+        if (snapshot.hasData) {
+          return consumer(context,snapshot.data);
+        } else {
+          return CircularProgressIndicator();
+        }
+      }
+    );
+    return builder;
+  }
+
+  Consumer<ProjectStore> consumer(BuildContext context, List<Project> emails){
     final isDesktop = isDisplayDesktop(context);
     final isTablet = isDisplaySmallDesktop(context);
     final startPadding = isTablet
         ? 60.0
         : isDesktop
-            ? 120.0
-            : 4.0;
+        ? 120.0
+        : 4.0;
     final endPadding = isTablet
         ? 30.0
         : isDesktop
-            ? 60.0
-            : 4.0;
-
+        ? 60.0
+        : 4.0;
     return Consumer<ProjectStore>(
       builder: (context, model, child) {
         final destination = model.selectedMailboxPage;
         final destinationString = destination
             .toString()
             .substring(destination.toString().indexOf('.') + 1);
-        List<Project> emails;
-
-        switch (destination) {
-          case MailboxPageType.inbox:
-            {
-              emails = model.inboxEmails;
-              break;
-            }
-          case MailboxPageType.sent:
-            {
-              emails = model.outboxEmails;
-              break;
-            }
-          case MailboxPageType.starred:
-            {
-              emails = model.starredEmails;
-              break;
-            }
-          case MailboxPageType.trash:
-            {
-              emails = model.trashEmails;
-              break;
-            }
-          case MailboxPageType.spam:
-            {
-              emails = model.spamEmails;
-              break;
-            }
-          case MailboxPageType.drafts:
-            {
-              emails = model.draftEmails;
-              break;
-            }
-        }
-
         return SafeArea(
           bottom: false,
           child: Row(
@@ -75,30 +57,30 @@ class ProjectBody extends StatelessWidget {
                 child: emails.isEmpty
                     ? Center(child: Text('Empty in $destinationString'))
                     : ListView.separated(
-                        itemCount: 2,
-                        padding: EdgeInsetsDirectional.only(
-                          start: startPadding,
-                          end: endPadding,
-                          top: isDesktop ? 28 : 0,
-                          bottom: kToolbarHeight,
-                        ),
-                        primary: false,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 4),
-                        itemBuilder: (context, index) {
-                          print("**********EMAIL_ITEM*****");
-                          var email = emails[index];
-                          return ProjectPreviewCard(
-                            id: email.id,
-                            email: email,
-                            isStarred: model.isEmailStarred(email.id),
-                            onDelete: () => model.deleteEmail(email.id),
-                            onStar: () => model.starEmail(email.id),
-                            onStarredMailbox: model.selectedMailboxPage ==
-                                MailboxPageType.starred,
-                          );
-                        },
-                      ),
+                  itemCount: emails.length,
+                  padding: EdgeInsetsDirectional.only(
+                    start: startPadding,
+                    end: endPadding,
+                    top: isDesktop ? 28 : 0,
+                    bottom: kToolbarHeight,
+                  ),
+                  primary: false,
+                  separatorBuilder: (context, index) =>
+                  const SizedBox(height: 4),
+                  itemBuilder: (context, index) {
+                    print("**********EMAIL_ITEM*****");
+                    var email = emails[index];
+                    return ProjectPreviewCard(
+                      id: email.id,
+                      email: email,
+                      isStarred: false,
+                      onDelete: () => null,
+                      onStar: () => null,
+                      onStarredMailbox: model.selectedMailboxPage ==
+                          MailboxPageType.starred,
+                    );
+                  },
+                ),
               ),
               if (isDesktop) ...[
                 Padding(
