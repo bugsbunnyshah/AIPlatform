@@ -51,7 +51,10 @@ class ProjectStore with ChangeNotifier {
 
     String remoteUrl = "http://localhost/projects/";
     try {
-      response = await http.get(Uri.parse(remoteUrl)).
+      response = await http.get(Uri.parse(remoteUrl),headers: {
+        "Principal":"-2061008798",
+        "Bearer": "blah",
+      },).
       timeout(Duration(seconds: 30),onTimeout: () {
         print("NETWORK_TIMEOUT");
         //json = new Map();
@@ -74,19 +77,21 @@ class ProjectStore with ChangeNotifier {
     }
 
     json  = jsonDecode(response.body) as Map<String, dynamic>;
-
-    String projectId = json['projects'].first['projectId'].toString();
-    ProjectDetails local = ProjectDetails(
-      id: 1,
-      sender: projectId,
-      time: '3 Artifacts',
-      subject: 'Aviation AI Model',
-      message: 'Status: Development -> QA',
-      avatar: '$_avatarsLocation/avatar_express.png',
-      recipients: '',
-      containsPictures: false,
-    );
-    projects.add(local);
+    Iterable l = json['projects'] as Iterable;
+    for (Map<String, dynamic> project in l) {
+      String projectId = project['projectId'].toString();
+      ProjectDetails local = ProjectDetails(
+        id: 1,
+        sender: projectId,
+        time: '3 Artifacts',
+        subject: 'Aviation AI Model',
+        message: 'Status: Development -> QA',
+        avatar: '$_avatarsLocation/avatar_express.png',
+        recipients: '',
+        containsPictures: false,
+      );
+      projects.add(local);
+    }
 
     return projects;
   }

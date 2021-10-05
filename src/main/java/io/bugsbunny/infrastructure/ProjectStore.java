@@ -25,18 +25,19 @@ class ProjectStore {
     {
         List<Project> projects = new ArrayList<>();
 
-        System.out.println(tenant);
-
         //String principal = tenant.getPrincipal();
         String principal = "-2061008798";
         String databaseName = principal + "_" + "aiplatform";
+
+        System.out.println("DatabaseName: "+databaseName);
+
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         MongoCollection<Document> collection = database.getCollection("project");
 
         FindIterable<Document> iterable = collection.find();
         MongoCursor<Document> cursor = iterable.cursor();
-        if(cursor.hasNext())
+        while(cursor.hasNext())
         {
             Document document = cursor.next();
             String documentJson = document.toJson();
