@@ -120,7 +120,7 @@ class _RestorableEmailState extends RestorableListenable<ProjectStore> {
 
     // The index of the MailboxPageType enum is restored.
     final mailboxPageIndex = appData['selectedMailboxPage'] as int;
-    appState.selectedMailboxPage = MailboxPageType.values[mailboxPageIndex];
+    appState.selectedMailboxPage = ProjectPages.values[mailboxPageIndex];
 
     final starredEmailIdsList = appData['starredEmailIds'] as List<dynamic>;
     return appState;

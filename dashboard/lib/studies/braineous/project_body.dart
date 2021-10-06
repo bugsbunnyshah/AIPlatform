@@ -29,7 +29,7 @@ class ProjectBody extends StatelessWidget {
     return builder;
   }
 
-  Consumer<ProjectStore> consumer(BuildContext context, List<Project> emails){
+  Consumer<ProjectStore> consumer(BuildContext context, List<Project> projects){
     final isDesktop = isDisplayDesktop(context);
     final isTablet = isDisplaySmallDesktop(context);
     final startPadding = isTablet
@@ -54,10 +54,10 @@ class ProjectBody extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: emails.isEmpty
+                child: projects.isEmpty
                     ? Center(child: Text('Empty in $destinationString'))
                     : ListView.separated(
-                  itemCount: emails.length,
+                  itemCount: projects.length,
                   padding: EdgeInsetsDirectional.only(
                     start: startPadding,
                     end: endPadding,
@@ -69,15 +69,9 @@ class ProjectBody extends StatelessWidget {
                   const SizedBox(height: 4),
                   itemBuilder: (context, index) {
                     print("**********EMAIL_ITEM*****");
-                    var email = emails[index];
+                    var project = projects[index];
                     return ProjectPreviewCard(
-                      id: email.id,
-                      email: email,
-                      isStarred: false,
-                      onDelete: () => null,
-                      onStar: () => null,
-                      onStarredMailbox: model.selectedMailboxPage ==
-                          MailboxPageType.starred,
+                      project:project,
                     );
                   },
                 ),

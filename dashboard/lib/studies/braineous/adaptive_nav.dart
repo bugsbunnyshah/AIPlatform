@@ -50,32 +50,32 @@ class _AdaptiveNavState extends State<AdaptiveNav> {
     final localizations = GalleryLocalizations.of(context);
     final _navigationDestinations = <_Destination>[
       _Destination(
-        type: MailboxPageType.inbox,
+        type: ProjectPages.inbox,
         textLabel: localizations.replyInboxLabel,
         icon: '$_iconAssetLocation/twotone_inbox.png',
       ),
       _Destination(
-        type: MailboxPageType.starred,
+        type: ProjectPages.starred,
         textLabel: localizations.replyStarredLabel,
         icon: '$_iconAssetLocation/twotone_star.png',
       ),
       _Destination(
-        type: MailboxPageType.sent,
+        type: ProjectPages.sent,
         textLabel: localizations.replySentLabel,
         icon: '$_iconAssetLocation/twotone_send.png',
       ),
       _Destination(
-        type: MailboxPageType.trash,
+        type: ProjectPages.trash,
         textLabel: localizations.replyTrashLabel,
         icon: '$_iconAssetLocation/twotone_delete.png',
       ),
       _Destination(
-        type: MailboxPageType.spam,
+        type: ProjectPages.spam,
         textLabel: localizations.replySpamLabel,
         icon: '$_iconAssetLocation/twotone_error.png',
       ),
       _Destination(
-        type: MailboxPageType.drafts,
+        type: ProjectPages.drafts,
         textLabel: localizations.replyDraftsLabel,
         icon: '$_iconAssetLocation/twotone_drafts.png',
       ),
@@ -108,19 +108,15 @@ class _AdaptiveNavState extends State<AdaptiveNav> {
     }
   }
 
-  void _onDestinationSelected(int index, MailboxPageType destination) {
-    var emailStore = Provider.of<ProjectStore>(
+  void _onDestinationSelected(int index, ProjectPages destination) {
+    var projectStore = Provider.of<ProjectStore>(
       context,
       listen: false,
     );
 
     final isDesktop = isDisplayDesktop(context);
 
-    if (emailStore.selectedMailboxPage != destination) {
-      _inboxKey = UniqueKey();
-    }
-
-    emailStore.selectedMailboxPage = destination;
+    projectStore.selectedMailboxPage = destination;
 
     if (isDesktop) {
       while (desktopMailNavKey.currentState.canPop()) {
@@ -128,12 +124,10 @@ class _AdaptiveNavState extends State<AdaptiveNav> {
       }
     }
 
-    if (emailStore.onMailView) {
+    if (projectStore.onMailView) {
       if (!isDesktop) {
         mobileMailNavKey.currentState.pop();
       }
-
-      emailStore.selectedEmailId = -1;
     }
   }
 }
@@ -154,7 +148,7 @@ class _DesktopNav extends StatefulWidget {
   final String currentInbox;
   final List<_Destination> destinations;
   final Map<String, String> folders;
-  final void Function(int, MailboxPageType) onItemTapped;
+  final void Function(int, ProjectPages) onItemTapped;
 
   @override
   _DesktopNavState createState() => _DesktopNavState();
@@ -465,7 +459,7 @@ class _MobileNav extends StatefulWidget {
   final UniqueKey inboxKey;
   final List<_Destination> destinations;
   final Map<String, String> folders;
-  final void Function(int, MailboxPageType) onItemTapped;
+  final void Function(int, ProjectPages) onItemTapped;
 
   @override
   _MobileNavState createState() => _MobileNavState();
@@ -727,7 +721,7 @@ class _AnimatedBottomAppBar extends StatelessWidget {
   final AnimationController drawerController;
   final Animation<double> dropArrowCurve;
   final List<_Destination> navigationDestinations;
-  final MailboxPageType selectedMailbox;
+  final ProjectPages selectedMailbox;
   final ui.VoidCallback toggleBottomDrawerVisibility;
 
   @override
@@ -920,8 +914,8 @@ class _BottomDrawerDestinations extends StatelessWidget {
   final List<_Destination> destinations;
   final AnimationController drawerController;
   final AnimationController dropArrowController;
-  final MailboxPageType selectedMailbox;
-  final void Function(int, MailboxPageType) onItemTapped;
+  final ProjectPages selectedMailbox;
+  final void Function(int, ProjectPages) onItemTapped;
 
   @override
   Widget build(BuildContext context) {
@@ -987,7 +981,7 @@ class _Destination {
         assert(icon != null);
 
   // Which mailbox page to display. For example, 'Starred' or 'Trash'.
-  final MailboxPageType type;
+  final ProjectPages type;
   // The localized text label for the inbox.
   final String textLabel;
   // The icon that appears next to the text label for the inbox.

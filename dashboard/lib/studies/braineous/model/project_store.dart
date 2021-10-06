@@ -28,9 +28,9 @@ class ProjectStore with ChangeNotifier {
 
   bool get onMailView => _selectedEmailId > -1;
 
-  MailboxPageType _selectedMailboxPage = MailboxPageType.inbox;
-  MailboxPageType get selectedMailboxPage => _selectedMailboxPage;
-  set selectedMailboxPage(MailboxPageType mailboxPage) {
+  ProjectPages _selectedMailboxPage = ProjectPages.inbox;
+  ProjectPages get selectedMailboxPage => _selectedMailboxPage;
+  set selectedMailboxPage(ProjectPages mailboxPage) {
     _selectedMailboxPage = mailboxPage;
     notifyListeners();
   }
@@ -80,19 +80,22 @@ class ProjectStore with ChangeNotifier {
     Iterable l = json['projects'] as Iterable;
     for (Map<String, dynamic> project in l) {
       String projectId = project['projectId'].toString();
-      ProjectDetails local = ProjectDetails(
-        id: 1,
-        sender: projectId,
-        time: '3 Artifacts',
-        subject: 'Aviation AI Model',
-        message: 'Status: Development -> QA',
-        avatar: '$_avatarsLocation/avatar_express.png',
-        recipients: '',
-        containsPictures: false,
+      Project local = Project(
+        projectId: projectId,
       );
       projects.add(local);
     }
 
     return projects;
   }
+}
+
+// The different mailbox pages that the Reply app contains.
+enum ProjectPages {
+  inbox,
+  starred,
+  sent,
+  trash,
+  spam,
+  drafts,
 }
