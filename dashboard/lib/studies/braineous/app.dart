@@ -61,7 +61,6 @@ class _BraineousAppState extends State<BraineousApp> with RestorationMixin {
 
   @override
   Widget build(BuildContext context) {
-    print("*******BRAINEOUS_APP***********");
     final galleryThemeMode = GalleryOptions.of(context).themeMode;
     final isDark = galleryThemeMode == ThemeMode.system
         ? Theme.of(context).brightness == Brightness.dark

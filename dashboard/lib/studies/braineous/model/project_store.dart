@@ -82,6 +82,7 @@ class ProjectStore with ChangeNotifier {
       String projectId = project['projectId'].toString();
       Project local = Project(
         projectId: projectId,
+        projectName: "Aviation Data Model",
       );
       projects.add(local);
     }

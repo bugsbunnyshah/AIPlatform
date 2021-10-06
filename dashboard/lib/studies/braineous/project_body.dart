@@ -68,7 +68,6 @@ class ProjectBody extends StatelessWidget {
                   separatorBuilder: (context, index) =>
                   const SizedBox(height: 4),
                   itemBuilder: (context, index) {
-                    print("**********EMAIL_ITEM*****");
                     var project = projects[index];
                     return ProjectPreviewCard(
                       project:project,
