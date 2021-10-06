@@ -2,7 +2,8 @@ import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery/layout/adaptive.dart';
 import 'package:gallery/studies/braineous/model/project_model.dart';
-import 'package:gallery/studies/rally/finance.dart';
+import 'package:gallery/studies/braineous/project_details.dart';
+//import 'package:gallery/studies/rally/finance.dart';
 import 'package:gallery/studies/reply/colors.dart';
 import 'package:gallery/studies/reply/profile_avatar.dart';
 import 'package:provider/provider.dart';
@@ -42,7 +43,9 @@ class ProjectPreviewCard extends StatelessWidget {
       openBuilder: (context, closedContainer) {
         //return MailViewPage(id: id, email: email);
         //return MailboxDetails(key: key,);
-        return FinancialEntityCategoryDetailsPage();
+        FinancialEntityCategoryDetailsPage page = new FinancialEntityCategoryDetailsPage();
+        page.projectId = email.sender;
+        return page;
       },
       openColor: theme.cardColor,
       closedShape: const RoundedRectangleBorder(
