@@ -78,7 +78,7 @@ public class ProjectServiceTests extends BaseTest {
     }
 
     @Test
-    public void evalModelFromData() throws Exception{
+    public void trainModelFromData() throws Exception{
         Project project = AllModelTests.mockProject();
         project.getArtifacts().clear();
         this.projectService.addProject(project);
@@ -102,13 +102,13 @@ public class ProjectServiceTests extends BaseTest {
         logger.info("MODEL_ID: "+modelId);
         assertTrue(project.containsModel(modelId));
 
-        JsonObject eval = this.projectService.evalModelFromData(project.getProjectId(),artifact.getArtifactId());
+        JsonObject eval = this.projectService.trainModelFromData(project.getProjectId(),artifact.getArtifactId());
         JsonUtil.print(ProjectServiceTests.class,eval);
         assertTrue(eval.has("@class"));
     }
 
     @Test
-    public void evalModelFromLakeCSV() throws Exception{
+    public void trainModelFromLakeCSV() throws Exception{
         Project project = AllModelTests.mockProject();
         project.getArtifacts().clear();
         this.projectService.addProject(project);
@@ -142,13 +142,13 @@ public class ProjectServiceTests extends BaseTest {
         logger.info("MODEL_ID: "+modelId);
         assertTrue(project.containsModel(modelId));
 
-        JsonObject eval = this.projectService.evalModelDataFromLake(project.getProjectId(),artifact.getArtifactId());
+        JsonObject eval = this.projectService.trainModelFromDataLake(project.getProjectId(),artifact.getArtifactId());
         JsonUtil.print(ProjectServiceTests.class,eval);
         assertTrue(eval.has("@class"));
     }
 
     @Test
-    public void evalModelFromLakeJson() throws Exception{
+    public void trainModelFromLakeJson() throws Exception{
         Project project = AllModelTests.mockProject();
         project.getArtifacts().clear();
         this.projectService.addProject(project);
@@ -196,13 +196,13 @@ public class ProjectServiceTests extends BaseTest {
         logger.info("MODEL_ID: "+modelId);
         assertTrue(project.containsModel(modelId));
 
-        JsonObject eval = this.projectService.evalModelDataFromLake(project.getProjectId(),artifact.getArtifactId());
+        JsonObject eval = this.projectService.trainModelFromDataLake(project.getProjectId(),artifact.getArtifactId());
         JsonUtil.print(ProjectServiceTests.class,eval);
         assertTrue(eval.has("@class"));
     }
 
     @Test
-    public void evalModelFromLakeXml() throws Exception{
+    public void trainModelFromLakeXml() throws Exception{
         Project project = AllModelTests.mockProject();
         project.getArtifacts().clear();
         this.projectService.addProject(project);
@@ -244,7 +244,7 @@ public class ProjectServiceTests extends BaseTest {
         logger.info("MODEL_ID: "+modelId);
         assertTrue(project.containsModel(modelId));
 
-        JsonObject eval = this.projectService.evalModelDataFromLake(project.getProjectId(),artifact.getArtifactId());
+        JsonObject eval = this.projectService.trainModelFromDataLake(project.getProjectId(),artifact.getArtifactId());
         JsonUtil.print(ProjectServiceTests.class,eval);
         assertTrue(eval.has("@class"));
     }

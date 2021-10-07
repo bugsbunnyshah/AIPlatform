@@ -40,15 +40,6 @@ public class ProjectService {
 
     }
 
-    public List<Project> readProjects(){
-        return this.mongoDBJsonStore.readProjects(this.securityTokenContainer.getTenant());
-    }
-
-    public Project readProject(String projectId)
-    {
-        return this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
-    }
-
     public void addProject(Project project){
         this.mongoDBJsonStore.addProject(this.securityTokenContainer.getTenant(),project);
     }
@@ -111,7 +102,16 @@ public class ProjectService {
         return modelId;
     }
 
-    public JsonObject evalModelFromData(String projectId,String artifactId){
+    public List<Project> readProjects(){
+        return this.mongoDBJsonStore.readProjects(this.securityTokenContainer.getTenant());
+    }
+
+    public Project readProject(String projectId)
+    {
+        return this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
+    }
+
+    public JsonObject trainModelFromData(String projectId, String artifactId){
         try {
             Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(), projectId);
             //JsonUtil.print(ProjectService.class, project.toJson());
@@ -138,7 +138,7 @@ public class ProjectService {
         }
     }
 
-    public JsonObject evalModelDataFromLake(String projectId,String artifactId){
+    public JsonObject trainModelFromDataLake(String projectId, String artifactId){
         try {
             Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(), projectId);
             //JsonUtil.print(ProjectService.class, project.toJson());
@@ -163,10 +163,6 @@ public class ProjectService {
         catch(Exception e){
             throw new RuntimeException(e);
         }
-    }
-
-    public void trainModel(){
-
     }
 
     public void deployModel(){
