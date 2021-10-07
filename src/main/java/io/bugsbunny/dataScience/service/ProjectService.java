@@ -165,8 +165,14 @@ public class ProjectService {
         }
     }
 
-    public void deployModel(){
-
+    public void deployModel(Artifact artifact){
+        try
+        {
+            this.aiModelService.deployModel(artifact.getAiModel().getModelId());
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
     public void verifyDeployment(){

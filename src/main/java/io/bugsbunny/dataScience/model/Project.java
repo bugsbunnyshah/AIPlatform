@@ -58,6 +58,15 @@ public class Project implements Serializable {
         return false;
     }
 
+    public Artifact findArtifact(String artifactId){
+        for(Artifact artifact:this.artifacts){
+            if(artifact.getArtifactId().equals(artifactId)){
+                return artifact;
+            }
+        }
+        return null;
+    }
+
     public JsonObject toJson(){
         JsonObject json = new JsonObject();
 

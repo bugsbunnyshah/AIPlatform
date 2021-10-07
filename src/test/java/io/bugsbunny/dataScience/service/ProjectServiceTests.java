@@ -248,4 +248,67 @@ public class ProjectServiceTests extends BaseTest {
         JsonUtil.print(ProjectServiceTests.class,eval);
         assertTrue(eval.has("@class"));
     }
+
+    @Test
+    public void deployModel() throws Exception{
+        Project project = AllModelTests.mockProject();
+        project.getArtifacts().clear();
+        this.projectService.addProject(project);
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        artifact.getLabels().clear();
+        artifact.getFeatures().clear();
+
+        artifact.addLabel(new Label("firstname","persons.person.firstname"));
+        artifact.addLabel(new Label("lastname","persons.person.lastname"));
+
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        JsonObject modelJson = JsonParser.parseString(modelPackage).getAsJsonObject();
+
+        String data = IOUtils.toString(Thread.currentThread().
+                        getContextClassLoader().
+                        getResourceAsStream("dataMapper/people.xml"),
+                StandardCharsets.UTF_8);
+
+        String dataLakeId = UUID.randomUUID().toString();
+        Tenant tenant = this.securityTokenContainer.getTenant();
+        String chainId = "/" + tenant.getPrincipal() + "/" + dataLakeId;
+        JsonObject cour = new JsonObject();
+        cour.addProperty("braineous_datalakeid",dataLakeId);
+        cour.addProperty("tenant",tenant.getPrincipal());
+        cour.addProperty("data", data);
+        cour.addProperty("chainId",chainId);
+        this.mongoDBJsonStore.storeIngestion(tenant,cour);
+
+        DataItem dataItem = new DataItem();
+        dataItem.setDataSetId("braineous_null");
+        dataItem.setDataLakeId(dataLakeId);
+        dataItem.setTenantId(tenant.getPrincipal());
+        dataItem.setChainId(chainId);
+
+        String modelId = this.projectService.addLakeArtifact(project.getProjectId(),modelJson,dataItem.toJson(),artifact);
+        project = this.projectService.readProject(project.getProjectId());
+        logger.info("MODEL_ID: "+modelId);
+        assertTrue(project.containsModel(modelId));
+
+        JsonObject eval = this.projectService.trainModelFromDataLake(project.getProjectId(),artifact.getArtifactId());
+        JsonUtil.print(ProjectServiceTests.class,eval);
+        assertTrue(eval.has("@class"));
+
+        Artifact trainedArtifact = this.projectService.readProject(project.getProjectId()).findArtifact(artifact.getArtifactId());
+        JsonUtil.print(trainedArtifact.toJson());
+        assertNotNull(trainedArtifact);
+
+        JsonObject liveModel = this.mongoDBJsonStore.getModelPackage(tenant,trainedArtifact.getAiModel().getModelId());
+        boolean isLive = liveModel.get("live").getAsBoolean();
+        boolean isDevelopment = liveModel.get("development").getAsBoolean();
+        assertFalse(isLive);
+        assertTrue(isDevelopment);
+
+        this.projectService.deployModel(trainedArtifact);
+        liveModel = this.mongoDBJsonStore.getModelPackage(tenant,trainedArtifact.getAiModel().getModelId());
+        isLive = liveModel.get("live").getAsBoolean();
+        assertTrue(isLive);
+    }
 }
