@@ -375,7 +375,7 @@ public class AIModelService
         }
     }
 
-    public JsonObject evalJavaDuringDevelopmentFromLake(String modelId, Artifact artifact, String[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
+    public JsonObject evalJavaDuringDevelopmentFromLake(String modelId, Artifact artifact, String[] dataLakeIds) throws ModelNotFoundException, ModelIsNotLive
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
 
@@ -399,7 +399,7 @@ public class AIModelService
             }
 
             DataSetIterator dataSetIterator = this.aiPlatformDataLakeIteratorFactory.
-                    getInstance(artifact,dataSetIds);
+                    getInstance(artifact,dataLakeIds);
             Evaluation evaluation = network.evaluate(dataSetIterator);
 
             return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();
