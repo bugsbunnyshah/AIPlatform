@@ -4,6 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.dataScience.model.AIModel;
+import io.bugsbunny.dataScience.model.Artifact;
+import io.bugsbunny.dataScience.model.PortableAIModelInterface;
 import io.bugsbunny.dataScience.service.AIModelService;
 import io.bugsbunny.dataScience.service.ModelIsLive;
 import io.bugsbunny.dataScience.service.ModelNotFoundException;
@@ -83,7 +86,11 @@ public class TrainModel
                 dataSetIds[counter] = iterator.next().getAsString();
                 counter++;
             }
-            String eval = this.trainingAIModelService.trainJava(modelId, dataSetIds);
+
+            Artifact artifact = new Artifact();
+            artifact.setAiModel(new AIModel());
+            artifact.getAiModel().setModelId(modelId);
+            String eval = this.trainingAIModelService.trainJava(artifact, dataSetIds);
 
             JsonObject returnValue = new JsonObject();
             returnValue.add("result", JsonParser.parseString(eval));
@@ -135,7 +142,10 @@ public class TrainModel
                 dataLakeIds[counter] = iterator.next().getAsString();
                 counter++;
             }
-            String eval = this.trainingAIModelService.trainJavaFromDataLake(modelId, dataLakeIds);
+            Artifact artifact = new Artifact();
+            artifact.setAiModel(new AIModel());
+            artifact.getAiModel().setModelId(modelId);
+            String eval = this.trainingAIModelService.trainJavaFromDataLake(artifact, dataLakeIds);
 
             JsonObject returnValue = new JsonObject();
             returnValue.add("result", JsonParser.parseString(eval));

@@ -2,6 +2,8 @@ package io.bugsbunny.dataScience.service;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.dataScience.model.AIModel;
+import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
@@ -53,7 +55,10 @@ public class AIModelServiceTests extends BaseTest {
         JsonObject response = this.packagingService.performPackagingForLiveDeployment(modelPackage);
 
         String modelId = response.get("modelId").getAsString();
-        String result = this.aiModelService.trainJava(modelId, new String[]{dataSetId});
+        Artifact artifact = new Artifact();
+        artifact.setAiModel(new AIModel());
+        artifact.getAiModel().setModelId(modelId);
+        String result = this.aiModelService.trainJava(artifact, new String[]{dataSetId});
         logger.info("****************");
         logger.info("ModelId: "+modelId);
         logger.info("****************");
@@ -66,8 +71,11 @@ public class AIModelServiceTests extends BaseTest {
     {
         String modelId = "0";
         boolean modelNotFound = false;
+        Artifact artifact = new Artifact();
+        artifact.setAiModel(new AIModel());
+        artifact.getAiModel().setModelId(modelId);
         try {
-            this.aiModelService.trainJava(modelId, null);
+            this.aiModelService.trainJava(artifact, null);
         }
         catch(ModelNotFoundException modelNotFoundException)
         {
@@ -102,7 +110,10 @@ public class AIModelServiceTests extends BaseTest {
 
         boolean isModelLive = false;
         try {
-            this.aiModelService.trainJava(modelId, null);
+            Artifact artifact = new Artifact();
+            artifact.setAiModel(new AIModel());
+            artifact.getAiModel().setModelId(modelId);
+            this.aiModelService.trainJava(artifact, null);
         }
         catch(ModelIsLive modelIsLive)
         {
@@ -227,7 +238,10 @@ public class AIModelServiceTests extends BaseTest {
         JsonObject response = this.packagingService.performPackagingForLiveDeployment(modelPackage);
 
         String modelId = response.get("modelId").getAsString();
-        String result = this.aiModelService.trainJava(modelId, new String[]{dataSetId});
+        Artifact artifact = new Artifact();
+        artifact.setAiModel(new AIModel());
+        artifact.getAiModel().setModelId(modelId);
+        String result = this.aiModelService.trainJava(artifact, new String[]{dataSetId});
         logger.info("****************");
         logger.info("ModelId: "+modelId);
         logger.info("****************");
@@ -246,7 +260,7 @@ public class AIModelServiceTests extends BaseTest {
         assertTrue(modelNotLive);
     }
 
-    //@Test
+    @Test
     public void testTrainJavaFromDataLake() throws Exception
     {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
@@ -280,7 +294,10 @@ public class AIModelServiceTests extends BaseTest {
         assertNotNull(ingestedData.get("dataLakeId"));
 
         String modelId = response.get("modelId").getAsString();
-        String result = this.aiModelService.trainJavaFromDataLake(modelId,
+        Artifact artifact = new Artifact();
+        artifact.setAiModel(new AIModel());
+        artifact.getAiModel().setModelId(modelId);
+        String result = this.aiModelService.trainJavaFromDataLake(artifact,
                 new String[]{ingestedData.get("dataLakeId").getAsString()});
         logger.info("****************");
         logger.info("ModelId: "+modelId);
@@ -289,7 +306,7 @@ public class AIModelServiceTests extends BaseTest {
         logger.info(result.toString());
     }
 
-    //@Test
+    @Test
     public void testEvalJavaFromDataLake() throws Exception
     {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,

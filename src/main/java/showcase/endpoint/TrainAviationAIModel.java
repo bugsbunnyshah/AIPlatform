@@ -2,6 +2,8 @@ package showcase.endpoint;
 
 import com.google.gson.JsonObject;
 
+import io.bugsbunny.dataScience.model.AIModel;
+import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.dataScience.service.AIModelService;
 import io.bugsbunny.dataScience.service.PackagingService;
 import showcase.service.AviationDataIngestionService;
@@ -102,7 +104,10 @@ public class TrainAviationAIModel
             JsonObject deployedModel = this.packagingService.performPackagingForLiveDeployment(jsonObject.toString());
             String modelId = deployedModel.get("modelId").getAsString();
 
-            String trainingResult = this.trainingAIModelService.trainJava(modelId, trainingDataSets);
+            Artifact artifact = new Artifact();
+            artifact.setAiModel(new AIModel());
+            artifact.getAiModel().setModelId(modelId);
+            String trainingResult = this.trainingAIModelService.trainJava(artifact, trainingDataSets);
 
             JsonObject result = new JsonObject();
             result.addProperty("result", trainingResult);

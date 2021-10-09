@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -128,9 +127,10 @@ public class ProjectService {
 
             PortableAIModelInterface aiModel = artifact.getAiModel();
             String modelId = aiModel.getModelId();
+            aiModel.setModelId(modelId);
             String[] dataSetIds = artifact.getDataSet().getDataSetIds();
 
-            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromData(modelId, dataSetIds);
+            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromDataSet(artifact, dataSetIds);
             return evaluation;
         }
         catch(Exception e){
@@ -155,9 +155,10 @@ public class ProjectService {
 
             PortableAIModelInterface aiModel = artifact.getAiModel();
             String modelId = aiModel.getModelId();
+            aiModel.setModelId(modelId);
             String[] dataLakeIds = artifact.getDataSet().getDataLakeIds();
 
-            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromLake(modelId, artifact, dataLakeIds);
+            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromLake(artifact, dataLakeIds);
             return evaluation;
         }
         catch(Exception e){

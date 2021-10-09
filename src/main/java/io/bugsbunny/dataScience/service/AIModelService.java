@@ -62,107 +62,6 @@ public class AIModelService
         this.trainingModels = new HashMap<>();
     }
 
-    public String trainJava(String modelId, String[] dataSetIds) throws ModelNotFoundException, ModelIsLive
-    {
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
-        if(modelPackage == null)
-        {
-            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
-        }
-        if(modelPackage.get("live").getAsBoolean())
-        {
-            throw new ModelIsLive("LIVE_MODEL_TRAINING_DOESNOT_MAKE_SENSE:"+modelId);
-        }
-        String modelString = modelPackage.get("model").getAsString();
-        try
-        {
-            MultiLayerNetwork network = this.activeModels.get(modelId);
-
-            if(network == null)
-            {
-                //logger.info("******************************************");
-                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
-                //logger.info("******************************************");
-                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
-                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
-                this.trainingModels.put(modelId, network);
-            }
-
-            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
-                    getInstance(dataSetIds);
-            network.fit(dataSetIterator);
-
-            Evaluation evaluation = network.evaluate(dataSetIterator);
-
-            this.trainingModels.put(modelId, network);
-
-            return evaluation.toJson();
-        }
-        catch(Exception e)
-        {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String trainJavaFromDataLake(String modelId, String[] dataLakeIds) throws ModelNotFoundException, ModelIsLive
-    {
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(),modelId);
-        if(modelPackage == null)
-        {
-            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
-        }
-        if(modelPackage.get("live").getAsBoolean())
-        {
-            throw new ModelIsLive("LIVE_MODEL_TRAINING_DOESNOT_MAKE_SENSE:"+modelId);
-        }
-        String modelString = modelPackage.get("model").getAsString();
-        try
-        {
-            MultiLayerNetwork network = this.activeModels.get(modelId);
-
-            if(network == null)
-            {
-                //logger.info("******************************************");
-                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
-                //logger.info("******************************************");
-                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
-                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
-                this.trainingModels.put(modelId, network);
-            }
-
-            String[] dataSetIds = new String[dataLakeIds.length];
-            for(int i=0; i<dataLakeIds.length;i++)
-            {
-                String dataLakeId = dataLakeIds[i];
-                JsonArray ingestedData = this.mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
-                //logger.info("***************************************************");
-                //logger.info("DataLakeId: "+dataLakeId+":"+ingestedData.toString());
-                //logger.info("***************************************************");
-
-                JsonObject input = new JsonObject();
-                input.addProperty("format", "csv");
-                input.addProperty("data", ingestedData.toString());
-                String dataSetId = this.modelDataSetService.storeTrainingDataSet(input);
-                dataSetIds[i] = dataSetId;
-            }
-            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
-                    getInstance(dataSetIds);
-            network.fit(dataSetIterator);
-
-            Evaluation evaluation = network.evaluate(dataSetIterator);
-
-            this.trainingModels.put(modelId, network);
-
-            return evaluation.toJson();
-        }
-        catch(Exception e)
-        {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-    }
-
     public void deployModel(String modelId) throws ModelNotFoundException
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
@@ -339,14 +238,25 @@ public class AIModelService
         }
     }
 
-    public JsonObject evalJavaDuringDevelopmentFromData(String modelId, String[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
-    {
+    public String trainJava(Artifact artifact, String[] dataSetIds) throws ModelNotFoundException, ModelIsLive{
+        JsonObject json = this.evalJavaDuringDevelopmentFromDataSet(artifact, dataSetIds);
+        return json.toString();
+    }
+
+    public JsonObject evalJavaDuringDevelopmentFromDataSet(Artifact artifact, String[] dataSetIds) throws
+            ModelNotFoundException, ModelIsLive {
+        String modelId = artifact.getAiModel().getModelId();
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
 
         if(modelPackage == null)
         {
             throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
         }
+        boolean isLive = modelPackage.get("live").getAsBoolean();
+        if(isLive){
+            throw new ModelIsLive("MODEL_IS_LIVE");
+        }
+
         String modelString = modelPackage.get("model").getAsString();
         try
         {
@@ -375,14 +285,27 @@ public class AIModelService
         }
     }
 
-    public JsonObject evalJavaDuringDevelopmentFromLake(String modelId, Artifact artifact, String[] dataLakeIds) throws ModelNotFoundException, ModelIsNotLive
+    public String trainJavaFromDataLake(Artifact artifact, String[] dataLakeIds) throws ModelNotFoundException, ModelIsLive
     {
+        JsonObject json = this.evalJavaDuringDevelopmentFromLake(artifact,dataLakeIds);
+        return json.toString();
+    }
+
+    public JsonObject evalJavaDuringDevelopmentFromLake(Artifact artifact, String[] dataLakeIds) throws
+            ModelNotFoundException,ModelIsLive
+    {
+        String modelId = artifact.getAiModel().getModelId();
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
 
         if(modelPackage == null)
         {
             throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
         }
+        boolean isLive = modelPackage.get("live").getAsBoolean();
+        if(isLive){
+            throw new ModelIsLive("MODEL_IS_LIVE");
+        }
+
         String modelString = modelPackage.get("model").getAsString();
         try
         {
