@@ -101,6 +101,9 @@ public class AllModelTests {
         assertEquals(artifact.getDataSet().getData(),deser.getDataSet().getData());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
+        assertEquals(artifact.getParameters(),deser.getParameters());
+        assertFalse(artifact.getParameters().isEmpty());
+        assertFalse(deser.getParameters().isEmpty());
 
         String data = IOUtils.toString(Thread.currentThread().
                         getContextClassLoader().
@@ -239,6 +242,10 @@ public class AllModelTests {
         for(int i=0; i<3; i++){
             artifact.addFeature(new Feature("f"+i));
         }
+
+        artifact.addParameter("nEpochs","30");
+        artifact.addParameter("labelIndex","0");
+        artifact.addParameter("possibleLabels","2");
 
         return artifact;
     }

@@ -5,7 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,10 +20,12 @@ public class Artifact implements Serializable {
 
     private List<Label> labels;
     private List<Feature> features;
+    private Map<String,String> parameters;
 
     public Artifact() {
         this.labels = new ArrayList<>();
         this.features = new ArrayList<>();
+        this.parameters = new HashMap<>();
     }
 
     public PortableAIModelInterface getAiModel() {
@@ -73,6 +74,18 @@ public class Artifact implements Serializable {
 
     public void addFeature(Feature feature){
         this.features.add(feature);
+    }
+
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
+    }
+
+    public void addParameter(String parameter,String value){
+        this.parameters.put(parameter,value);
     }
 
     public String convertJsonToCsv(JsonArray jsonArray){
@@ -217,6 +230,17 @@ public class Artifact implements Serializable {
             json.add("features", JsonParser.parseString(this.features.toString()).getAsJsonArray());
         }
 
+        if(this.parameters != null){
+            JsonObject paramsJson = new JsonObject();
+            Set<Map.Entry<String,String>> entrySet = this.parameters.entrySet();
+            for(Map.Entry<String,String> entry:entrySet){
+                String key = entry.getKey();
+                String value = entry.getValue();
+                paramsJson.addProperty(key,value);
+            }
+            json.add("parameters",paramsJson);
+        }
+
         return json;
     }
 
@@ -251,6 +275,16 @@ public class Artifact implements Serializable {
             for(int i=0; i<array.size(); i++){
                 JsonObject cour = array.get(i).getAsJsonObject();
                 artifact.addFeature(new Feature(cour.get("value").getAsString()));
+            }
+        }
+
+        if(json.has("parameters")){
+            JsonObject paramsJson = json.get("parameters").getAsJsonObject();
+            Set<Map.Entry<String, JsonElement>> entrySet = paramsJson.entrySet();
+            for(Map.Entry<String, JsonElement> entry:entrySet){
+                String key = entry.getKey();
+                JsonElement value = entry.getValue();
+                artifact.addParameter(key,value.getAsString());
             }
         }
 
