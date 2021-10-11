@@ -5,9 +5,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
+import io.bugsbunny.dataScience.service.ResettableStreamSplit;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 
 import io.bugsbunny.test.components.BaseTest;
+import io.bugsbunny.util.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
 import org.deeplearning4j.nn.conf.inputs.InputType;
@@ -52,6 +54,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
 public class ModelTrainingProcessTests extends BaseTest
@@ -78,9 +81,6 @@ public class ModelTrainingProcessTests extends BaseTest
         int numInputs = 2;
         int numOutputs = 2;
         int numHiddenNodes = 20;
-
-        String test = "0.770505522143023";
-        Double testDouble = Double.parseDouble(test);
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
@@ -116,8 +116,6 @@ public class ModelTrainingProcessTests extends BaseTest
         JsonObject deployedModel = JsonParser.parseString(packageResponse.body().asString()).getAsJsonObject();
         String modelId = deployedModel.get("modelId").getAsString();
 
-        String tmp = "tmp";
-
         String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
         JsonObject input = new JsonObject();
@@ -129,11 +127,8 @@ public class ModelTrainingProcessTests extends BaseTest
         response = given().get("/dataset/readDataSet/?dataSetId="+dataSetId).andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         String storedData = returnValue.get("data").getAsString();
-        String trainFileName = UUID.randomUUID().toString();
-        File trainFile = new File(tmp+"/"+trainFileName);
-        FileUtils.writeStringToFile(trainFile, storedData);
         RecordReader rrTrain = new CSVRecordReader();
-        rrTrain.initialize(new FileSplit(trainFile));
+        rrTrain.initialize(new ResettableStreamSplit(storedData));
         DataSetIterator trainIter = this.aiPlatformDataSetIteratorFactory.getInstance(
                 new String[]{dataSetId});
 
@@ -152,17 +147,15 @@ public class ModelTrainingProcessTests extends BaseTest
         response = given().get("/dataset/readDataSet/?dataSetId="+evalDataSetId).andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         storedData = returnValue.get("data").getAsString();
-        String testFileName = UUID.randomUUID().toString();
-        File testFile = new File(tmp+"/"+testFileName);
-        FileUtils.writeStringToFile(testFile, storedData);
         RecordReader rrTest = new CSVRecordReader();
-        rrTest.initialize(new FileSplit(testFile));
+        rrTest.initialize(new ResettableStreamSplit(storedData));
         DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest, batchSize, 0, 2);
 
         logger.info("Evaluate model....");
         Evaluation eval = model.evaluate(testIter);
         logger.info("*********LOCAL_EVAL**************");
         logger.info(eval.stats());
+        assertNotNull(eval.stats());
 
         //Deploy the model
         JsonObject deployModel = new JsonObject();
@@ -175,9 +168,12 @@ public class ModelTrainingProcessTests extends BaseTest
         dataSetIdArray.add(dataSetId);
         deployResult.add("dataSetIds",dataSetIdArray);
         response = given().body(deployResult.toString()).when().post("/liveModel/evalJava").andReturn();
-        //logger.info("*********CLOUD_EVAL**************");
         //response.body().prettyPrint();
         assertEquals(200, response.getStatusCode());
+        JsonObject confusion = JsonParser.parseString(response.getBody().asString()).getAsJsonObject().
+                get("result").getAsJsonObject().get("confusion").getAsJsonObject();
+        JsonUtil.print(confusion);
+        assertNotNull(confusion);
     }
 
     //@Test

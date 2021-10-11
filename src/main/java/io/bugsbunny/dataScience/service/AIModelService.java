@@ -181,25 +181,26 @@ public class AIModelService
                 this.activeModels.put(modelId, network);
             }
 
-            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
-                    getInstance(dataSetIds);
-
             JsonObject dataSetJson = mongoDBJsonStore.readDataSet(this.securityTokenContainer.getTenant(),dataSetIds[0]);
             String storedData = dataSetJson.get("data").getAsString();
             int batchSize = storedData.length();
             ResettableStreamSplit inputStreamSplit = new ResettableStreamSplit(
                     storedData);
 
+            //This should be a parameter
             int nEpochs = 30;
+            int labelIndex = 0;
+            int possibleLabels = 2;
             RecordReader rrTest = new CSVRecordReader();
             rrTest.initialize(inputStreamSplit);
-            DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest, batchSize, 0, 2);
+            DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest,
+                    batchSize, labelIndex, possibleLabels);
 
             network.fit(testIter,nEpochs);
 
             Evaluation evaluation = network.evaluate(testIter);
-            logger.info("*********CLOUD_EVAL**************");
-            logger.info(evaluation.stats());
+            //logger.info("*********CLOUD_EVAL**************");
+            //logger.info(evaluation.stats());
 
             return evaluation.toJson();
         }
