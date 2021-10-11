@@ -130,7 +130,7 @@ public class ProjectService {
             aiModel.setModelId(modelId);
             String[] dataSetIds = artifact.getDataSet().getDataSetIds();
 
-            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromDataSet(artifact, dataSetIds);
+            JsonObject evaluation = this.aiModelService.trainJavaFromDataSetInProject(artifact, dataSetIds);
             return evaluation;
         }
         catch(Exception e){
@@ -158,7 +158,7 @@ public class ProjectService {
             aiModel.setModelId(modelId);
             String[] dataLakeIds = artifact.getDataSet().getDataLakeIds();
 
-            JsonObject evaluation = this.aiModelService.evalJavaDuringDevelopmentFromLake(artifact, dataLakeIds);
+            JsonObject evaluation = this.aiModelService.trainJavaFromDataLakeInProject(artifact, dataLakeIds);
             return evaluation;
         }
         catch(Exception e){
@@ -176,7 +176,12 @@ public class ProjectService {
         }
     }
 
-    public void verifyDeployment(){
+    public void verifyDeployment(JsonObject payload){
+        try{
 
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
     }
 }

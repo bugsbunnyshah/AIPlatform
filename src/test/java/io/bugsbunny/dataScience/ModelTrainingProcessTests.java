@@ -79,6 +79,9 @@ public class ModelTrainingProcessTests extends BaseTest
         int numOutputs = 2;
         int numHiddenNodes = 20;
 
+        String test = "0.770505522143023";
+        Double testDouble = Double.parseDouble(test);
+
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
                 .weightInit(WeightInit.XAVIER)
@@ -105,7 +108,7 @@ public class ModelTrainingProcessTests extends BaseTest
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("name", UUID.randomUUID().toString());
         jsonObject.addProperty("model", modelString);
-        logger.info(jsonObject.toString());
+        jsonObject.addProperty("format","csv");
 
         Response packageResponse = given().body(jsonObject.toString()).when().post("/aimodel/performPackaging/")
                 .andReturn();
@@ -115,55 +118,50 @@ public class ModelTrainingProcessTests extends BaseTest
 
         String tmp = "tmp";
 
-        //Load the test/evaluation data:
-        String data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
+        String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
         JsonObject input = new JsonObject();
-        input.addProperty("modelId", modelId);
         input.addProperty("format", "csv");
         input.addProperty("data", data);
-        Response response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
+        Response response = given().body(input.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
         JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        String evalDataSetId = returnValue.get("dataSetId").getAsString();
-        response = given().get("/dataset/readDataSet/?dataSetId="+evalDataSetId).andReturn();
-        returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        String storedData = returnValue.get("data").getAsString();
-        String testFileName = UUID.randomUUID().toString();
-        File testFile = new File(tmp+"/"+testFileName);
-        FileUtils.writeStringToFile(testFile, storedData);
-        RecordReader rrTest = new CSVRecordReader();
-        //InputStreamInputSplit testSplit = new InputStreamInputSplit(new ByteArrayInputStream(
-        //        storedData.getBytes(UTF_8)));
-        rrTest.initialize(new FileSplit(testFile));
-        DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest, batchSize, 0, 2);
-        //DataSetIterator testIter = AIPlatformDataSetIteratorFactory.getInstance();
-
-        data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
-                Thread.currentThread().getContextClassLoader());
-        input = new JsonObject();
-        input.addProperty("format", "csv");
-        input.addProperty("data", data);
-        response = given().body(input.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
-        returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
         String dataSetId = returnValue.get("dataSetId").getAsString();
         response = given().get("/dataset/readDataSet/?dataSetId="+dataSetId).andReturn();
         returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
-        storedData = returnValue.get("data").getAsString();
+        String storedData = returnValue.get("data").getAsString();
         String trainFileName = UUID.randomUUID().toString();
         File trainFile = new File(tmp+"/"+trainFileName);
         FileUtils.writeStringToFile(trainFile, storedData);
         RecordReader rrTrain = new CSVRecordReader();
-        //InputStreamInputSplit trainSplit = new InputStreamInputSplit(new ByteArrayInputStream(
-        //        storedData.getBytes(UTF_8)));
         rrTrain.initialize(new FileSplit(trainFile));
-        //DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain, batchSize, 0, 2);
         DataSetIterator trainIter = this.aiPlatformDataSetIteratorFactory.getInstance(
-                new String[]{"8262950843826255554"});
+                new String[]{dataSetId});
 
         model.fit(trainIter, nEpochs);
 
+        //Load the test/evaluation data:
+        data = IOUtils.resourceToString("dataScience/saturn_data_eval.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        input = new JsonObject();
+        input.addProperty("modelId", modelId);
+        input.addProperty("format", "csv");
+        input.addProperty("data", data);
+        response = given().body(input.toString()).when().post("/dataset/storeEvalDataSet/").andReturn();
+        returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+        String evalDataSetId = returnValue.get("dataSetId").getAsString();
+        response = given().get("/dataset/readDataSet/?dataSetId="+evalDataSetId).andReturn();
+        returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+        storedData = returnValue.get("data").getAsString();
+        String testFileName = UUID.randomUUID().toString();
+        File testFile = new File(tmp+"/"+testFileName);
+        FileUtils.writeStringToFile(testFile, storedData);
+        RecordReader rrTest = new CSVRecordReader();
+        rrTest.initialize(new FileSplit(testFile));
+        DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest, batchSize, 0, 2);
+
         logger.info("Evaluate model....");
         Evaluation eval = model.evaluate(testIter);
+        logger.info("*********LOCAL_EVAL**************");
         logger.info(eval.stats());
 
         //Deploy the model
@@ -177,7 +175,8 @@ public class ModelTrainingProcessTests extends BaseTest
         dataSetIdArray.add(dataSetId);
         deployResult.add("dataSetIds",dataSetIdArray);
         response = given().body(deployResult.toString()).when().post("/liveModel/evalJava").andReturn();
-        response.body().prettyPrint();
+        //logger.info("*********CLOUD_EVAL**************");
+        //response.body().prettyPrint();
         assertEquals(200, response.getStatusCode());
     }
 
@@ -258,5 +257,10 @@ public class ModelTrainingProcessTests extends BaseTest
         System.out.println("Evaluate model....");
         Evaluation eval = model.evaluate(mnistTest);
         System.out.println(eval.stats());
+    }
+
+    @Test
+    public void scoringPrototype() throws Exception{
+
     }
 }

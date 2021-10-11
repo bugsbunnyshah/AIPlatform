@@ -11,11 +11,23 @@ import jep.Interpreter;
 import jep.JepException;
 import jep.SharedInterpreter;
 
+import org.apache.commons.io.FileUtils;
+import org.datavec.api.records.reader.RecordReader;
+import org.datavec.api.records.reader.impl.LineRecordReader;
+import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
+import org.datavec.api.split.FileSplit;
+import org.datavec.api.split.InputStreamInputSplit;
+import org.datavec.api.split.ListStringSplit;
+import org.datavec.api.split.StringSplit;
+import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
+import org.deeplearning4j.datasets.iterator.MultiDataSetWrapperIterator;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
+import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
+import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIteratorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +35,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import java.io.ByteArrayInputStream;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
@@ -171,7 +183,23 @@ public class AIModelService
 
             DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
                     getInstance(dataSetIds);
-            Evaluation evaluation = network.evaluate(dataSetIterator);
+
+            JsonObject dataSetJson = mongoDBJsonStore.readDataSet(this.securityTokenContainer.getTenant(),dataSetIds[0]);
+            String storedData = dataSetJson.get("data").getAsString();
+            int batchSize = storedData.length();
+            ResettableStreamSplit inputStreamSplit = new ResettableStreamSplit(
+                    storedData);
+
+            int nEpochs = 30;
+            RecordReader rrTest = new CSVRecordReader();
+            rrTest.initialize(inputStreamSplit);
+            DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest, batchSize, 0, 2);
+
+            network.fit(testIter,nEpochs);
+
+            Evaluation evaluation = network.evaluate(testIter);
+            logger.info("*********CLOUD_EVAL**************");
+            logger.info(evaluation.stats());
 
             return evaluation.toJson();
         }
@@ -239,11 +267,11 @@ public class AIModelService
     }
 
     public String trainJava(Artifact artifact, String[] dataSetIds) throws ModelNotFoundException, ModelIsLive{
-        JsonObject json = this.evalJavaDuringDevelopmentFromDataSet(artifact, dataSetIds);
+        JsonObject json = this.trainJavaFromDataSetInProject(artifact, dataSetIds);
         return json.toString();
     }
 
-    public JsonObject evalJavaDuringDevelopmentFromDataSet(Artifact artifact, String[] dataSetIds) throws
+    public JsonObject trainJavaFromDataSetInProject(Artifact artifact, String[] dataSetIds) throws
             ModelNotFoundException, ModelIsLive {
         String modelId = artifact.getAiModel().getModelId();
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
@@ -287,11 +315,11 @@ public class AIModelService
 
     public String trainJavaFromDataLake(Artifact artifact, String[] dataLakeIds) throws ModelNotFoundException, ModelIsLive
     {
-        JsonObject json = this.evalJavaDuringDevelopmentFromLake(artifact,dataLakeIds);
+        JsonObject json = this.trainJavaFromDataLakeInProject(artifact,dataLakeIds);
         return json.toString();
     }
 
-    public JsonObject evalJavaDuringDevelopmentFromLake(Artifact artifact, String[] dataLakeIds) throws
+    public JsonObject trainJavaFromDataLakeInProject(Artifact artifact, String[] dataLakeIds) throws
             ModelNotFoundException,ModelIsLive
     {
         String modelId = artifact.getAiModel().getModelId();

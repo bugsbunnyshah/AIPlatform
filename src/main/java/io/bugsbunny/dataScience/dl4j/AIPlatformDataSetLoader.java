@@ -113,7 +113,6 @@ public class AIPlatformDataSetLoader implements Loader
             logger.info("********************************");*/
 
             String inputData = csvData.toString();
-            logger.info("CSVData: "+inputData);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             byteArrayOutputStream.writeBytes(inputData.getBytes(StandardCharsets.UTF_8));
             dataSet.save(byteArrayOutputStream);

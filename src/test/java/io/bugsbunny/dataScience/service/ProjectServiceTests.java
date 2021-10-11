@@ -311,4 +311,8 @@ public class ProjectServiceTests extends BaseTest {
         isLive = liveModel.get("live").getAsBoolean();
         assertTrue(isLive);
     }
+
+    @Test
+    public void verifyDeployment() throws Exception {
+    }
 }
