@@ -114,69 +114,6 @@ public class ProjectService {
         this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
     }
 
-    public String addLakeArtifact(String projectId, JsonObject aiModelJson, JsonObject modelInput, Artifact artifact){
-        JsonUtil.print(aiModelJson);
-        if(true){
-            return null;
-        }
-
-
-        //Store Model
-        JsonObject deploymentJson = null;
-        String modelId = deploymentJson.get("modelId").getAsString();
-        artifact.getAiModel().setModelId(modelId);
-
-        //Store Model Input data..
-        DataSet dataSet = new DataSet();
-        dataSet.setDataSetId(UUID.randomUUID().toString());
-        DataItem dataItem = DataItem.parse(modelInput.toString());
-        dataSet.addDataItem(dataItem);
-        artifact.setDataSet(dataSet);
-
-        Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
-        project.addArtifact(artifact);
-        this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
-
-        return modelId;
-    }
-
-    public String addDataArtifact(String projectId, JsonObject aiModelJson, JsonArray modelInput, Artifact artifact){
-        JsonUtil.print(aiModelJson);
-        if(true){
-            return null;
-        }
-
-
-        //Store Model
-        JsonObject deploymentJson = null;
-        String modelId = deploymentJson.get("modelId").getAsString();
-        artifact.getAiModel().setModelId(modelId);
-
-        //Store Model Input data
-        DataSet dataSet = new DataSet();
-        dataSet.setDataSetId(UUID.randomUUID().toString());
-        for(int i=0; i<modelInput.size();i++){
-            JsonObject dataSetItemJson = modelInput.get(i).getAsJsonObject();
-            JsonUtil.print(ProjectService.class,dataSetItemJson);
-
-            String dataSetId = this.modelDataSetService.storeTrainingDataSet(dataSetItemJson);
-
-            DataItem dataItem = new DataItem();
-            dataItem.setDataSetId(dataSetId);
-            dataItem.setDataLakeId("braineous_null");
-            dataItem.setTenantId(this.securityTokenContainer.getTenant().getPrincipal());
-            dataItem.setData(dataSetItemJson.toString());
-            dataSet.addDataItem(dataItem);
-        }
-        artifact.setDataSet(dataSet);
-
-        Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
-        project.addArtifact(artifact);
-        this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
-
-        return modelId;
-    }
-
     public List<Project> readProjects(){
         return this.mongoDBJsonStore.readProjects(this.securityTokenContainer.getTenant());
     }
