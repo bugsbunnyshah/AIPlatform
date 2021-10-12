@@ -342,9 +342,11 @@ public class ProjectServiceTests extends BaseTest {
         assertEquals(artifact.getParameters(),deser.getParameters());
         assertFalse(artifact.getParameters().isEmpty());
         assertFalse(deser.getParameters().isEmpty());
+        assertFalse(deser.isLive());
 
         //Assert the actual model was stored
         String model = this.projectService.getAiModel(project.getProjectId(), deser.getArtifactId());
         assertNotNull(model);
+        assertTrue(model.length()>0);
     }
 }

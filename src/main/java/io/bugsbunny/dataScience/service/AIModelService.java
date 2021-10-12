@@ -51,9 +51,6 @@ public class AIModelService
     private MongoDBJsonStore mongoDBJsonStore;
 
     @Inject
-    private PackagingService packagingService;
-
-    @Inject
     private AIPlatformDataSetIteratorFactory aiPlatformDataSetIteratorFactory;
 
     @Inject
@@ -108,7 +105,7 @@ public class AIModelService
 
     public String evalPython(String modelId, String[] dataSetIds) throws JepException
     {
-        String output;
+        /*String output;
         JsonObject modelPackage = this.packagingService.getModelPackage(modelId);
         String pythonScript = modelPackage.get("script").getAsString();
         try (Interpreter interp = new SharedInterpreter())
@@ -123,7 +120,8 @@ public class AIModelService
             interp.exec(pythonScript);
             output = interp.getValue("output", String.class);
         }
-        return output;
+        return output;*/
+        return null;
     }
 
     public JsonArray rollOverToTraningDataSets(String modelId) throws ModelNotFoundException,ModelIsNotLive

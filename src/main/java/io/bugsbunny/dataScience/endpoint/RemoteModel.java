@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.bugsbunny.dataScience.service.ModelDataSetService;
-import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.restClient.DataBricksClient;
 
 import org.slf4j.Logger;
@@ -27,8 +26,6 @@ public class RemoteModel
     @Inject
     private DataBricksClient dataBricksClient;
 
-    @Inject
-    private PackagingService packagingService;
 
     @Inject
     private ModelDataSetService modelDataSetService;
@@ -40,7 +37,8 @@ public class RemoteModel
     {
         try
         {
-            JsonObject request = JsonParser.parseString(input).getAsJsonObject();
+            //TODO
+            /*JsonObject request = JsonParser.parseString(input).getAsJsonObject();
             String modelId = request.get("modelId").getAsString();
             JsonObject remoteModelPackage = this.packagingService.getModelPackage(modelId);
 
@@ -54,7 +52,8 @@ public class RemoteModel
             this.modelDataSetService.storeEvalDataSet(jsonObject);
 
             Response response = Response.ok(result.toString()).build();
-            return response;
+            return response;*/
+            return null;
         }
         catch(Exception e)
         {

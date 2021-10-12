@@ -22,6 +22,8 @@ public class Artifact implements Serializable {
     private List<Feature> features;
     private Map<String,String> parameters;
 
+    private boolean isLive;
+
     public Artifact() {
         this.labels = new ArrayList<>();
         this.features = new ArrayList<>();
@@ -86,6 +88,14 @@ public class Artifact implements Serializable {
 
     public void addParameter(String parameter,String value){
         this.parameters.put(parameter,value);
+    }
+
+    public boolean isLive() {
+        return isLive;
+    }
+
+    public void setLive(boolean live) {
+        isLive = live;
     }
 
     public String convertJsonToCsv(JsonArray jsonArray){
@@ -241,6 +251,8 @@ public class Artifact implements Serializable {
             json.add("parameters",paramsJson);
         }
 
+        json.addProperty("isLive",this.isLive);
+
         return json;
     }
 
@@ -286,6 +298,10 @@ public class Artifact implements Serializable {
                 JsonElement value = entry.getValue();
                 artifact.addParameter(key,value.getAsString());
             }
+        }
+
+        if(json.has("isLive")){
+            artifact.isLive = json.get("isLive").getAsBoolean();
         }
 
         return artifact;

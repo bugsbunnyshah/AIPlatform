@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.bugsbunny.dataScience.model.DataBricksProcessException;
-import io.bugsbunny.dataScience.service.PackagingService;
 import io.bugsbunny.test.components.BaseTest;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
@@ -24,9 +23,6 @@ public class DataBricksClientTests extends BaseTest {
 
     @Inject
     private DataBricksClient dataBricksClient;
-
-    @Inject
-    private PackagingService packagingService;
 
     /*@Test
     public void testCreateDevExperiment() throws Exception
@@ -131,7 +127,7 @@ public class DataBricksClientTests extends BaseTest {
         }
     }*/
 
-    @Test
+    /*@Test
     public void testInvokeDatabricksModel() throws Exception
     {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-remote-model.json", StandardCharsets.UTF_8,
@@ -172,5 +168,5 @@ public class DataBricksClientTests extends BaseTest {
                 throw ex;
             }
         }
-    }
+    }*/
 }

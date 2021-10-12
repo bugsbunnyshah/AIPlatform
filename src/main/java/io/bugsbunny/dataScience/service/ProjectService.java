@@ -33,9 +33,6 @@ public class ProjectService {
     private AIModelService aiModelService;
 
     @Inject
-    private PackagingService packagingService;
-
-    @Inject
     private ModelDataSetService modelDataSetService;
 
     @PostConstruct
@@ -91,7 +88,6 @@ public class ProjectService {
     public String getAiModel(String projectId, String artifactId){
         try{
             Project project = this.readProject(projectId);
-            Artifact artifact = null;
             List<Artifact> artifacts = project.getArtifacts();
             for(Artifact local:artifacts){
                 if(local.getArtifactId().equals(artifactId)){
@@ -119,8 +115,14 @@ public class ProjectService {
     }
 
     public String addLakeArtifact(String projectId, JsonObject aiModelJson, JsonObject modelInput, Artifact artifact){
+        JsonUtil.print(aiModelJson);
+        if(true){
+            return null;
+        }
+
+
         //Store Model
-        JsonObject deploymentJson = this.packagingService.performPackagingForDevelopment(aiModelJson.toString());
+        JsonObject deploymentJson = null;
         String modelId = deploymentJson.get("modelId").getAsString();
         artifact.getAiModel().setModelId(modelId);
 
@@ -139,8 +141,14 @@ public class ProjectService {
     }
 
     public String addDataArtifact(String projectId, JsonObject aiModelJson, JsonArray modelInput, Artifact artifact){
+        JsonUtil.print(aiModelJson);
+        if(true){
+            return null;
+        }
+
+
         //Store Model
-        JsonObject deploymentJson = this.packagingService.performPackagingForDevelopment(aiModelJson.toString());
+        JsonObject deploymentJson = null;
         String modelId = deploymentJson.get("modelId").getAsString();
         artifact.getAiModel().setModelId(modelId);
 

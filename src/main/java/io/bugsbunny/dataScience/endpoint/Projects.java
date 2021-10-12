@@ -20,10 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -53,6 +50,48 @@ public class Projects
             JsonObject json = new JsonObject();
             json.add("projects",array);
             Response response = Response.ok(json.toString()).build();
+            return response;
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
+    }
+
+    @Path("storeModelForTraining")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response storeModelForTraining(@RequestBody String input){
+        try {
+            Project project = this.projectService.storeModelForTraining(input);
+            return Response.ok(project.toJson().toString()).build();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
+    }
+
+    @Path("model")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getModel(@RequestBody String input)
+    {
+        try {
+            JsonObject json = JsonParser.parseString(input).getAsJsonObject();
+
+            String projectId = json.get("projectId").getAsString();
+            String artifactId = json.get("artifactId").getAsString();
+
+            String model = this.projectService.getAiModel(projectId,artifactId);
+
+            Response response = Response.ok(model).build();
             return response;
         }
         catch(Exception e)
