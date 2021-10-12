@@ -1,6 +1,7 @@
 package io.bugsbunny.dataScience.service;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.model.*;
@@ -314,5 +315,36 @@ public class ProjectServiceTests extends BaseTest {
 
     @Test
     public void verifyDeployment() throws Exception {
+    }
+
+    @Test
+    public void storeModelForTraining() throws Exception{
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = JsonParser.parseString(modelPackage).getAsJsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Project project = this.projectService.storeModelForTraining(input.toString());
+        JsonUtil.print(project.toJson());
+        Artifact deser = project.getArtifacts().get(0);
+        assertNotNull(deser.getArtifactId());
+        assertNotNull(deser.getAiModel().getModelId());
+        assertEquals(artifact.getLabels(),deser.getLabels());
+        assertEquals(artifact.getFeatures(),deser.getFeatures());
+        assertEquals(artifact.getParameters(),deser.getParameters());
+        assertFalse(artifact.getParameters().isEmpty());
+        assertFalse(deser.getParameters().isEmpty());
+
+        //Assert the actual model was stored
+        String model = this.projectService.getAiModel(project.getProjectId(), deser.getArtifactId());
+        assertNotNull(model);
     }
 }

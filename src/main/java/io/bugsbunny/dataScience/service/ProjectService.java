@@ -1,7 +1,9 @@
 package io.bugsbunny.dataScience.service;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.model.*;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
@@ -13,6 +15,8 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -37,6 +41,70 @@ public class ProjectService {
     @PostConstruct
     public void onStart(){
 
+    }
+
+    public Project storeModelForTraining(String packageString){
+        try
+        {
+            Project project = new Project();
+            project.setProjectId(UUID.randomUUID().toString());
+            Artifact artifact = new Artifact();
+            artifact.setArtifactId(UUID.randomUUID().toString());
+
+            JsonObject modelPackage = JsonParser.parseString(packageString).getAsJsonObject();
+            modelPackage.addProperty("live", false);
+            String modelId = this.mongoDBJsonStore.storeModel(this.securityTokenContainer.getTenant(),modelPackage);
+
+            JsonArray labels = modelPackage.get("labels").getAsJsonArray();
+            JsonArray features = modelPackage.get("features").getAsJsonArray();
+            JsonObject parameters = modelPackage.get("parameters").getAsJsonObject();
+            AIModel aiModel = new AIModel();
+            aiModel.setModelId(modelId);
+            artifact.setAiModel(aiModel);
+
+            for(int i=0; i<labels.size(); i++){
+                JsonObject local = labels.get(i).getAsJsonObject();
+                artifact.addLabel(new Label(local.get("value").getAsString(),local.get("field").getAsString()));
+            }
+
+            for(int i=0; i<features.size(); i++){
+                JsonObject local = features.get(i).getAsJsonObject();
+                artifact.addFeature(new Feature(local.get("value").getAsString()));
+            }
+
+            Set<Map.Entry<String,JsonElement>> entrySet = parameters.entrySet();
+            for(Map.Entry<String,JsonElement> entry:entrySet){
+                artifact.addParameter(entry.getKey(),entry.getValue().getAsString());
+            }
+
+            project.addArtifact(artifact);
+
+            this.addProject(project);
+
+            return this.readProject(project.getProjectId());
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getAiModel(String projectId, String artifactId){
+        try{
+            Project project = this.readProject(projectId);
+            Artifact artifact = null;
+            List<Artifact> artifacts = project.getArtifacts();
+            for(Artifact local:artifacts){
+                if(local.getArtifactId().equals(artifactId)){
+                    String modelId = local.getAiModel().getModelId();
+                    String model = this.mongoDBJsonStore.getModel(this.securityTokenContainer.getTenant(),modelId);
+                    return model;
+                }
+            }
+            return null;
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
     public void addProject(Project project){

@@ -166,6 +166,8 @@ public class AIModelService
         {
             throw new ModelIsNotLive("MODEL_IS_NOT_LIVE_YET:"+modelId);
         }
+
+
         String modelString = modelPackage.get("model").getAsString();
         try
         {
