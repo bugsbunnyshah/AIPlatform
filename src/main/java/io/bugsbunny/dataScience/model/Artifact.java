@@ -24,6 +24,8 @@ public class Artifact implements Serializable {
 
     private boolean isLive;
 
+    private String scientist;
+
     public Artifact() {
         this.labels = new ArrayList<>();
         this.features = new ArrayList<>();
@@ -96,6 +98,14 @@ public class Artifact implements Serializable {
 
     public void setLive(boolean live) {
         isLive = live;
+    }
+
+    public String getScientist() {
+        return scientist;
+    }
+
+    public void setScientist(String scientist) {
+        this.scientist = scientist;
     }
 
     public String convertJsonToCsv(JsonArray jsonArray){
@@ -253,6 +263,10 @@ public class Artifact implements Serializable {
 
         json.addProperty("isLive",this.isLive);
 
+        if(this.scientist != null){
+            json.addProperty("scientist", this.scientist);
+        }
+
         return json;
     }
 
@@ -302,6 +316,10 @@ public class Artifact implements Serializable {
 
         if(json.has("isLive")){
             artifact.isLive = json.get("isLive").getAsBoolean();
+        }
+
+        if(json.has("scientist")){
+            artifact.scientist = json.get("scientist").getAsString();
         }
 
         return artifact;

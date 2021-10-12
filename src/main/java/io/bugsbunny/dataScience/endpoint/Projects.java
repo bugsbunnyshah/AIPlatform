@@ -1,20 +1,10 @@
 package io.bugsbunny.dataScience.endpoint;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.model.Project;
-import io.bugsbunny.dataScience.service.AIModelService;
-import io.bugsbunny.dataScience.service.ModelIsLive;
-import io.bugsbunny.dataScience.service.ModelNotFoundException;
 import io.bugsbunny.dataScience.service.ProjectService;
-import io.bugsbunny.preprocess.AITrafficContainer;
-import jep.Interpreter;
-import jep.JepException;
-import jep.MainInterpreter;
-import jep.SharedInterpreter;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,10 +13,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 @Path("projects")
 public class Projects
@@ -61,12 +48,17 @@ public class Projects
         }
     }
 
-    @Path("storeModelForTraining")
+    @Path("createModelForTraining")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response storeModelForTraining(@RequestBody String input){
+    public Response createModelForTraining(@RequestBody String input){
         try {
-            Project project = this.projectService.storeModelForTraining(input);
+            JsonObject json = JsonParser.parseString(input).getAsJsonObject();
+            String scientist = json.get("scientist").getAsString();
+
+            //TODO: Validate
+
+            Project project = this.projectService.createArtifactForTraining(scientist,json);
             return Response.ok(project.toJson().toString()).build();
         }
         catch(Exception e)

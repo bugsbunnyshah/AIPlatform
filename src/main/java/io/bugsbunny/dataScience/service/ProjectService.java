@@ -40,21 +40,23 @@ public class ProjectService {
 
     }
 
-    public Project storeModelForTraining(String packageString){
+    public Project createArtifactForTraining(String scientist, JsonObject artifactData){
         try
         {
             Project project = new Project();
             project.setProjectId(UUID.randomUUID().toString());
             Artifact artifact = new Artifact();
             artifact.setArtifactId(UUID.randomUUID().toString());
+            artifact.setScientist(scientist);
 
-            JsonObject modelPackage = JsonParser.parseString(packageString).getAsJsonObject();
-            modelPackage.addProperty("live", false);
-            String modelId = this.mongoDBJsonStore.storeModel(this.securityTokenContainer.getTenant(),modelPackage);
+            //Store the AI Model
+            artifactData.addProperty("live", false);
+            String modelId = this.mongoDBJsonStore.storeModel(this.securityTokenContainer.getTenant(),artifactData);
 
-            JsonArray labels = modelPackage.get("labels").getAsJsonArray();
-            JsonArray features = modelPackage.get("features").getAsJsonArray();
-            JsonObject parameters = modelPackage.get("parameters").getAsJsonObject();
+            //Link to a Project
+            JsonArray labels = artifactData.get("labels").getAsJsonArray();
+            JsonArray features = artifactData.get("features").getAsJsonArray();
+            JsonObject parameters = artifactData.get("parameters").getAsJsonObject();
             AIModel aiModel = new AIModel();
             aiModel.setModelId(modelId);
             artifact.setAiModel(aiModel);
@@ -84,6 +86,7 @@ public class ProjectService {
             throw new RuntimeException(e);
         }
     }
+
 
     public String getAiModel(String projectId, String artifactId){
         try{

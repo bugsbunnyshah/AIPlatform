@@ -104,6 +104,7 @@ public class AllModelTests {
         assertEquals(artifact.getParameters(),deser.getParameters());
         assertFalse(artifact.getParameters().isEmpty());
         assertFalse(deser.getParameters().isEmpty());
+        assertEquals(artifact.getScientist(),deser.getScientist());
 
         String data = IOUtils.toString(Thread.currentThread().
                         getContextClassLoader().
@@ -246,6 +247,8 @@ public class AllModelTests {
         artifact.addParameter("nEpochs","30");
         artifact.addParameter("labelIndex","0");
         artifact.addParameter("possibleLabels","2");
+
+        artifact.setScientist(mockScientist().getEmail());
 
         return artifact;
     }

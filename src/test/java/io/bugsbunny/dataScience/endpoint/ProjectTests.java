@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.model.AllModelTests;
 import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.dataScience.model.Project;
+import io.bugsbunny.dataScience.model.Scientist;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.test.components.BaseTest;
 import io.bugsbunny.util.JsonUtil;
@@ -42,7 +43,7 @@ public class ProjectTests extends BaseTest
     }
 
     @Test
-    public void storeModelForTraining() throws Exception {
+    public void createModelForTraining() throws Exception {
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
@@ -56,7 +57,10 @@ public class ProjectTests extends BaseTest
         input.add("features",features);
         input.add("parameters",parameters);
 
-        String url = "/projects/storeModelForTraining/";
+        Scientist scientist = AllModelTests.mockScientist();
+        input.addProperty("scientist",scientist.getEmail());
+
+        String url = "/projects/createModelForTraining/";
         String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
         String token = this.securityTokenContainer.getSecurityToken().getToken();
         Response response = given().header("Principal",principal).header("Bearer",token).
@@ -87,7 +91,7 @@ public class ProjectTests extends BaseTest
                 .andReturn();
         assertEquals(200, response.getStatusCode());
         String model = response.body().asString();
-        logger.info(model);
+        //logger.info(model);
         assertTrue(model.length() > 0);
     }
 }

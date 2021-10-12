@@ -1,12 +1,10 @@
 package io.bugsbunny.dataScience.service;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.model.*;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
-import io.bugsbunny.infrastructure.Tenant;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.test.components.BaseTest;
 import io.bugsbunny.util.JsonUtil;
@@ -21,7 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 @QuarkusTest
 public class ProjectServiceTests extends BaseTest {
@@ -67,7 +64,7 @@ public class ProjectServiceTests extends BaseTest {
     }
 
     @Test
-    public void storeModelForTraining() throws Exception{
+    public void createArtifactForTraining() throws Exception{
         String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
 
@@ -81,7 +78,9 @@ public class ProjectServiceTests extends BaseTest {
         input.add("features",features);
         input.add("parameters",parameters);
 
-        Project project = this.projectService.storeModelForTraining(input.toString());
+        Scientist scientist = AllModelTests.mockScientist();
+
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
         JsonUtil.print(project.toJson());
         Artifact deser = project.getArtifacts().get(0);
         assertNotNull(deser.getArtifactId());
