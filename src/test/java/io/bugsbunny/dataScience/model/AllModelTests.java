@@ -47,7 +47,7 @@ public class AllModelTests {
 
         Team deser = Team.parse(json.toString());
         assertEquals(team.getScientists().size(),deser.getScientists().size());
-        Scientist original = team.getScientists().get(0);
+        Scientist original = team.getScientists().iterator().next();
         assertTrue(deser.getScientists().contains(original));
     }
 

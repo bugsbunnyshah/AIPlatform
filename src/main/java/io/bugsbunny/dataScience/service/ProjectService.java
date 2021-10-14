@@ -75,6 +75,7 @@ public class ProjectService {
             }
 
             project.addArtifact(artifact);
+            project.getTeam().addScientist(new Scientist(scientist));
 
             this.addProject(project);
 
@@ -83,6 +84,17 @@ public class ProjectService {
         catch(Exception e){
             throw new RuntimeException(e);
         }
+    }
+
+    public void addProject(Project project){
+        this.mongoDBJsonStore.addProject(this.securityTokenContainer.getTenant(),project);
+    }
+
+    public void addScientist(String projectId,Scientist scientist)
+    {
+        Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
+        project.getTeam().addScientist(scientist);
+        this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
     }
 
 
@@ -102,17 +114,6 @@ public class ProjectService {
         catch (Exception e){
             throw new RuntimeException(e);
         }
-    }
-
-    public void addProject(Project project){
-        this.mongoDBJsonStore.addProject(this.securityTokenContainer.getTenant(),project);
-    }
-
-    public void addScientist(String projectId,Scientist scientist)
-    {
-        Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
-        project.getTeam().addScientist(scientist);
-        this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
     }
 
     public List<Project> readProjects(){

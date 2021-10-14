@@ -18,6 +18,7 @@ public class Project implements Serializable {
     private List<Artifact> artifacts;
 
     public Project() {
+        this.team = new Team();
         this.artifacts = new ArrayList<>();
     }
 

@@ -7,28 +7,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Team implements Serializable {
     private static Logger logger = LoggerFactory.getLogger(Team.class);
 
-    private List<Scientist> scientists;
+    private Set<Scientist> scientists;
 
     public Team() {
-        this.scientists = new ArrayList<>();
+        this.scientists = new LinkedHashSet();
     }
 
     public void addScientist(Scientist scientist){
         this.scientists.add(scientist);
     }
 
-    public List<Scientist> getScientists() {
+    public Set<Scientist> getScientists() {
         return scientists;
     }
 
-    public void setScientists(List<Scientist> scientists) {
+    public void setScientists(Set<Scientist> scientists) {
         this.scientists = scientists;
     }
 
@@ -53,7 +51,7 @@ public class Team implements Serializable {
         JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
 
         if(json.has("scientists")){
-            List<Scientist> scientists = new ArrayList<>();
+            Set<Scientist> scientists = new HashSet<>();
             JsonArray array = json.get("scientists").getAsJsonArray();
             for(int i=0; i<array.size();i++){
                 Scientist cour = Scientist.parse(array.get(i).toString());

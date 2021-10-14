@@ -16,6 +16,10 @@ public class Scientist implements Serializable {
     public Scientist() {
     }
 
+    public Scientist(String email) {
+        this.email = email;
+    }
+
     public String getEmail() {
         return email;
     }
