@@ -80,6 +80,7 @@ public class ProjectTests extends BaseTest
         assertFalse(artifact.getParameters().isEmpty());
         assertFalse(deser.getParameters().isEmpty());
         assertFalse(deser.isLive());
+        assertEquals(scientist.getEmail(),deser.getScientist());
 
         //Assert the actual model was stored
         JsonObject json = new JsonObject();
