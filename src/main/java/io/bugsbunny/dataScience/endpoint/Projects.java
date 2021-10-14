@@ -3,6 +3,7 @@ package io.bugsbunny.dataScience.endpoint;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.dataScience.model.Project;
 import io.bugsbunny.dataScience.service.ProjectService;
 import org.slf4j.Logger;
@@ -60,6 +61,31 @@ public class Projects
 
             Project project = this.projectService.createArtifactForTraining(scientist,json);
             return Response.ok(project.toJson().toString()).build();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
+    }
+
+    @Path("/project/artifact")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response readArtifactId(@QueryParam("projectId") String projectId, @QueryParam("artifactId") String artifactId)
+    {
+        try {
+            Artifact artifact = this.projectService.getArtifact(projectId,artifactId);
+            if(artifact == null){
+                JsonObject error = new JsonObject();
+                error.addProperty("message", "ARTIFACT_NOT_FOUND");
+                return Response.status(404).entity(error.toString()).build();
+            }
+
+            Response response = Response.ok(artifact.toJson().toString()).build();
+            return response;
         }
         catch(Exception e)
         {

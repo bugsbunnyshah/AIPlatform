@@ -99,4 +99,90 @@ public class ProjectServiceTests extends BaseTest {
         assertNotNull(model);
         assertTrue(model.length()>0);
     }
+
+    @Test
+    public void getArtifact() throws Exception{
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = JsonParser.parseString(modelPackage).getAsJsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        JsonUtil.print(project.toJson());
+        Artifact deser = this.projectService.getArtifact(project.getProjectId(),
+                project.getArtifacts().get(0).getArtifactId());
+        assertNotNull(deser.getArtifactId());
+        assertNotNull(deser.getAiModel().getModelId());
+        assertEquals(artifact.getLabels(),deser.getLabels());
+        assertEquals(artifact.getFeatures(),deser.getFeatures());
+        assertEquals(artifact.getParameters(),deser.getParameters());
+        assertFalse(artifact.getParameters().isEmpty());
+        assertFalse(deser.getParameters().isEmpty());
+        assertFalse(deser.isLive());
+        assertEquals(scientist.getEmail(),deser.getScientist());
+        assertTrue(project.getTeam().getScientists().contains(new Scientist(deser.getScientist())));
+
+        //Assert the actual model was stored
+        String model = this.projectService.getAiModel(project.getProjectId(), deser.getArtifactId());
+        assertNotNull(model);
+        assertTrue(model.length()>0);
+    }
+
+    @Test
+    public void getArtifactProjectNotFound() throws Exception{
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = JsonParser.parseString(modelPackage).getAsJsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        JsonUtil.print(project.toJson());
+        Artifact deser = this.projectService.getArtifact("mock",
+                project.getArtifacts().get(0).getArtifactId());
+        assertNull(deser);
+    }
+
+    @Test
+    public void getArtifactNotFound() throws Exception{
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = JsonParser.parseString(modelPackage).getAsJsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        JsonUtil.print(project.toJson());
+        Artifact deser = this.projectService.getArtifact(project.getProjectId(),
+                "mock");
+        assertNull(deser);
+    }
 }

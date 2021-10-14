@@ -97,6 +97,26 @@ public class ProjectService {
         this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
     }
 
+    public Artifact getArtifact(String projectId,String artifactId){
+        try
+        {
+            Project project = this.readProject(projectId);
+            if(project == null){
+                return null;
+            }
+
+            Artifact artifact = project.findArtifact(artifactId);
+            if(artifact == null){
+                return null;
+            }
+
+            return artifact;
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public String getAiModel(String projectId, String artifactId){
         try{

@@ -96,4 +96,144 @@ public class ProjectTests extends BaseTest
         //logger.info(model);
         assertTrue(model.length() > 0);
     }
+
+    @Test
+    public void getArtifact() throws Exception {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = JsonParser.parseString(modelPackage).getAsJsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+        input.addProperty("scientist",scientist.getEmail());
+
+        String url = "/projects/createModelForTraining/";
+        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
+        String token = this.securityTokenContainer.getSecurityToken().getToken();
+        Response response = given().header("Principal",principal).header("Bearer",token).
+                body(input.toString()).
+                post(url).andReturn();
+        //response.getBody().prettyPrint();
+        assertEquals(200,response.getStatusCode());
+        Project project = Project.parse(response.body().asString());
+        JsonUtil.print(project.toJson());
+
+        url = "/projects/project/artifact/?projectId="+project.getProjectId()+"&artifactId="+project.
+                getArtifacts().get(0).getArtifactId();
+        response = given().header("Principal",principal).header("Bearer",token).
+                get(url).andReturn();
+        //response.getBody().prettyPrint();
+        assertEquals(200,response.getStatusCode());
+        Artifact deser = Artifact.parse(response.body().asString());
+        JsonUtil.print(deser.toJson());
+
+        assertNotNull(deser.getArtifactId());
+        assertNotNull(deser.getAiModel().getModelId());
+        assertEquals(artifact.getLabels(),deser.getLabels());
+        assertEquals(artifact.getFeatures(),deser.getFeatures());
+        assertEquals(artifact.getParameters(),deser.getParameters());
+        assertFalse(artifact.getParameters().isEmpty());
+        assertFalse(deser.getParameters().isEmpty());
+        assertFalse(deser.isLive());
+        assertEquals(scientist.getEmail(),deser.getScientist());
+        assertTrue(project.getTeam().getScientists().contains(new Scientist(deser.getScientist())));
+
+        //Assert the actual model was stored
+        JsonObject json = new JsonObject();
+        json.addProperty("projectId",project.getProjectId());
+        json.addProperty("artifactId", deser.getArtifactId());
+        url = "/projects/model/";
+        response = given().header("Principal",principal).header("Bearer",token).
+                body(json.toString()).post(url)
+                .andReturn();
+        assertEquals(200, response.getStatusCode());
+        String model = response.body().asString();
+        //logger.info(model);
+        assertTrue(model.length() > 0);
+    }
+
+    @Test
+    public void getArtifactProjectNotFound() throws Exception {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = JsonParser.parseString(modelPackage).getAsJsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+        input.addProperty("scientist",scientist.getEmail());
+
+        String url = "/projects/createModelForTraining/";
+        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
+        String token = this.securityTokenContainer.getSecurityToken().getToken();
+        Response response = given().header("Principal",principal).header("Bearer",token).
+                body(input.toString()).
+                post(url).andReturn();
+        //response.getBody().prettyPrint();
+        assertEquals(200,response.getStatusCode());
+        Project project = Project.parse(response.body().asString());
+        JsonUtil.print(project.toJson());
+
+        url = "/projects/project/artifact/?projectId=mock&artifactId="+project.
+                getArtifacts().get(0).getArtifactId();
+        response = given().header("Principal",principal).header("Bearer",token).
+                get(url).andReturn();
+        //response.getBody().prettyPrint();
+        assertEquals(404,response.getStatusCode());
+        String message = JsonParser.parseString(response.getBody().asString()).getAsJsonObject().get("message").getAsString();
+        assertEquals("ARTIFACT_NOT_FOUND",message);
+    }
+
+    @Test
+    public void getArtifactNotFound() throws Exception {
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = JsonParser.parseString(modelPackage).getAsJsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+        input.addProperty("scientist",scientist.getEmail());
+
+        String url = "/projects/createModelForTraining/";
+        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
+        String token = this.securityTokenContainer.getSecurityToken().getToken();
+        Response response = given().header("Principal",principal).header("Bearer",token).
+                body(input.toString()).
+                post(url).andReturn();
+        //response.getBody().prettyPrint();
+        assertEquals(200,response.getStatusCode());
+        Project project = Project.parse(response.body().asString());
+        JsonUtil.print(project.toJson());
+
+        url = "/projects/project/artifact/?projectId="+project.getProjectId()+"&artifactId=mock";
+        response = given().header("Principal",principal).header("Bearer",token).
+                get(url).andReturn();
+        //response.getBody().prettyPrint();
+        assertEquals(404,response.getStatusCode());
+        String message = JsonParser.parseString(response.getBody().asString()).getAsJsonObject().get("message").getAsString();
+        assertEquals("ARTIFACT_NOT_FOUND",message);
+    }
 }
