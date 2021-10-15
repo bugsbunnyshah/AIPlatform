@@ -25,11 +25,8 @@ class ProjectStore {
     {
         List<Project> projects = new ArrayList<>();
 
-        //String principal = tenant.getPrincipal();
-        String principal = "-2061008798";
+        String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
-
-        System.out.println("DatabaseName: "+databaseName);
 
         MongoDatabase database = mongoClient.getDatabase(databaseName);
 

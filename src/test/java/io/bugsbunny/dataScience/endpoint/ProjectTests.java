@@ -1,5 +1,6 @@
 package io.bugsbunny.dataScience.endpoint;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -7,6 +8,7 @@ import io.bugsbunny.dataScience.model.AllModelTests;
 import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.dataScience.model.Project;
 import io.bugsbunny.dataScience.model.Scientist;
+import io.bugsbunny.dataScience.service.ProjectService;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.test.components.BaseTest;
 import io.bugsbunny.util.JsonUtil;
@@ -19,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,16 +33,38 @@ public class ProjectTests extends BaseTest
     private static Logger logger = LoggerFactory.getLogger(ProjectTests.class);
 
     @Inject
-    private SecurityTokenContainer securityTokenContainer;
+    private ProjectService projectService;
 
     @Test
     public void readProjects() throws Exception
     {
         String url = "/projects/";
-        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
-        String token = this.securityTokenContainer.getSecurityToken().getToken();
-        Response response = given().header("Principal",principal).header("Bearer",token).get(url).andReturn();
+        Response response = given().get(url).andReturn();
         response.getBody().prettyPrint();
+    }
+
+    @Test
+    public void updateProject() throws Exception
+    {
+        Project project = AllModelTests.mockProject();
+        this.projectService.addProject(project);
+
+        String url = "/projects/";
+        Response response = given().get(url).andReturn();
+        response.getBody().prettyPrint();
+        JsonObject projectsJson = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+        JsonArray array = projectsJson.get("projects").getAsJsonArray();
+        project = Project.parse(array.get(0).getAsJsonObject().toString());
+        Scientist scientist = AllModelTests.mockScientist();
+        project.getTeam().addScientist(scientist);
+
+        url = "/projects/updateProject/";
+        JsonObject json = new JsonObject();
+        json.add("project",project.toJson());
+        response = given().body(json.toString()).
+                post(url).andReturn();
+        Project updated = Project.parse(response.getBody().asString());
+        assertTrue(updated.getTeam().getScientists().contains(scientist));
     }
 
     @Test
@@ -61,9 +86,7 @@ public class ProjectTests extends BaseTest
         input.addProperty("scientist",scientist.getEmail());
 
         String url = "/projects/createModelForTraining/";
-        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
-        String token = this.securityTokenContainer.getSecurityToken().getToken();
-        Response response = given().header("Principal",principal).header("Bearer",token).
+        Response response = given().
                 body(input.toString()).
                 post(url).andReturn();
         //response.getBody().prettyPrint();
@@ -88,7 +111,7 @@ public class ProjectTests extends BaseTest
         json.addProperty("projectId",project.getProjectId());
         json.addProperty("artifactId", deser.getArtifactId());
         url = "/projects/model/";
-        response = given().header("Principal",principal).header("Bearer",token).
+        response = given().
                 body(json.toString()).post(url)
                 .andReturn();
         assertEquals(200, response.getStatusCode());
@@ -116,9 +139,7 @@ public class ProjectTests extends BaseTest
         input.addProperty("scientist",scientist.getEmail());
 
         String url = "/projects/createModelForTraining/";
-        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
-        String token = this.securityTokenContainer.getSecurityToken().getToken();
-        Response response = given().header("Principal",principal).header("Bearer",token).
+        Response response = given().
                 body(input.toString()).
                 post(url).andReturn();
         //response.getBody().prettyPrint();
@@ -128,7 +149,7 @@ public class ProjectTests extends BaseTest
 
         url = "/projects/project/artifact/?projectId="+project.getProjectId()+"&artifactId="+project.
                 getArtifacts().get(0).getArtifactId();
-        response = given().header("Principal",principal).header("Bearer",token).
+        response = given().
                 get(url).andReturn();
         //response.getBody().prettyPrint();
         assertEquals(200,response.getStatusCode());
@@ -151,7 +172,7 @@ public class ProjectTests extends BaseTest
         json.addProperty("projectId",project.getProjectId());
         json.addProperty("artifactId", deser.getArtifactId());
         url = "/projects/model/";
-        response = given().header("Principal",principal).header("Bearer",token).
+        response = given().
                 body(json.toString()).post(url)
                 .andReturn();
         assertEquals(200, response.getStatusCode());
@@ -179,9 +200,7 @@ public class ProjectTests extends BaseTest
         input.addProperty("scientist",scientist.getEmail());
 
         String url = "/projects/createModelForTraining/";
-        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
-        String token = this.securityTokenContainer.getSecurityToken().getToken();
-        Response response = given().header("Principal",principal).header("Bearer",token).
+        Response response = given().
                 body(input.toString()).
                 post(url).andReturn();
         //response.getBody().prettyPrint();
@@ -191,7 +210,7 @@ public class ProjectTests extends BaseTest
 
         url = "/projects/project/artifact/?projectId=mock&artifactId="+project.
                 getArtifacts().get(0).getArtifactId();
-        response = given().header("Principal",principal).header("Bearer",token).
+        response = given().
                 get(url).andReturn();
         //response.getBody().prettyPrint();
         assertEquals(404,response.getStatusCode());
@@ -218,9 +237,7 @@ public class ProjectTests extends BaseTest
         input.addProperty("scientist",scientist.getEmail());
 
         String url = "/projects/createModelForTraining/";
-        String principal = this.securityTokenContainer.getSecurityToken().getPrincipal();
-        String token = this.securityTokenContainer.getSecurityToken().getToken();
-        Response response = given().header("Principal",principal).header("Bearer",token).
+        Response response = given().
                 body(input.toString()).
                 post(url).andReturn();
         //response.getBody().prettyPrint();
@@ -229,7 +246,7 @@ public class ProjectTests extends BaseTest
         JsonUtil.print(project.toJson());
 
         url = "/projects/project/artifact/?projectId="+project.getProjectId()+"&artifactId=mock";
-        response = given().header("Principal",principal).header("Bearer",token).
+        response = given().
                 get(url).andReturn();
         //response.getBody().prettyPrint();
         assertEquals(404,response.getStatusCode());

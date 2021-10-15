@@ -1,8 +1,11 @@
 package io.bugsbunny.test.components;
 
 import io.bugsbunny.dataIngestion.service.StreamIngesterContext;
+import io.bugsbunny.preprocess.SecurityToken;
+import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.util.BackgroundProcessListener;
 import io.bugsbunny.util.JsonUtil;
+import io.bugsbunny.util.ObjectUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
@@ -16,6 +19,9 @@ public abstract class BaseTest
 
     @Inject
     private SecurityTokenMockComponent securityTokenMockComponent;
+
+    @Inject
+    private SecurityTokenContainer securityTokenContainer;
 
     @BeforeEach
     public void setUp() throws Exception
