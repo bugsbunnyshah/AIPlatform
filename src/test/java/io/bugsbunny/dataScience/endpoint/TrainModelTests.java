@@ -224,4 +224,171 @@ public class TrainModelTests extends BaseTest {
         responseJson = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
         assertEquals("DATA_NOT_FOUND",responseJson.get("message").getAsString());
     }
+
+    @Test
+    public void trainModelFromDataSet() throws Exception{
+        int seed = 123;
+        double learningRate = 0.005;
+        int numInputs = 2;
+        int numOutputs = 2;
+        int numHiddenNodes = 20;
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .seed(seed)
+                .weightInit(WeightInit.XAVIER)
+                .updater(new Nesterovs(learningRate, 0.9))
+                .list()
+                .layer(new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
+                        .activation(Activation.RELU)
+                        .build())
+                .layer(new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .activation(Activation.SOFTMAX)
+                        .nIn(numHiddenNodes).nOut(numOutputs).build())
+                .build();
+        MultiLayerNetwork network = new MultiLayerNetwork(conf);
+        network.init();
+        network.setListeners(new ScoreIterationListener(10));
+
+        ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
+        ModelSerializer.writeModel(network, modelBytes, false);
+        String modelString = Base64.getEncoder().encodeToString(modelBytes.toByteArray());
+
+        //Deploy the Artifact with the Model
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = new JsonObject();
+        input.addProperty("name","model");
+        input.addProperty("model",modelString);
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+
+
+        String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        JsonArray dataSetIds = new JsonArray();
+        for(int i=0; i< 3; i++) {
+            input = new JsonObject();
+            input.addProperty("format", "csv");
+            input.addProperty("data", data);
+            Response response = given().body(input.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
+            JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+            String dataSetId = returnValue.get("dataSetId").getAsString();
+            dataSetIds.add(dataSetId);
+        }
+
+        String url = "/trainModel/trainModelFromDataSet/";
+        JsonObject json = new JsonObject();
+        json.addProperty("projectId",project.getProjectId());
+        json.addProperty("artifactId",project.getArtifacts().get(0).getArtifactId());
+        json.add("dataSetIds",dataSetIds);
+        Response response = given().body(json.toString()).
+                post(url).andReturn();
+        response.getBody().prettyPrint();
+        assertEquals(200, response.getStatusCode());
+        JsonObject responseJson = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+        JsonObject confusion = responseJson.get("result").getAsJsonObject().get("confusion").getAsJsonObject();
+        JsonUtil.print(confusion);
+        assertNotNull(confusion);
+    }
+
+    @Test
+    public void trainModelFromDataSetExceptions() throws Exception{
+        int seed = 123;
+        double learningRate = 0.005;
+        int numInputs = 2;
+        int numOutputs = 2;
+        int numHiddenNodes = 20;
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .seed(seed)
+                .weightInit(WeightInit.XAVIER)
+                .updater(new Nesterovs(learningRate, 0.9))
+                .list()
+                .layer(new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
+                        .activation(Activation.RELU)
+                        .build())
+                .layer(new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .activation(Activation.SOFTMAX)
+                        .nIn(numHiddenNodes).nOut(numOutputs).build())
+                .build();
+        MultiLayerNetwork network = new MultiLayerNetwork(conf);
+        network.init();
+        network.setListeners(new ScoreIterationListener(10));
+
+        ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
+        ModelSerializer.writeModel(network, modelBytes, false);
+        String modelString = Base64.getEncoder().encodeToString(modelBytes.toByteArray());
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = new JsonObject();
+        input.addProperty("name","model");
+        input.addProperty("model",modelString);
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+
+        //Validation Errors
+        String url = "/trainModel/trainModelFromDataSet/";
+        JsonObject json = new JsonObject();
+        Response response = given().body(json.toString()).
+                post(url).andReturn();
+        response.getBody().prettyPrint();
+        assertEquals(403, response.getStatusCode());
+        JsonObject responseJson = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+        assertEquals("project_id_missing",responseJson.get("project_id_missing").getAsString());
+        assertEquals("artifact_id_missing",responseJson.get("artifact_id_missing").getAsString());
+        assertEquals("data_missing",responseJson.get("data_missing").getAsString());
+
+        //Artifact_Not_Found
+        url = "/trainModel/trainModelFromDataSet/";
+        json = new JsonObject();
+        json.addProperty("projectId","blah");
+        json.addProperty("artifactId",project.getArtifacts().get(0).getArtifactId());
+        json.add("dataSetIds",new JsonArray());
+        response = given().body(json.toString()).
+                post(url).andReturn();
+        response.getBody().prettyPrint();
+        assertEquals(404, response.getStatusCode());
+        responseJson = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+        assertEquals("ARTIFACT_NOT_FOUND",responseJson.get("message").getAsString());
+
+        //Artifact_Not_Found
+        url = "/trainModel/trainModelFromDataSet/";
+        json = new JsonObject();
+        json.addProperty("projectId",project.getProjectId());
+        json.addProperty("artifactId","blah");
+        json.add("dataSetIds",new JsonArray());
+        response = given().body(json.toString()).
+                post(url).andReturn();
+        response.getBody().prettyPrint();
+        assertEquals(404, response.getStatusCode());
+        responseJson = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+        assertEquals("ARTIFACT_NOT_FOUND",responseJson.get("message").getAsString());
+
+        //Data_Not_Found
+        url = "/trainModel/trainModelFromDataSet/";
+        json = new JsonObject();
+        json.addProperty("projectId",project.getProjectId());
+        json.addProperty("artifactId",project.getArtifacts().get(0).getArtifactId());
+        json.add("dataSetIds",new JsonArray());
+        response = given().body(json.toString()).
+                post(url).andReturn();
+        response.getBody().prettyPrint();
+        assertEquals(404, response.getStatusCode());
+        responseJson = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+        assertEquals("DATA_NOT_FOUND",responseJson.get("message").getAsString());
+    }
 }

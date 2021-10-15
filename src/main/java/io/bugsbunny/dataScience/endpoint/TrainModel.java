@@ -268,4 +268,92 @@ public class TrainModel
             return Response.status(500).entity(error.toString()).build();
         }
     }
+
+    @Path("trainModelFromDataSet")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response trainModelFromDataSet(@RequestBody String input)
+    {
+        try {
+            JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
+            String projectId = null;
+            if(jsonInput.has("projectId"))
+            {
+                projectId = jsonInput.get("projectId").getAsString();
+            }
+            String artifactId = null;
+            if(jsonInput.has("artifactId")){
+                artifactId = jsonInput.get("artifactId").getAsString();
+            }
+            JsonArray dataSetIdsArray = null;
+            if(jsonInput.has("dataSetIds")){
+                dataSetIdsArray = jsonInput.get("dataSetIds").getAsJsonArray();
+            }
+
+            if(projectId == null || artifactId == null || dataSetIdsArray == null){
+                JsonObject response = new JsonObject();
+                if(projectId == null){
+                    response.addProperty("project_id_missing","project_id_missing");
+                }
+                if(artifactId == null){
+                    response.addProperty("artifact_id_missing","artifact_id_missing");
+                }
+                if(dataSetIdsArray == null){
+                    response.addProperty("data_missing","data_missing");
+                }
+                return Response.status(403).entity(response.toString()).build();
+            }
+
+            String[] dataSetIds = new String[dataSetIdsArray.size()];
+            Iterator<JsonElement> iterator = dataSetIdsArray.iterator();
+            int counter = 0;
+            while(iterator.hasNext())
+            {
+                dataSetIds[counter] = iterator.next().getAsString();
+                counter++;
+            }
+            JsonObject evalJson = this.projectService.trainModelFromDataSet(projectId,artifactId,dataSetIds);
+
+            JsonObject returnValue = new JsonObject();
+            returnValue.add("result", evalJson);
+
+            //TODO: use this as chain id but once concept of data history and training history
+            //is created, this will have to change
+            //returnValue.addProperty("dataHistoryId", dataLakeIds[0]);
+
+            Response response = Response.ok(returnValue.toString()).build();
+            return response;
+        }
+        catch(ModelNotFoundException modelNotFoundException)
+        {
+            logger.error(modelNotFoundException.getMessage(), modelNotFoundException);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", modelNotFoundException.getMessage());
+            return Response.status(404).entity(error.toString()).build();
+        }
+        catch(ModelIsLive modelIsLive)
+        {
+            logger.error(modelIsLive.getMessage(), modelIsLive);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", modelIsLive.getMessage());
+            return Response.status(422).entity(error.toString()).build();
+        }
+        catch(ArtifactNotFoundException artifactNotFoundException){
+            JsonObject error = new JsonObject();
+            error.addProperty("message", "ARTIFACT_NOT_FOUND");
+            return Response.status(404).entity(error.toString()).build();
+        }
+        catch(DataNotFoundException dataNotFoundException){
+            JsonObject error = new JsonObject();
+            error.addProperty("message", "DATA_NOT_FOUND");
+            return Response.status(404).entity(error.toString()).build();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
+    }
 }
