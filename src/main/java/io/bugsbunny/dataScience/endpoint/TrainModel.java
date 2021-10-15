@@ -7,9 +7,7 @@ import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.model.AIModel;
 import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.dataScience.model.PortableAIModelInterface;
-import io.bugsbunny.dataScience.service.AIModelService;
-import io.bugsbunny.dataScience.service.ModelIsLive;
-import io.bugsbunny.dataScience.service.ModelNotFoundException;
+import io.bugsbunny.dataScience.service.*;
 import io.bugsbunny.preprocess.AITrafficContainer;
 import jep.Interpreter;
 import jep.JepException;
@@ -42,6 +40,9 @@ public class TrainModel
     @Inject
     private AIModelService trainingAIModelService;
 
+    @Inject
+    private ProjectService projectService;
+
     static
     {
         try
@@ -69,7 +70,7 @@ public class TrainModel
         }
     }
 
-    @Path("trainJava")
+    /*@Path("trainJava")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response trainJava(@RequestBody String input)
@@ -123,62 +124,7 @@ public class TrainModel
             error.addProperty("exception", e.getMessage());
             return Response.status(500).entity(error.toString()).build();
         }
-    }
-
-    @Path("trainJavaFromDataLake")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response trainJavaFromDataLake(@RequestBody String input)
-    {
-        try {
-            JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
-            String modelId = jsonInput.get("modelId").getAsString();
-            JsonArray dataLakeIdsArray = jsonInput.get("dataLakeIds").getAsJsonArray();
-            String[] dataLakeIds = new String[dataLakeIdsArray.size()];
-            Iterator<JsonElement> iterator = dataLakeIdsArray.iterator();
-            int counter = 0;
-            while(iterator.hasNext())
-            {
-                dataLakeIds[counter] = iterator.next().getAsString();
-                counter++;
-            }
-            Artifact artifact = new Artifact();
-            artifact.setAiModel(new AIModel());
-            artifact.getAiModel().setModelId(modelId);
-            String eval = this.trainingAIModelService.trainJavaFromDataLake(artifact, dataLakeIds);
-
-            JsonObject returnValue = new JsonObject();
-            returnValue.add("result", JsonParser.parseString(eval));
-
-            //TODO: use this as chain id but once concept of data history and training history
-            //is created, this will have to change
-            returnValue.addProperty("dataHistoryId", dataLakeIds[0]);
-
-            Response response = Response.ok(returnValue.toString()).build();
-            return response;
-        }
-        catch(ModelNotFoundException modelNotFoundException)
-        {
-            logger.error(modelNotFoundException.getMessage(), modelNotFoundException);
-            JsonObject error = new JsonObject();
-            error.addProperty("exception", modelNotFoundException.getMessage());
-            return Response.status(404).entity(error.toString()).build();
-        }
-        catch(ModelIsLive modelIsLive)
-        {
-            logger.error(modelIsLive.getMessage(), modelIsLive);
-            JsonObject error = new JsonObject();
-            error.addProperty("exception", modelIsLive.getMessage());
-            return Response.status(422).entity(error.toString()).build();
-        }
-        catch(Exception e)
-        {
-            logger.error(e.getMessage(), e);
-            JsonObject error = new JsonObject();
-            error.addProperty("exception", e.getMessage());
-            return Response.status(500).entity(error.toString()).build();
-        }
-    }
+    }*/
 
     @Path("trainPython")
     @POST
@@ -225,6 +171,94 @@ public class TrainModel
             JsonObject error = new JsonObject();
             error.addProperty("exception", "PYTHON_RUNTIME_NOT_DETECTED");
             return Response.status(500).entity(error.toString()).build();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
+    }
+
+    @Path("trainModelFromDataLake")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response trainModelFromDataLake(@RequestBody String input)
+    {
+        try {
+            JsonObject jsonInput = JsonParser.parseString(input).getAsJsonObject();
+            String projectId = null;
+            if(jsonInput.has("projectId"))
+            {
+                projectId = jsonInput.get("projectId").getAsString();
+            }
+            String artifactId = null;
+            if(jsonInput.has("artifactId")){
+                artifactId = jsonInput.get("artifactId").getAsString();
+            }
+            JsonArray dataLakeIdsArray = null;
+            if(jsonInput.has("dataLakeIds")){
+                dataLakeIdsArray = jsonInput.get("dataLakeIds").getAsJsonArray();
+            }
+
+            if(projectId == null || artifactId == null || dataLakeIdsArray == null){
+                JsonObject response = new JsonObject();
+                if(projectId == null){
+                    response.addProperty("project_id_missing","project_id_missing");
+                }
+                if(artifactId == null){
+                    response.addProperty("artifact_id_missing","artifact_id_missing");
+                }
+                if(dataLakeIdsArray == null){
+                    response.addProperty("data_missing","data_missing");
+                }
+                return Response.status(403).entity(response.toString()).build();
+            }
+
+            String[] dataLakeIds = new String[dataLakeIdsArray.size()];
+            Iterator<JsonElement> iterator = dataLakeIdsArray.iterator();
+            int counter = 0;
+            while(iterator.hasNext())
+            {
+                dataLakeIds[counter] = iterator.next().getAsString();
+                counter++;
+            }
+            JsonObject evalJson = this.projectService.trainModelFromDataLake(projectId,artifactId,dataLakeIds);
+
+            JsonObject returnValue = new JsonObject();
+            returnValue.add("result", evalJson);
+
+            //TODO: use this as chain id but once concept of data history and training history
+            //is created, this will have to change
+            returnValue.addProperty("dataHistoryId", dataLakeIds[0]);
+
+            Response response = Response.ok(returnValue.toString()).build();
+            return response;
+        }
+        catch(ModelNotFoundException modelNotFoundException)
+        {
+            logger.error(modelNotFoundException.getMessage(), modelNotFoundException);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", modelNotFoundException.getMessage());
+            return Response.status(404).entity(error.toString()).build();
+        }
+        catch(ModelIsLive modelIsLive)
+        {
+            logger.error(modelIsLive.getMessage(), modelIsLive);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", modelIsLive.getMessage());
+            return Response.status(422).entity(error.toString()).build();
+        }
+        catch(ArtifactNotFoundException artifactNotFoundException){
+            JsonObject error = new JsonObject();
+            error.addProperty("message", "ARTIFACT_NOT_FOUND");
+            return Response.status(404).entity(error.toString()).build();
+        }
+        catch(DataNotFoundException dataNotFoundException){
+            JsonObject error = new JsonObject();
+            error.addProperty("message", "DATA_NOT_FOUND");
+            return Response.status(404).entity(error.toString()).build();
         }
         catch(Exception e)
         {

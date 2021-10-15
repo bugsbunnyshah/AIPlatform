@@ -23,6 +23,8 @@ import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.datasets.iterator.MultiDataSetWrapperIterator;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.util.ModelSerializer;
+import org.json.JSONObject;
+import org.json.XML;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
@@ -267,15 +269,11 @@ public class AIModelService
         }
     }
 
-    public String trainJava(Artifact artifact, String[] dataSetIds) throws ModelNotFoundException, ModelIsLive{
-        JsonObject json = this.trainJavaFromDataSetInProject(artifact, dataSetIds);
-        return json.toString();
-    }
-
-    public JsonObject trainJavaFromDataSetInProject(Artifact artifact, String[] dataSetIds) throws
+    public JsonObject trainModelFromDataSet(Artifact artifact) throws
             ModelNotFoundException, ModelIsLive {
         String modelId = artifact.getAiModel().getModelId();
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
+        String[] dataSetIds = artifact.getDataSet().getDataSetIds();
 
         if(modelPackage == null)
         {
@@ -301,9 +299,33 @@ public class AIModelService
                 this.activeModels.put(modelId, network);
             }
 
-            DataSetIterator dataSetIterator = this.aiPlatformDataSetIteratorFactory.
-                    getInstance(dataSetIds);
-            Evaluation evaluation = network.evaluate(dataSetIterator);
+            String storedData;
+            StringBuilder dataSetBuilder = new StringBuilder();
+            for(String dataSetId:dataSetIds) {
+                JsonObject dataSetJson = mongoDBJsonStore.readDataSet(this.securityTokenContainer.getTenant(),
+                        dataSetId);
+                dataSetBuilder.append(dataSetJson.get("data").getAsString()+"\n");
+            }
+            storedData = dataSetBuilder.toString().trim();
+
+            ResettableStreamSplit inputStreamSplit = new ResettableStreamSplit(
+                    storedData);
+
+            //This should be a parameter
+            int batchSize = storedData.length();
+            int nEpochs = 30;
+            int labelIndex = 0;
+            int possibleLabels = 2;
+            RecordReader rrTrain = new CSVRecordReader();
+            rrTrain.initialize(inputStreamSplit);
+            DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain,
+                    batchSize, labelIndex, possibleLabels);
+
+            network.fit(trainIter,nEpochs);
+
+            Evaluation evaluation = network.evaluate(trainIter);
+            //logger.info("*********CLOUD_EVAL**************");
+            //logger.info(evaluation.stats());
 
             return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();
         }
@@ -314,17 +336,11 @@ public class AIModelService
         }
     }
 
-    public String trainJavaFromDataLake(Artifact artifact, String[] dataLakeIds) throws ModelNotFoundException, ModelIsLive
-    {
-        JsonObject json = this.trainJavaFromDataLakeInProject(artifact,dataLakeIds);
-        return json.toString();
-    }
-
-    public JsonObject trainJavaFromDataLakeInProject(Artifact artifact, String[] dataLakeIds) throws
-            ModelNotFoundException,ModelIsLive
-    {
+    public JsonObject trainModelFromDataLake(Artifact artifact) throws
+            ModelNotFoundException, ModelIsLive {
         String modelId = artifact.getAiModel().getModelId();
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
+        String[] dataLakeIds = artifact.getDataSet().getDataLakeIds();
 
         if(modelPackage == null)
         {
@@ -350,9 +366,64 @@ public class AIModelService
                 this.activeModels.put(modelId, network);
             }
 
-            DataSetIterator dataSetIterator = this.aiPlatformDataLakeIteratorFactory.
-                    getInstance(artifact,dataLakeIds);
-            Evaluation evaluation = network.evaluate(dataSetIterator);
+            String csvData;
+            StringBuilder csvBuilder = new StringBuilder();
+            for(String dataLakeId:dataLakeIds) {
+                JsonArray dataLakeArray = mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
+                //Get the Data
+                boolean isJson = false;
+                boolean isXml = false;
+                JsonArray dataArray = new JsonArray();
+                int size = dataLakeArray.size();
+                for (int i = 0; i < size; i++) {
+                    JsonObject cour = dataLakeArray.get(i).getAsJsonObject();
+                    String data = cour.get("data").getAsString();
+                    if (data.startsWith("{") || data.startsWith("[")) {
+                        //Its json
+                        dataArray.add(JsonParser.parseString(data).getAsJsonObject());
+                        isJson = true;
+                    } else if (data.contains("<") && data.contains(">")) {
+                        //Its xml
+                        JSONObject sourceJson = XML.toJSONObject(data);
+                        String json = sourceJson.toString(4);
+                        JsonObject sourceJsonObject = JsonParser.parseString(json).getAsJsonObject();
+                        dataArray.add(sourceJsonObject);
+                        isXml = true;
+                    } else {
+                        //Its CSV
+                        dataArray.add(data);
+                    }
+                }
+
+                //Convert To Csv
+                if (isJson) {
+                    csvBuilder.append(artifact.convertJsonToCsv(dataArray)+"\n");
+                } else if (isXml) {
+                    csvBuilder.append(artifact.convertXmlToCsv(dataArray)+"\n");
+                } else {
+                    csvBuilder.append(dataArray.get(0).getAsString()+"\n");
+                }
+            }
+
+            csvData = csvBuilder.toString().trim();
+            int batchSize = csvData.length();
+            ResettableStreamSplit inputStreamSplit = new ResettableStreamSplit(
+                    csvData);
+
+            //This should be a parameter
+            int nEpochs = 30;
+            int labelIndex = 0;
+            int possibleLabels = 2;
+            RecordReader rrTest = new CSVRecordReader();
+            rrTest.initialize(inputStreamSplit);
+            DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest,
+                    batchSize, labelIndex, possibleLabels);
+
+            network.fit(testIter,nEpochs);
+
+            Evaluation evaluation = network.evaluate(testIter);
+            //logger.info("*********CLOUD_EVAL**************");
+            //logger.info(evaluation.stats());
 
             return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();
         }

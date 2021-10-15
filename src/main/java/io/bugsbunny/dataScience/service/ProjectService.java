@@ -203,60 +203,59 @@ public class ProjectService {
         }
     }
 
-    public JsonObject trainModelFromData(String projectId, String artifactId){
-        try {
-            Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(), projectId);
-            //JsonUtil.print(ProjectService.class, project.toJson());
+    public JsonObject trainModelFromDataSet(String projectId, String artifactId, String[] dataSetIds)
+            throws ArtifactNotFoundException, DataNotFoundException, ModelIsLive, ModelNotFoundException {
 
-            List<Artifact> artifacts = project.getArtifacts();
-            Artifact artifact = null;
-            //TODO: very minor maybe pull using a MongoQuery. This is perfectly fine also
-            for (Artifact cour : artifacts) {
-                if (cour.getArtifactId().equals(artifactId)) {
-                    artifact = cour;
-                    break;
-                }
-            }
-
-            PortableAIModelInterface aiModel = artifact.getAiModel();
-            String modelId = aiModel.getModelId();
-            aiModel.setModelId(modelId);
-            String[] dataSetIds = artifact.getDataSet().getDataSetIds();
-
-            JsonObject evaluation = this.aiModelService.trainJavaFromDataSetInProject(artifact, dataSetIds);
-            return evaluation;
+        Artifact artifact = this.getArtifact(projectId,artifactId);
+        if(artifact == null){
+            throw new ArtifactNotFoundException("ARTIFACT_NOT_FOUND");
         }
-        catch(Exception e){
-            throw new RuntimeException(e);
+
+        if(dataSetIds == null || dataSetIds.length == 0){
+            throw new DataNotFoundException("DATA_NOT_SPECIFIED");
         }
+
+        PortableAIModelInterface aiModel = artifact.getAiModel();
+        String modelId = aiModel.getModelId();
+        aiModel.setModelId(modelId);
+        DataSet dataSet = new DataSet();
+        for(String dataSetId:dataSetIds) {
+            DataItem dataItem = new DataItem();
+            dataItem.setDataSetId(dataSetId);
+            dataSet.addDataItem(dataItem);
+        }
+        artifact.setDataSet(dataSet);
+        artifact = this.updateArtifact(projectId,artifact);
+
+        JsonObject evaluation = this.aiModelService.trainModelFromDataSet(artifact);
+        return evaluation;
     }
 
-    public JsonObject trainModelFromDataLake(String projectId, String artifactId){
-        try {
-            Project project = this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(), projectId);
-            //JsonUtil.print(ProjectService.class, project.toJson());
-
-            List<Artifact> artifacts = project.getArtifacts();
-            Artifact artifact = null;
-            //TODO: very minor maybe pull using a MongoQuery. This is perfectly fine also
-            for (Artifact cour : artifacts) {
-                if (cour.getArtifactId().equals(artifactId)) {
-                    artifact = cour;
-                    break;
-                }
-            }
-
-            PortableAIModelInterface aiModel = artifact.getAiModel();
-            String modelId = aiModel.getModelId();
-            aiModel.setModelId(modelId);
-            String[] dataLakeIds = artifact.getDataSet().getDataLakeIds();
-
-            JsonObject evaluation = this.aiModelService.trainJavaFromDataLakeInProject(artifact, dataLakeIds);
-            return evaluation;
+    public JsonObject trainModelFromDataLake(String projectId, String artifactId,String[] dataLakeIds)
+            throws ArtifactNotFoundException, DataNotFoundException, ModelIsLive, ModelNotFoundException{
+        Artifact artifact = this.getArtifact(projectId,artifactId);
+        if(artifact == null){
+            throw new ArtifactNotFoundException("ARTIFACT_NOT_FOUND");
         }
-        catch(Exception e){
-            throw new RuntimeException(e);
+
+        if(dataLakeIds == null || dataLakeIds.length == 0){
+            throw new DataNotFoundException("DATA_NOT_SPECIFIED");
         }
+
+        PortableAIModelInterface aiModel = artifact.getAiModel();
+        String modelId = aiModel.getModelId();
+        aiModel.setModelId(modelId);
+        DataSet dataSet = new DataSet();
+        for(String dataLakeId:dataLakeIds) {
+            DataItem dataItem = new DataItem();
+            dataItem.setDataLakeId(dataLakeId);
+            dataSet.addDataItem(dataItem);
+        }
+        artifact.setDataSet(dataSet);
+        artifact = this.updateArtifact(projectId,artifact);
+
+        JsonObject evaluation = this.aiModelService.trainModelFromDataLake(artifact);
+        return evaluation;
     }
 
     public void deployModel(Artifact artifact){

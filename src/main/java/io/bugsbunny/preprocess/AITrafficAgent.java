@@ -49,15 +49,15 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         //logger.info("*****PATH**********");
         //logger.info(context.getUriInfo().getRequestUri().getPath());
         //logger.info("*****PATH**********");
-        if(!context.getUriInfo().getRequestUri().getPath().startsWith("/liveModel") &&
+        /*if(!context.getUriInfo().getRequestUri().getPath().startsWith("/liveModel") &&
                 !context.getUriInfo().getRequestUri().getPath().startsWith("/trainModel") &&
                 !context.getUriInfo().getRequestUri().getPath().startsWith("/remoteModel")
         )
         {
             return;
-        }
+        }*/
 
-        String payload = IOUtils.toString(context.getEntityStream(), StandardCharsets.UTF_8);
+        /*String payload = IOUtils.toString(context.getEntityStream(), StandardCharsets.UTF_8);
         if(payload == null || payload.length() == 0)
         {
             return;
@@ -75,13 +75,13 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         catch (Exception e)
         {
             return;
-        }
+        }*/
 
         //logger.info("TRAFFIC***********************");
         //logger.info(payload);
         //logger.info("TRAFFIC***********************");
 
-        String modelId = JsonParser.parseString(payload).getAsJsonObject().get("modelId").getAsString();
+        /*String modelId = JsonParser.parseString(payload).getAsJsonObject().get("modelId").getAsString();
         String key = "/"+this.securityTokenContainer.getSecurityToken().getPrincipal()+"/"+modelId;
         if(!this.diffChains.contains(key))
         {
@@ -109,7 +109,7 @@ public class AITrafficAgent implements ContainerRequestFilter, ContainerResponse
         }
 
         this.aiTrafficContainer.setChainId(key);
-        context.setEntityStream(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));
+        context.setEntityStream(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));*/
     }
 
     @Override
