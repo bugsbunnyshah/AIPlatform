@@ -34,12 +34,6 @@ public class ProjectServiceTests extends BaseTest {
     private SecurityTokenContainer securityTokenContainer;
 
     @Test
-    public void readProjects() throws Exception{
-        System.out.println(this.projectService.readProjects());
-    }
-
-
-    @Test
     public void addScientist() throws Exception{
         Project project = AllModelTests.mockProject();
         String projectId = project.getProjectId();
@@ -51,16 +45,6 @@ public class ProjectServiceTests extends BaseTest {
         Project stored = this.projectService.readProject(projectId);
         JsonUtil.print(ProjectServiceTests.class,stored.toJson());
         assertTrue(stored.getTeam().getScientists().contains(scientist));
-    }
-
-
-
-
-
-
-
-    @Test
-    public void verifyDeployment() throws Exception {
     }
 
     @Test
@@ -184,5 +168,112 @@ public class ProjectServiceTests extends BaseTest {
         Artifact deser = this.projectService.getArtifact(project.getProjectId(),
                 "mock");
         assertNull(deser);
+    }
+
+    @Test
+    public void updateArtifact() throws Exception{
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = JsonParser.parseString(modelPackage).getAsJsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        JsonUtil.print(project.toJson());
+        Artifact deser = this.projectService.getArtifact(project.getProjectId(),
+                project.getArtifacts().get(0).getArtifactId());
+        assertNotNull(deser.getArtifactId());
+        assertNotNull(deser.getAiModel().getModelId());
+        assertEquals(artifact.getLabels(),deser.getLabels());
+        assertEquals(artifact.getFeatures(),deser.getFeatures());
+        assertEquals(artifact.getParameters(),deser.getParameters());
+        assertFalse(artifact.getParameters().isEmpty());
+        assertFalse(deser.getParameters().isEmpty());
+        assertFalse(deser.isLive());
+        assertEquals(scientist.getEmail(),deser.getScientist());
+        assertTrue(project.getTeam().getScientists().contains(new Scientist(deser.getScientist())));
+
+        Label newLabel = new Label("newValue","newField");
+        deser.addLabel(newLabel);
+        deser = this.projectService.updateArtifact(project.getProjectId(),deser);
+        assertTrue(deser.getLabels().contains(newLabel));
+        JsonUtil.print(this.projectService.readProject(project.getProjectId()).toJson());
+
+        //Assert the actual model was stored
+        String model = this.projectService.getAiModel(project.getProjectId(), deser.getArtifactId());
+        assertNotNull(model);
+        assertTrue(model.length()>0);
+    }
+
+    @Test
+    public void deleteArtifact() throws Exception{
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = JsonParser.parseString(modelPackage).getAsJsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        JsonUtil.print(project.toJson());
+        Artifact deser = this.projectService.getArtifact(project.getProjectId(),
+                project.getArtifacts().get(0).getArtifactId());
+        assertNotNull(deser.getArtifactId());
+        assertNotNull(deser.getAiModel().getModelId());
+        assertEquals(artifact.getLabels(),deser.getLabels());
+        assertEquals(artifact.getFeatures(),deser.getFeatures());
+        assertEquals(artifact.getParameters(),deser.getParameters());
+        assertFalse(artifact.getParameters().isEmpty());
+        assertFalse(deser.getParameters().isEmpty());
+        assertFalse(deser.isLive());
+        assertEquals(scientist.getEmail(),deser.getScientist());
+        assertTrue(project.getTeam().getScientists().contains(new Scientist(deser.getScientist())));
+
+        Project updatedProject = this.projectService.deleteArtifact(project.getProjectId(), deser.getArtifactId());
+        JsonUtil.print(updatedProject.toJson());
+        assertFalse(updatedProject.getArtifacts().contains(deser));
+
+        //Assert the actual model was stored
+        String model = this.projectService.getAiModel(project.getProjectId(), deser.getArtifactId());
+        assertNull(model);
+    }
+
+    @Test
+    public void updateProject() throws Exception{
+        Project project = AllModelTests.mockProject();
+        String projectId = project.getProjectId();
+        Scientist scientist = AllModelTests.mockScientist();
+        project.getTeam().addScientist(scientist);
+        this.projectService.addProject(project);
+
+        Project stored = this.projectService.readProject(projectId);
+        JsonUtil.print(ProjectServiceTests.class,stored.toJson());
+        assertTrue(stored.getTeam().getScientists().contains(scientist));
+
+        stored.getTeam().getScientists().remove(scientist);
+        stored = this.projectService.updateProject(stored);
+        JsonUtil.print(ProjectServiceTests.class,stored.toJson());
+        assertFalse(stored.getTeam().getScientists().contains(scientist));
+    }
+
+    @Test
+    public void verifyDeployment() throws Exception {
     }
 }

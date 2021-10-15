@@ -117,6 +117,73 @@ public class ProjectService {
         }
     }
 
+    public Artifact updateArtifact(String projectId,Artifact artifact){
+        try
+        {
+            Project project = this.readProject(projectId);
+            if(project == null){
+                return null;
+            }
+
+            Artifact current = project.findArtifact(artifact.getArtifactId());
+            if(current == null){
+                return null;
+            }
+
+            project.removeArtifact(artifact);
+            project.addArtifact(artifact);
+            this.updateProject(project);
+
+            return artifact;
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Project deleteArtifact(String projectId,String artifactId){
+        try
+        {
+            Project project = this.readProject(projectId);
+            if(project == null){
+                return null;
+            }
+
+            Artifact current = project.findArtifact(artifactId);
+            if(current == null){
+                return null;
+            }
+
+            project.removeArtifact(current);
+            project = this.updateProject(project);
+
+            return project;
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Project> readProjects(){
+        return this.mongoDBJsonStore.readProjects(this.securityTokenContainer.getTenant());
+    }
+
+    public Project readProject(String projectId)
+    {
+        return this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
+    }
+
+    public Project updateProject(Project project){
+        Project stored = this.readProject(project.getProjectId());
+        if(stored == null){
+            return null;
+        }
+
+        this.mongoDBJsonStore.updateProject(this.securityTokenContainer.getTenant(),project);
+
+        return project;
+    }
+
 
     public String getAiModel(String projectId, String artifactId){
         try{
@@ -134,15 +201,6 @@ public class ProjectService {
         catch (Exception e){
             throw new RuntimeException(e);
         }
-    }
-
-    public List<Project> readProjects(){
-        return this.mongoDBJsonStore.readProjects(this.securityTokenContainer.getTenant());
-    }
-
-    public Project readProject(String projectId)
-    {
-        return this.mongoDBJsonStore.readProject(this.securityTokenContainer.getTenant(),projectId);
     }
 
     public JsonObject trainModelFromData(String projectId, String artifactId){

@@ -38,6 +38,10 @@ public class Project implements Serializable {
         this.artifacts.add(artifact);
     }
 
+    public void removeArtifact(Artifact artifact){
+        this.artifacts.remove(artifact);
+    }
+
     public void setArtifacts(List<Artifact> artifacts) {
         this.artifacts = artifacts;
     }
