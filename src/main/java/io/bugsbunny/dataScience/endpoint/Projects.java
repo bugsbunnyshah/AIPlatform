@@ -66,12 +66,18 @@ public class Projects
                 if(projectJson == null){
                     response.addProperty("project_missing","project_missing");
                 }
-                Response.status(403).entity(response.toString()).build();
+                return Response.status(403).entity(response.toString()).build();
             }
 
             Project project = Project.parse(projectJson.toString());
 
             project = this.projectService.updateProject(project);
+            if(project == null){
+                JsonObject error = new JsonObject();
+                error.addProperty("message", "PROJECT_NOT_FOUND");
+                return Response.status(404).entity(error.toString()).build();
+            }
+
             return Response.ok(project.toJson().toString()).build();
         }
         catch(Exception e)
@@ -100,7 +106,7 @@ public class Projects
                 if (scientist == null) {
                     response.addProperty("scientist_missing", "scientist_missing");
                 }
-                Response.status(403).entity(response.toString()).build();
+                return Response.status(403).entity(response.toString()).build();
             }
 
             Project project = this.projectService.createArtifactForTraining(scientist,json);
@@ -164,12 +170,18 @@ public class Projects
                 if(artifactJson == null){
                     response.addProperty("artifact_missing","artifact_missing");
                 }
-                Response.status(403).entity(response.toString()).build();
+                return Response.status(403).entity(response.toString()).build();
             }
 
             Artifact artifact = Artifact.parse(artifactJson.toString());
 
             artifact = this.projectService.updateArtifact(projectId,artifact);
+            if(artifact == null){
+                JsonObject error = new JsonObject();
+                error.addProperty("message", "ARTIFACT_NOT_FOUND");
+                return Response.status(404).entity(error.toString()).build();
+            }
+
             return Response.ok(artifact.toJson().toString()).build();
         }
         catch(Exception e)
