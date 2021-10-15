@@ -118,7 +118,7 @@ public class Projects
     @Path("/project/artifact")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response readArtifact(@QueryParam("projectId") String projectId, @QueryParam("artifactId") String artifactId)
+    public Response getArtifact(@QueryParam("projectId") String projectId, @QueryParam("artifactId") String artifactId)
     {
         try {
             Artifact artifact = this.projectService.getArtifact(projectId,artifactId);
@@ -181,7 +181,7 @@ public class Projects
         }
     }
 
-    @Path("/project/artifact")
+    @Path("deleteArtifact")
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteArtifact(@QueryParam("projectId") String projectId, @QueryParam("artifactId") String artifactId)
@@ -232,6 +232,11 @@ public class Projects
             String artifactId = json.get("artifactId").getAsString();
 
             String model = this.projectService.getAiModel(projectId,artifactId);
+            if(model == null){
+                JsonObject response = new JsonObject();
+                response.addProperty("message","AI_MODEL_NOT_FOUND");
+                return Response.status(404).entity(response.toString()).build();
+            }
 
             Response response = Response.ok(model).build();
             return response;

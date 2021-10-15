@@ -204,8 +204,8 @@ public class ProjectServiceTests extends BaseTest {
 
         Label newLabel = new Label("newValue","newField");
         deser.addLabel(newLabel);
-        deser = this.projectService.updateArtifact(project.getProjectId(),deser);
-        assertTrue(deser.getLabels().contains(newLabel));
+        Artifact updated = this.projectService.updateArtifact(project.getProjectId(),deser);
+        assertTrue(updated.getLabels().contains(newLabel));
         JsonUtil.print(this.projectService.readProject(project.getProjectId()).toJson());
 
         //Assert the actual model was stored
