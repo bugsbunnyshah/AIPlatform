@@ -48,16 +48,13 @@ public class ProjectService {
             artifact.setScientist(scientist);
 
             //Store the AI Model
-            artifactData.addProperty("live", false);
-            String modelId = this.mongoDBJsonStore.storeModel(this.securityTokenContainer.getTenant(),artifactData);
+            //artifactData.addProperty("live", false);
+            //String modelId = this.mongoDBJsonStore.storeModel(this.securityTokenContainer.getTenant(),artifactData);
 
             //Link to a Project
             JsonArray labels = artifactData.get("labels").getAsJsonArray();
             JsonArray features = artifactData.get("features").getAsJsonArray();
             JsonObject parameters = artifactData.get("parameters").getAsJsonObject();
-            AIModel aiModel = new AIModel();
-            aiModel.setModelId(modelId);
-            artifact.setAiModel(aiModel);
 
             for(int i=0; i<labels.size(); i++){
                 JsonObject local = labels.get(i).getAsJsonObject();
@@ -201,6 +198,34 @@ public class ProjectService {
         catch (Exception e){
             throw new RuntimeException(e);
         }
+    }
+
+    public JsonObject storeAiModel(String projectId, String artifactId, String modelName, String language, String model)
+            throws ArtifactNotFoundException {
+        Artifact artifact = this.getArtifact(projectId,artifactId);
+        if(artifact == null){
+            throw new ArtifactNotFoundException("ARTIFACT_NOT_FOUND");
+        }
+
+        JsonObject modelPackageJson = new JsonObject();
+        modelPackageJson.addProperty("name",modelName);
+        modelPackageJson.addProperty("model",model);
+        modelPackageJson.addProperty("live", false);
+        String modelId = this.mongoDBJsonStore.storeModel(this.securityTokenContainer.getTenant(),modelPackageJson);
+        AIModel aiModel = new AIModel();
+        aiModel.setModelId(modelId);
+        aiModel.setLanguage(language);
+        artifact.setAiModel(aiModel);
+        this.updateArtifact(projectId,artifact);
+
+        JsonObject result = new JsonObject();
+        result.addProperty("projectId",projectId);
+        result.addProperty("artifactId",artifactId);
+        result.addProperty("modelId",modelId);
+        result.addProperty("modelName",modelName);
+        result.addProperty("language",language);
+
+        return result;
     }
 
     public JsonObject trainModelFromDataSet(String projectId, String artifactId, String[] dataSetIds)

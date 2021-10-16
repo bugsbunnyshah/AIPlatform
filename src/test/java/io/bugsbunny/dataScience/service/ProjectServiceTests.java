@@ -3,6 +3,7 @@ package io.bugsbunny.dataScience.service;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import io.bugsbunny.dataScience.model.*;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
@@ -22,55 +23,20 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import io.bugsbunny.dataScience.dl4j.AIPlatformDataSetIteratorFactory;
-import io.bugsbunny.preprocess.SecurityTokenContainer;
-
-import io.bugsbunny.test.components.BaseTest;
-import io.quarkus.test.junit.QuarkusTest;
-import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
-import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.*;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.restassured.response.Response;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.FileUtils;
-
-import org.datavec.api.records.reader.RecordReader;
-import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
-import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
-import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.nd4j.common.primitives.Pair;
-import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.learning.config.Nesterovs;
-import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
-import org.datavec.api.split.FileSplit;
 import org.deeplearning4j.util.ModelSerializer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
@@ -123,7 +89,6 @@ public class ProjectServiceTests extends BaseTest {
         JsonUtil.print(project.toJson());
         Artifact deser = project.getArtifacts().get(0);
         assertNotNull(deser.getArtifactId());
-        assertNotNull(deser.getAiModel().getModelId());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
         assertEquals(artifact.getParameters(),deser.getParameters());
@@ -132,11 +97,6 @@ public class ProjectServiceTests extends BaseTest {
         assertFalse(deser.isLive());
         assertEquals(scientist.getEmail(),deser.getScientist());
         assertTrue(project.getTeam().getScientists().contains(new Scientist(deser.getScientist())));
-
-        //Assert the actual model was stored
-        String model = this.projectService.getAiModel(project.getProjectId(), deser.getArtifactId());
-        assertNotNull(model);
-        assertTrue(model.length()>0);
     }
 
     @Test
@@ -161,7 +121,6 @@ public class ProjectServiceTests extends BaseTest {
         Artifact deser = this.projectService.getArtifact(project.getProjectId(),
                 project.getArtifacts().get(0).getArtifactId());
         assertNotNull(deser.getArtifactId());
-        assertNotNull(deser.getAiModel().getModelId());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
         assertEquals(artifact.getParameters(),deser.getParameters());
@@ -170,11 +129,6 @@ public class ProjectServiceTests extends BaseTest {
         assertFalse(deser.isLive());
         assertEquals(scientist.getEmail(),deser.getScientist());
         assertTrue(project.getTeam().getScientists().contains(new Scientist(deser.getScientist())));
-
-        //Assert the actual model was stored
-        String model = this.projectService.getAiModel(project.getProjectId(), deser.getArtifactId());
-        assertNotNull(model);
-        assertTrue(model.length()>0);
     }
 
     @Test
@@ -247,7 +201,6 @@ public class ProjectServiceTests extends BaseTest {
         Artifact deser = this.projectService.getArtifact(project.getProjectId(),
                 project.getArtifacts().get(0).getArtifactId());
         assertNotNull(deser.getArtifactId());
-        assertNotNull(deser.getAiModel().getModelId());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
         assertEquals(artifact.getParameters(),deser.getParameters());
@@ -262,11 +215,6 @@ public class ProjectServiceTests extends BaseTest {
         Artifact updated = this.projectService.updateArtifact(project.getProjectId(),deser);
         assertTrue(updated.getLabels().contains(newLabel));
         JsonUtil.print(this.projectService.readProject(project.getProjectId()).toJson());
-
-        //Assert the actual model was stored
-        String model = this.projectService.getAiModel(project.getProjectId(), deser.getArtifactId());
-        assertNotNull(model);
-        assertTrue(model.length()>0);
     }
 
     @Test
@@ -291,7 +239,6 @@ public class ProjectServiceTests extends BaseTest {
         Artifact deser = this.projectService.getArtifact(project.getProjectId(),
                 project.getArtifacts().get(0).getArtifactId());
         assertNotNull(deser.getArtifactId());
-        assertNotNull(deser.getAiModel().getModelId());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
         assertEquals(artifact.getParameters(),deser.getParameters());
@@ -304,10 +251,6 @@ public class ProjectServiceTests extends BaseTest {
         Project updatedProject = this.projectService.deleteArtifact(project.getProjectId(), deser.getArtifactId());
         JsonUtil.print(updatedProject.toJson());
         assertFalse(updatedProject.getArtifacts().contains(deser));
-
-        //Assert the actual model was stored
-        String model = this.projectService.getAiModel(project.getProjectId(), deser.getArtifactId());
-        assertNull(model);
     }
 
     @Test
@@ -375,6 +318,9 @@ public class ProjectServiceTests extends BaseTest {
 
         Scientist scientist = AllModelTests.mockScientist();
         Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        this.projectService.storeAiModel(project.getProjectId(),project.getArtifacts().get(0).getArtifactId(),
+                "testModel","java",
+                modelString);
 
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
@@ -440,6 +386,9 @@ public class ProjectServiceTests extends BaseTest {
 
         Scientist scientist = AllModelTests.mockScientist();
         Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        this.projectService.storeAiModel(project.getProjectId(),project.getArtifacts().get(0).getArtifactId(),
+                "testModel","java",
+                modelString);
 
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
@@ -467,5 +416,36 @@ public class ProjectServiceTests extends BaseTest {
         JsonObject confusion = trainingResult.get("confusion").getAsJsonObject();
         JsonUtil.print(confusion);
         assertNotNull(confusion);
+    }
+
+    @Test
+    public void storeAiModel() throws Exception{
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = new JsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        JsonUtil.print(project.toJson());
+
+        Artifact createdArtifact = project.getArtifacts().get(0);
+
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        String model = JsonParser.parseString(modelPackage).getAsJsonObject().get("model").getAsString();
+        JsonObject json = this.projectService.storeAiModel(project.getProjectId(),
+                createdArtifact.getArtifactId(),"testModel","java",model);
+        JsonUtil.print(json);
+
+        createdArtifact = this.projectService.getArtifact(project.getProjectId(),createdArtifact.getArtifactId());
+        JsonUtil.print(createdArtifact.toJson());
+        assertEquals(createdArtifact.getAiModel().getModelId(),json.get("modelId").getAsString());
     }
 }

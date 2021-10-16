@@ -131,7 +131,6 @@ public class ProjectTests extends BaseTest
 
         Artifact deser = project.getArtifacts().get(0);
         assertNotNull(deser.getArtifactId());
-        assertNotNull(deser.getAiModel().getModelId());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
         assertEquals(artifact.getParameters(),deser.getParameters());
@@ -140,19 +139,6 @@ public class ProjectTests extends BaseTest
         assertFalse(deser.isLive());
         assertEquals(scientist.getEmail(),deser.getScientist());
         assertTrue(project.getTeam().getScientists().contains(new Scientist(deser.getScientist())));
-
-        //Assert the actual model was stored
-        JsonObject json = new JsonObject();
-        json.addProperty("projectId",project.getProjectId());
-        json.addProperty("artifactId", deser.getArtifactId());
-        url = "/projects/model/";
-        response = given().
-                body(json.toString()).post(url)
-                .andReturn();
-        assertEquals(200, response.getStatusCode());
-        String model = response.body().asString();
-        //logger.info(model);
-        assertTrue(model.length() > 0);
     }
 
     @Test
@@ -217,7 +203,6 @@ public class ProjectTests extends BaseTest
         JsonUtil.print(deser.toJson());
 
         assertNotNull(deser.getArtifactId());
-        assertNotNull(deser.getAiModel().getModelId());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
         assertEquals(artifact.getParameters(),deser.getParameters());
@@ -226,19 +211,6 @@ public class ProjectTests extends BaseTest
         assertFalse(deser.isLive());
         assertEquals(scientist.getEmail(),deser.getScientist());
         assertTrue(project.getTeam().getScientists().contains(new Scientist(deser.getScientist())));
-
-        //Assert the actual model was stored
-        JsonObject json = new JsonObject();
-        json.addProperty("projectId",project.getProjectId());
-        json.addProperty("artifactId", deser.getArtifactId());
-        url = "/projects/model/";
-        response = given().
-                body(json.toString()).post(url)
-                .andReturn();
-        assertEquals(200, response.getStatusCode());
-        String model = response.body().asString();
-        //logger.info(model);
-        assertTrue(model.length() > 0);
     }
 
     @Test
@@ -351,7 +323,6 @@ public class ProjectTests extends BaseTest
         JsonUtil.print(deser.toJson());
 
         assertNotNull(deser.getArtifactId());
-        assertNotNull(deser.getAiModel().getModelId());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
         assertEquals(artifact.getParameters(),deser.getParameters());
@@ -375,19 +346,6 @@ public class ProjectTests extends BaseTest
         Artifact updated = Artifact.parse(response.body().asString());
         assertTrue(updated.getLabels().contains(newLabel));
         JsonUtil.print(this.projectService.readProject(project.getProjectId()).toJson());
-
-        //Assert the actual model was stored
-        json = new JsonObject();
-        json.addProperty("projectId",project.getProjectId());
-        json.addProperty("artifactId", deser.getArtifactId());
-        url = "/projects/model/";
-        response = given().
-                body(json.toString()).post(url)
-                .andReturn();
-        assertEquals(200, response.getStatusCode());
-        String model = response.body().asString();
-        //logger.info(model);
-        assertTrue(model.length() > 0);
     }
 
     @Test
@@ -427,7 +385,6 @@ public class ProjectTests extends BaseTest
         JsonUtil.print(deser.toJson());
 
         assertNotNull(deser.getArtifactId());
-        assertNotNull(deser.getAiModel().getModelId());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
         assertEquals(artifact.getParameters(),deser.getParameters());
@@ -449,19 +406,6 @@ public class ProjectTests extends BaseTest
         JsonObject error = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
         assertEquals("project_id_missing",error.get("project_id_missing").getAsString());
         assertEquals("artifact_missing",error.get("artifact_missing").getAsString());
-
-        //Assert the actual model was stored
-        json = new JsonObject();
-        json.addProperty("projectId",project.getProjectId());
-        json.addProperty("artifactId", deser.getArtifactId());
-        url = "/projects/model/";
-        response = given().
-                body(json.toString()).post(url)
-                .andReturn();
-        assertEquals(200, response.getStatusCode());
-        String model = response.body().asString();
-        //logger.info(model);
-        assertTrue(model.length() > 0);
     }
 
     @Test
@@ -501,7 +445,6 @@ public class ProjectTests extends BaseTest
         JsonUtil.print(deser.toJson());
 
         assertNotNull(deser.getArtifactId());
-        assertNotNull(deser.getAiModel().getModelId());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
         assertEquals(artifact.getParameters(),deser.getParameters());
@@ -524,19 +467,6 @@ public class ProjectTests extends BaseTest
         assertEquals(404, response.getStatusCode());
         JsonObject error = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
         assertEquals("ARTIFACT_NOT_FOUND",error.get("message").getAsString());
-
-        //Assert the actual model was stored
-        json = new JsonObject();
-        json.addProperty("projectId",project.getProjectId());
-        json.addProperty("artifactId", deser.getArtifactId());
-        url = "/projects/model/";
-        response = given().
-                body(json.toString()).post(url)
-                .andReturn();
-        assertEquals(200, response.getStatusCode());
-        String model = response.body().asString();
-        //logger.info(model);
-        assertTrue(model.length() > 0);
     }
 
     @Test
@@ -576,7 +506,6 @@ public class ProjectTests extends BaseTest
         JsonUtil.print(deser.toJson());
 
         assertNotNull(deser.getArtifactId());
-        assertNotNull(deser.getAiModel().getModelId());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
         assertEquals(artifact.getParameters(),deser.getParameters());
@@ -595,18 +524,6 @@ public class ProjectTests extends BaseTest
         Project updatedProject = Project.parse(response.body().asString());
         JsonUtil.print(this.projectService.readProject(project.getProjectId()).toJson());
         assertFalse(updatedProject.getArtifacts().contains(deser));
-
-        //Assert the actual model was stored
-        JsonObject json = new JsonObject();
-        json.addProperty("projectId",project.getProjectId());
-        json.addProperty("artifactId", deser.getArtifactId());
-        url = "/projects/model/";
-        response = given().
-                body(json.toString()).post(url)
-                .andReturn();
-        assertEquals(404, response.getStatusCode());
-        JsonObject modelNotFound = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
-        assertEquals("AI_MODEL_NOT_FOUND",modelNotFound.get("message").getAsString());
     }
 
     @Test
@@ -646,7 +563,6 @@ public class ProjectTests extends BaseTest
         JsonUtil.print(deser.toJson());
 
         assertNotNull(deser.getArtifactId());
-        assertNotNull(deser.getAiModel().getModelId());
         assertEquals(artifact.getLabels(),deser.getLabels());
         assertEquals(artifact.getFeatures(),deser.getFeatures());
         assertEquals(artifact.getParameters(),deser.getParameters());
@@ -664,18 +580,5 @@ public class ProjectTests extends BaseTest
         assertEquals(404, response.getStatusCode());
         JsonObject error = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
         assertEquals("ARTIFACT_NOT_FOUND",error.get("message").getAsString());
-
-        //Assert the actual model was stored
-        JsonObject json = new JsonObject();
-        json.addProperty("projectId",project.getProjectId());
-        json.addProperty("artifactId", deser.getArtifactId());
-        url = "/projects/model/";
-        response = given().
-                body(json.toString()).post(url)
-                .andReturn();
-        assertEquals(200, response.getStatusCode());
-        String model = response.body().asString();
-        //logger.info(model);
-        assertTrue(model.length() > 0);
     }
 }

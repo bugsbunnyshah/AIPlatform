@@ -95,6 +95,9 @@ public class TrainModelTests extends BaseTest {
 
         Scientist scientist = AllModelTests.mockScientist();
         Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        this.projectService.storeAiModel(project.getProjectId(),project.getArtifacts().get(0).getArtifactId(),
+                "testModel","java",
+                modelString);
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
                 Thread.currentThread().getContextClassLoader());
@@ -267,6 +270,9 @@ public class TrainModelTests extends BaseTest {
 
         Scientist scientist = AllModelTests.mockScientist();
         Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        this.projectService.storeAiModel(project.getProjectId(),project.getArtifacts().get(0).getArtifactId(),
+                "testModel","java",
+                modelString);
 
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
