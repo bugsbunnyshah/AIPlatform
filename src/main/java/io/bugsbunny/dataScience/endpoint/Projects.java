@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.model.Artifact;
 import io.bugsbunny.dataScience.model.Project;
+import io.bugsbunny.dataScience.service.ArtifactNotFoundException;
 import io.bugsbunny.dataScience.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -252,6 +253,95 @@ public class Projects
 
             Response response = Response.ok(model).build();
             return response;
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            JsonObject error = new JsonObject();
+            error.addProperty("exception", e.getMessage());
+            return Response.status(500).entity(error.toString()).build();
+        }
+    }
+
+    @Path("storeModel")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response storeModel(@RequestBody String input)
+    {
+        try {
+            JsonObject json = JsonParser.parseString(input).getAsJsonObject();
+
+            String projectId = null;
+            if(json.has("projectId")){
+                projectId = json.get("projectId").getAsString();
+            }
+
+            String artifactId = null;
+            if(json.has("artifactId")){
+                artifactId = json.get("artifactId").getAsString();
+            }
+
+            JsonObject modelJson = null;
+            if(json.has("modelPackage")){
+                modelJson = json.get("modelPackage").getAsJsonObject();
+            }
+
+            if(projectId == null || artifactId == null || modelJson == null){
+                JsonObject error = new JsonObject();
+                if(projectId == null)
+                {
+                    error.addProperty("project_id_missing","project_id_missing");
+                }
+                if(artifactId == null){
+                    error.addProperty("artifact_id_missing","artifact_id_missing");
+                }
+                if(modelJson == null){
+                    error.addProperty("model_package_missing","model_package_missing");
+                }
+                return Response.status(403).entity(error.toString()).build();
+            }
+
+            String modelName = null;
+            if(modelJson.has("name")){
+                modelName = modelJson.get("name").getAsString();
+            }
+
+            String language = null;
+            if(modelJson.has("language")){
+                language = modelJson.get("language").getAsString();
+            }
+
+            String modelString = null;
+            if(modelJson.has("model")){
+                modelString = modelJson.get("model").getAsString();
+            }
+
+            //Validate
+            if(modelName == null || language == null || modelString == null){
+                JsonObject error = new JsonObject();
+                if(modelName == null)
+                {
+                    error.addProperty("model_name_missing","model_name_missing");
+                }
+                if(language == null){
+                    error.addProperty("language_missing","language_missing");
+                }
+                if(modelString == null){
+                    error.addProperty("model_missing","model_missing");
+                }
+                return Response.status(403).entity(error.toString()).build();
+            }
+
+            JsonObject modelMetaDataJson = this.projectService.storeAiModel(projectId,artifactId,
+                    modelName,language,modelString);
+
+            Response response = Response.ok(modelMetaDataJson.toString()).build();
+            return response;
+        }
+        catch(ArtifactNotFoundException artifactNotFoundException){
+            JsonObject error = new JsonObject();
+            error.addProperty("message", "ARTIFACT_NOT_FOUND");
+            return Response.status(404).entity(error.toString()).build();
         }
         catch(Exception e)
         {

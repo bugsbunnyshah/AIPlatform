@@ -201,7 +201,7 @@ public class ProjectService {
     }
 
     public JsonObject storeAiModel(String projectId, String artifactId, String modelName, String language, String model)
-            throws ArtifactNotFoundException {
+            throws ArtifactNotFoundException{
         Artifact artifact = this.getArtifact(projectId,artifactId);
         if(artifact == null){
             throw new ArtifactNotFoundException("ARTIFACT_NOT_FOUND");

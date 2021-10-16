@@ -581,4 +581,135 @@ public class ProjectTests extends BaseTest
         JsonObject error = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
         assertEquals("ARTIFACT_NOT_FOUND",error.get("message").getAsString());
     }
+
+    @Test
+    public void storeModel() throws Exception{
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = new JsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        JsonUtil.print(project.toJson());
+
+        Artifact createdArtifact = project.getArtifacts().get(0);
+
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        String name = JsonParser.parseString(modelPackage).getAsJsonObject().get("name").getAsString();
+        String model = JsonParser.parseString(modelPackage).getAsJsonObject().get("model").getAsString();
+        String language = "java";
+        JsonObject modelPackageJson = new JsonObject();
+        modelPackageJson.addProperty("name",name);
+        modelPackageJson.addProperty("language",language);
+        modelPackageJson.addProperty("model",model);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("projectId",project.getProjectId());
+        json.addProperty("artifactId",createdArtifact.getArtifactId());
+        json.add("modelPackage",modelPackageJson);
+
+        String url = "/projects/storeModel/";
+        Response response = given().body(json.toString()).post(url)
+                .andReturn();
+        response.getBody().prettyPrint();
+        assertEquals(200, response.getStatusCode());
+        JsonObject responseJson = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+
+        createdArtifact = this.projectService.getArtifact(project.getProjectId(),createdArtifact.getArtifactId());
+        JsonUtil.print(createdArtifact.toJson());
+        assertEquals(createdArtifact.getAiModel().getModelId(),responseJson.get("modelId").getAsString());
+    }
+
+    @Test
+    public void storeModelExceptions() throws Exception{
+        Artifact artifact = AllModelTests.mockArtifact();
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+
+        JsonObject input = new JsonObject();
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+
+        Scientist scientist = AllModelTests.mockScientist();
+
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        JsonUtil.print(project.toJson());
+
+        Artifact createdArtifact = project.getArtifacts().get(0);
+
+        String modelPackage = IOUtils.resourceToString("dataScience/aiplatform-model.json", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+        String name = JsonParser.parseString(modelPackage).getAsJsonObject().get("name").getAsString();
+        String model = JsonParser.parseString(modelPackage).getAsJsonObject().get("model").getAsString();
+        String language = "java";
+        JsonObject modelPackageJson = new JsonObject();
+        modelPackageJson.addProperty("name",name);
+        modelPackageJson.addProperty("language",language);
+        modelPackageJson.addProperty("model",model);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("projectId",project.getProjectId());
+        json.addProperty("artifactId",createdArtifact.getArtifactId());
+        json.add("modelPackage",modelPackageJson);
+
+        //ARTIFACT_NOT_FOUND
+        String url = "/projects/storeModel/";
+        json.addProperty("projectId","blah");
+        Response response = given().body(json.toString()).post(url)
+                .andReturn();
+        response.getBody().prettyPrint();
+        assertEquals(404, response.getStatusCode());
+        JsonObject error = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+        assertEquals("ARTIFACT_NOT_FOUND",error.get("message").getAsString());
+
+        url = "/projects/storeModel/";
+        json.addProperty("projectId",project.getProjectId());
+        json.addProperty("artifactId","blah");
+        response = given().body(json.toString()).post(url)
+                .andReturn();
+        response.getBody().prettyPrint();
+        assertEquals(404, response.getStatusCode());
+        error = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+        assertEquals("ARTIFACT_NOT_FOUND",error.get("message").getAsString());
+
+        //VALIDATION_ERROR
+        url = "/projects/storeModel/";
+        json.remove("projectId");
+        json.remove("artifactId");
+        json.remove("modelPackage");
+        response = given().body(json.toString()).post(url)
+                .andReturn();
+        response.getBody().prettyPrint();
+        assertEquals(403, response.getStatusCode());
+        error = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+        assertEquals("project_id_missing",error.get("project_id_missing").getAsString());
+        assertEquals("artifact_id_missing",error.get("artifact_id_missing").getAsString());
+        assertEquals("model_package_missing",error.get("model_package_missing").getAsString());
+
+        url = "/projects/storeModel/";
+        json.addProperty("projectId",project.getProjectId());
+        json.addProperty("artifactId",createdArtifact.getArtifactId());
+        modelPackageJson.remove("name");
+        modelPackageJson.remove("language");
+        modelPackageJson.remove("model");
+        json.add("modelPackage",modelPackageJson);
+        response = given().body(json.toString()).post(url)
+                .andReturn();
+        response.getBody().prettyPrint();
+        assertEquals(403, response.getStatusCode());
+        error = JsonParser.parseString(response.getBody().asString()).getAsJsonObject();
+        assertEquals("model_name_missing",error.get("model_name_missing").getAsString());
+        assertEquals("language_missing",error.get("language_missing").getAsString());
+        assertEquals("model_missing",error.get("model_missing").getAsString());
+    }
 }
