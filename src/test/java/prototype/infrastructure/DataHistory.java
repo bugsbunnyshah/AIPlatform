@@ -466,6 +466,266 @@ public class DataHistory {
         System.out.println(this.detectUpdates(ingestion1,ingestion2));
     }
 
+    @Test
+    public void detectNewObjects() throws Exception
+    {
+        Map<Integer,String> oids = new HashMap<>();
+        oids.put(0,UUID.randomUUID().toString());
+        oids.put(1,UUID.randomUUID().toString());
+        oids.put(2,UUID.randomUUID().toString());
+
+        JsonArray ingestion1 = new JsonArray();
+        OffsetDateTime ingestion1Time = OffsetDateTime.now();
+        for(int i=0; i<3; i++){
+            JsonObject data = new JsonObject();
+            ingestion1.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion1Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion1);
+
+        JsonArray ingestion2 = new JsonArray();
+        OffsetDateTime ingestion2Time = OffsetDateTime.now();
+        ingestion2Time = ingestion2Time.plus(5, ChronoUnit.MINUTES);
+        for(int i=0; i<3; i++){
+            JsonObject data = new JsonObject();
+            ingestion2.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion2Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion2);
+
+        System.out.println(this.detectAdds(ingestion1,ingestion2));
+    }
+
+    @Test
+    public void detectNewObjectsMoreOnNext() throws Exception
+    {
+        Map<Integer,String> oids = new HashMap<>();
+        oids.put(0,UUID.randomUUID().toString());
+        oids.put(1,UUID.randomUUID().toString());
+        oids.put(2,UUID.randomUUID().toString());
+        oids.put(3,UUID.randomUUID().toString());
+        oids.put(4,UUID.randomUUID().toString());
+
+        JsonArray ingestion1 = new JsonArray();
+        OffsetDateTime ingestion1Time = OffsetDateTime.now();
+        for(int i=0; i<3; i++){
+            JsonObject data = new JsonObject();
+            ingestion1.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion1Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion1);
+
+        JsonArray ingestion2 = new JsonArray();
+        OffsetDateTime ingestion2Time = OffsetDateTime.now();
+        ingestion2Time = ingestion2Time.plus(5, ChronoUnit.MINUTES);
+        for(int i=0; i<5; i++){
+            JsonObject data = new JsonObject();
+            ingestion2.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion2Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion2);
+
+        System.out.println(this.detectAdds(ingestion1,ingestion2));
+    }
+
+    @Test
+    public void detectNewObjectsMoreOnTop() throws Exception
+    {
+        Map<Integer,String> oids = new HashMap<>();
+        oids.put(0,UUID.randomUUID().toString());
+        oids.put(1,UUID.randomUUID().toString());
+        oids.put(2,UUID.randomUUID().toString());
+        oids.put(3,UUID.randomUUID().toString());
+        oids.put(4,UUID.randomUUID().toString());
+
+        JsonArray ingestion1 = new JsonArray();
+        OffsetDateTime ingestion1Time = OffsetDateTime.now();
+        for(int i=0; i<5; i++){
+            JsonObject data = new JsonObject();
+            ingestion1.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion1Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion1);
+
+        JsonArray ingestion2 = new JsonArray();
+        OffsetDateTime ingestion2Time = OffsetDateTime.now();
+        ingestion2Time = ingestion2Time.plus(5, ChronoUnit.MINUTES);
+        for(int i=0; i<3; i++){
+            JsonObject data = new JsonObject();
+            ingestion2.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion2Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion2);
+
+        System.out.println(this.detectAdds(ingestion1,ingestion2));
+    }
+
+    @Test
+    public void detectDeletedObjects() throws Exception
+    {
+        Map<Integer,String> oids = new HashMap<>();
+        oids.put(0,UUID.randomUUID().toString());
+        oids.put(1,UUID.randomUUID().toString());
+        oids.put(2,UUID.randomUUID().toString());
+
+        JsonArray ingestion1 = new JsonArray();
+        OffsetDateTime ingestion1Time = OffsetDateTime.now();
+        for(int i=0; i<3; i++){
+            JsonObject data = new JsonObject();
+            ingestion1.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion1Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion1);
+
+        JsonArray ingestion2 = new JsonArray();
+        OffsetDateTime ingestion2Time = OffsetDateTime.now();
+        ingestion2Time = ingestion2Time.plus(5, ChronoUnit.MINUTES);
+        for(int i=0; i<3; i++){
+            JsonObject data = new JsonObject();
+            ingestion2.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion2Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion2);
+
+        System.out.println(this.detectDeletes(ingestion1,ingestion2));
+    }
+
+    @Test
+    public void detectDeletedObjectsMoreOnTop() throws Exception
+    {
+        Map<Integer,String> oids = new HashMap<>();
+        oids.put(0,UUID.randomUUID().toString());
+        oids.put(1,UUID.randomUUID().toString());
+        oids.put(2,UUID.randomUUID().toString());
+        oids.put(3,UUID.randomUUID().toString());
+        oids.put(4,UUID.randomUUID().toString());
+
+        JsonArray ingestion1 = new JsonArray();
+        OffsetDateTime ingestion1Time = OffsetDateTime.now();
+        for(int i=0; i<5; i++){
+            JsonObject data = new JsonObject();
+            ingestion1.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion1Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion1);
+
+        JsonArray ingestion2 = new JsonArray();
+        OffsetDateTime ingestion2Time = OffsetDateTime.now();
+        ingestion2Time = ingestion2Time.plus(5, ChronoUnit.MINUTES);
+        for(int i=0; i<3; i++){
+            JsonObject data = new JsonObject();
+            ingestion2.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion2Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion2);
+
+        System.out.println(this.detectDeletes(ingestion1,ingestion2));
+    }
+
+    @Test
+    public void detectDeletedObjectsMoreOnNext() throws Exception
+    {
+        Map<Integer,String> oids = new HashMap<>();
+        oids.put(0,UUID.randomUUID().toString());
+        oids.put(1,UUID.randomUUID().toString());
+        oids.put(2,UUID.randomUUID().toString());
+        oids.put(3,UUID.randomUUID().toString());
+        oids.put(4,UUID.randomUUID().toString());
+
+        JsonArray ingestion1 = new JsonArray();
+        OffsetDateTime ingestion1Time = OffsetDateTime.now();
+        for(int i=0; i<3; i++){
+            JsonObject data = new JsonObject();
+            ingestion1.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion1Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion1);
+
+        JsonArray ingestion2 = new JsonArray();
+        OffsetDateTime ingestion2Time = OffsetDateTime.now();
+        ingestion2Time = ingestion2Time.plus(5, ChronoUnit.MINUTES);
+        for(int i=0; i<5; i++){
+            JsonObject data = new JsonObject();
+            ingestion2.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion2Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion2);
+
+        System.out.println(this.detectDeletes(ingestion1,ingestion2));
+    }
+
     private List<String> detectUpdates(JsonArray top,JsonArray next){
         List<String> results = new ArrayList<>();
 
@@ -489,6 +749,58 @@ public class DataHistory {
             }
         }
 
+        return results;
+    }
+
+    private List<String> detectAdds(JsonArray top,JsonArray next){
+        List<String> results = new ArrayList<>();
+
+        Map<String, Object> topMap = JsonFlattener.flattenAsMap(top.toString());
+        Map<String, Object> nextMap = JsonFlattener.flattenAsMap(next.toString());
+
+        int topArraySize = top.size();
+        int nextArraySize = next.size();
+
+        for(int i=0; i<nextArraySize; i++){
+            String currentOid = nextMap.get("["+i+"].oid").toString();
+            boolean objectFound = false;
+            for(int j=0; j<topArraySize; j++){
+                String nextOid = topMap.get("["+j+"].oid").toString();
+                if(currentOid.equals(nextOid)){
+                    objectFound = true;
+                    break;
+                }
+            }
+            if(!objectFound) {
+                results.add(currentOid);
+            }
+        }
+        return results;
+    }
+
+    private List<String> detectDeletes(JsonArray top,JsonArray next){
+        List<String> results = new ArrayList<>();
+
+        Map<String, Object> topMap = JsonFlattener.flattenAsMap(top.toString());
+        Map<String, Object> nextMap = JsonFlattener.flattenAsMap(next.toString());
+
+        int topArraySize = top.size();
+        int nextArraySize = next.size();
+
+        for(int i=0; i<topArraySize; i++){
+            String currentOid = topMap.get("["+i+"].oid").toString();
+            boolean objectFound = false;
+            for(int j=0; j<nextArraySize; j++){
+                String nextOid = nextMap.get("["+j+"].oid").toString();
+                if(currentOid.equals(nextOid)){
+                    objectFound = true;
+                    break;
+                }
+            }
+            if(!objectFound) {
+                results.add(currentOid);
+            }
+        }
         return results;
     }
 
