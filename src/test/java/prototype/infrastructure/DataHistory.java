@@ -22,6 +22,105 @@ import javax.xml.crypto.Data;
 public class DataHistory {
 
     @Test
+    public void createStateByTimelineReal() throws Exception
+    {
+        Map<Integer,String> oids = new HashMap<>();
+        oids.put(0,UUID.randomUUID().toString());
+        oids.put(1,UUID.randomUUID().toString());
+        oids.put(2,UUID.randomUUID().toString());
+        oids.put(3,UUID.randomUUID().toString());
+        oids.put(4,UUID.randomUUID().toString());
+
+        Set<DataLakeObject> datalake = new HashSet<>();
+        List<JsonArray> dataHistory = new ArrayList<>();
+
+
+        //ingestion0
+        OffsetDateTime ingestion0Time = OffsetDateTime.now();
+        JsonArray ingestion0 = this.mockIngestion(oids, ingestion0Time,2);
+        this.performIngestion(datalake,dataHistory,ingestion0);
+
+        //ingestion1
+        OffsetDateTime ingestion1Time = OffsetDateTime.now();
+        ingestion1Time = ingestion1Time.plus(5, ChronoUnit.MINUTES);
+        JsonArray ingestion1 = this.mockIngestion(oids, ingestion1Time,3);
+        this.performIngestion(datalake,dataHistory,ingestion1);
+
+        //ingestion2
+        OffsetDateTime ingestion2Time = OffsetDateTime.now();
+        ingestion2Time = ingestion2Time.plus(10, ChronoUnit.MINUTES);
+        JsonArray ingestion2 = this.mockIngestion(oids, ingestion2Time,2);
+        this.performIngestion(datalake,dataHistory,ingestion2);
+
+        //ingestion3
+        OffsetDateTime ingestion3Time = OffsetDateTime.now();
+        ingestion3Time = ingestion3Time.plus(15, ChronoUnit.MINUTES);
+        JsonArray ingestion3 = this.mockIngestion(oids, ingestion3Time,3);
+        this.performIngestion(datalake,dataHistory,ingestion3);
+
+        JsonUtil.print(JsonParser.parseString(datalake.toString()));
+        JsonUtil.print(JsonParser.parseString(dataHistory.toString()));
+
+        //Create State
+        Set<String> state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion3Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+    }
+
+    @Test
+    public void createStateByTimelineUnique() throws Exception
+    {
+        Set<DataLakeObject> datalake = new HashSet<>();
+        List<JsonArray> dataHistory = new ArrayList<>();
+
+
+        //ingestion0
+        OffsetDateTime ingestion0Time = OffsetDateTime.now();
+        JsonArray ingestion0 = this.mockIngestion(ingestion0Time,2);
+        this.performIngestion(datalake,dataHistory,ingestion0);
+
+        //ingestion1
+        OffsetDateTime ingestion1Time = OffsetDateTime.now();
+        ingestion1Time = ingestion1Time.plus(5, ChronoUnit.MINUTES);
+        JsonArray ingestion1 = this.mockIngestion(ingestion1Time,3);
+        this.performIngestion(datalake,dataHistory,ingestion1);
+
+        //ingestion2
+        OffsetDateTime ingestion2Time = OffsetDateTime.now();
+        ingestion2Time = ingestion2Time.plus(10, ChronoUnit.MINUTES);
+        JsonArray ingestion2 = this.mockIngestion(ingestion2Time,2);
+        this.performIngestion(datalake,dataHistory,ingestion2);
+
+        //ingestion3
+        OffsetDateTime ingestion3Time = OffsetDateTime.now();
+        ingestion3Time = ingestion3Time.plus(15, ChronoUnit.MINUTES);
+        JsonArray ingestion3 = this.mockIngestion(ingestion3Time,3);
+        this.performIngestion(datalake,dataHistory,ingestion3);
+
+        //JsonUtil.print(JsonParser.parseString(datalake.toString()));
+        JsonUtil.print(JsonParser.parseString(dataHistory.toString()));
+
+        //Create State
+        Set<String> state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion2Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+
+        state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion1Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+
+        state = this.generateState(datalake,dataHistory,ingestion0Time,ingestion3Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+
+        state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion3Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+
+        state = this.generateState(datalake,dataHistory,ingestion2Time,ingestion2Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+
+        state = this.generateState(datalake,dataHistory,ingestion3Time,ingestion3Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+    }
+    //------------------
+
+    @Test
     public void detectUpdatesAll() throws Exception
     {
         Map<Integer,String> oids = new HashMap<>();
@@ -792,89 +891,6 @@ public class DataHistory {
         Set<String> state = this.calculateState(ingestion1,ingestion2);
         System.out.println("********************");
         System.out.println(state);
-    }
-
-    @Test
-    public void createStateByTimelineReal() throws Exception
-    {
-        Map<Integer,String> oids = new HashMap<>();
-        oids.put(0,UUID.randomUUID().toString());
-        oids.put(1,UUID.randomUUID().toString());
-        oids.put(2,UUID.randomUUID().toString());
-        oids.put(3,UUID.randomUUID().toString());
-        oids.put(4,UUID.randomUUID().toString());
-
-        Set<DataLakeObject> datalake = new HashSet<>();
-        List<JsonArray> dataHistory = new ArrayList<>();
-
-
-        //ingestion0
-        OffsetDateTime ingestion0Time = OffsetDateTime.now();
-        JsonArray ingestion0 = this.mockIngestion(oids, ingestion0Time,2);
-        this.performIngestion(datalake,dataHistory,ingestion0);
-
-        //ingestion1
-        OffsetDateTime ingestion1Time = OffsetDateTime.now();
-        ingestion1Time = ingestion1Time.plus(5, ChronoUnit.MINUTES);
-        JsonArray ingestion1 = this.mockIngestion(oids, ingestion1Time,3);
-        this.performIngestion(datalake,dataHistory,ingestion1);
-
-        //ingestion2
-        OffsetDateTime ingestion2Time = OffsetDateTime.now();
-        ingestion2Time = ingestion2Time.plus(10, ChronoUnit.MINUTES);
-        JsonArray ingestion2 = this.mockIngestion(oids, ingestion2Time,2);
-        this.performIngestion(datalake,dataHistory,ingestion2);
-
-        //ingestion3
-        OffsetDateTime ingestion3Time = OffsetDateTime.now();
-        ingestion3Time = ingestion3Time.plus(15, ChronoUnit.MINUTES);
-        JsonArray ingestion3 = this.mockIngestion(oids, ingestion3Time,3);
-        this.performIngestion(datalake,dataHistory,ingestion3);
-
-        JsonUtil.print(JsonParser.parseString(datalake.toString()));
-        JsonUtil.print(JsonParser.parseString(dataHistory.toString()));
-
-        //Create State
-        Set<String> state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion3Time);
-        JsonUtil.print(JsonParser.parseString(state.toString()));
-    }
-
-    @Test
-    public void createStateByTimelineUnique() throws Exception
-    {
-        Set<DataLakeObject> datalake = new HashSet<>();
-        List<JsonArray> dataHistory = new ArrayList<>();
-
-
-        //ingestion0
-        OffsetDateTime ingestion0Time = OffsetDateTime.now();
-        JsonArray ingestion0 = this.mockIngestion(ingestion0Time,2);
-        this.performIngestion(datalake,dataHistory,ingestion0);
-
-        //ingestion1
-        OffsetDateTime ingestion1Time = OffsetDateTime.now();
-        ingestion1Time = ingestion1Time.plus(5, ChronoUnit.MINUTES);
-        JsonArray ingestion1 = this.mockIngestion(ingestion1Time,3);
-        this.performIngestion(datalake,dataHistory,ingestion1);
-
-        //ingestion2
-        OffsetDateTime ingestion2Time = OffsetDateTime.now();
-        ingestion2Time = ingestion2Time.plus(10, ChronoUnit.MINUTES);
-        JsonArray ingestion2 = this.mockIngestion(ingestion2Time,2);
-        this.performIngestion(datalake,dataHistory,ingestion2);
-
-        //ingestion3
-        OffsetDateTime ingestion3Time = OffsetDateTime.now();
-        ingestion3Time = ingestion3Time.plus(15, ChronoUnit.MINUTES);
-        JsonArray ingestion3 = this.mockIngestion(ingestion3Time,3);
-        this.performIngestion(datalake,dataHistory,ingestion3);
-
-        //JsonUtil.print(JsonParser.parseString(datalake.toString()));
-        JsonUtil.print(JsonParser.parseString(dataHistory.toString()));
-
-        //Create State
-        Set<String> state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion2Time);
-        JsonUtil.print(JsonParser.parseString(state.toString()));
     }
 
     private Set<String> generateState(Set<DataLakeObject> datalake,List<JsonArray> dataHistory,
