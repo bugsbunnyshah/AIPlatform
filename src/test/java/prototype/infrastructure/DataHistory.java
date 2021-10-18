@@ -839,9 +839,47 @@ public class DataHistory {
         JsonUtil.print(JsonParser.parseString(state.toString()));
     }
 
+    @Test
+    public void createStateByTimelineUnique() throws Exception
+    {
+        Set<DataLakeObject> datalake = new HashSet<>();
+        List<JsonArray> dataHistory = new ArrayList<>();
+
+
+        //ingestion0
+        OffsetDateTime ingestion0Time = OffsetDateTime.now();
+        JsonArray ingestion0 = this.mockIngestion(ingestion0Time,2);
+        this.performIngestion(datalake,dataHistory,ingestion0);
+
+        //ingestion1
+        OffsetDateTime ingestion1Time = OffsetDateTime.now();
+        ingestion1Time = ingestion1Time.plus(5, ChronoUnit.MINUTES);
+        JsonArray ingestion1 = this.mockIngestion(ingestion1Time,3);
+        this.performIngestion(datalake,dataHistory,ingestion1);
+
+        //ingestion2
+        OffsetDateTime ingestion2Time = OffsetDateTime.now();
+        ingestion2Time = ingestion2Time.plus(10, ChronoUnit.MINUTES);
+        JsonArray ingestion2 = this.mockIngestion(ingestion2Time,2);
+        this.performIngestion(datalake,dataHistory,ingestion2);
+
+        //ingestion3
+        OffsetDateTime ingestion3Time = OffsetDateTime.now();
+        ingestion3Time = ingestion3Time.plus(15, ChronoUnit.MINUTES);
+        JsonArray ingestion3 = this.mockIngestion(ingestion3Time,3);
+        this.performIngestion(datalake,dataHistory,ingestion3);
+
+        //JsonUtil.print(JsonParser.parseString(datalake.toString()));
+        JsonUtil.print(JsonParser.parseString(dataHistory.toString()));
+
+        //Create State
+        Set<String> state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion2Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+    }
+
     private Set<String> generateState(Set<DataLakeObject> datalake,List<JsonArray> dataHistory,
                                       OffsetDateTime start, OffsetDateTime end){
-        Set<String> state = new HashSet<>();
+        Set<String> state = new LinkedHashSet<>();
 
         long startEpoch = start.toEpochSecond();
 
@@ -850,36 +888,42 @@ public class DataHistory {
             JsonObject object = local.getJson();
             String timestamp = object.get("timestamp").getAsString();
             long stamp = Long.parseLong(timestamp);
-            if(stamp <= startEpoch){
+            if(stamp < startEpoch){
                 startSnapShot.add(object);
                 state.add(object.get("oid").getAsString());
             }
         }
-        JsonUtil.print(startSnapShot);
+        //JsonUtil.print(startSnapShot);
 
-        JsonArray top = this.findIngestion(dataHistory,start);
-        JsonArray next = this.findIngestion(dataHistory,end);
-
-        Set<String> extendedState = this.calculateState(top,next);
-        extendedState.addAll(extendedState);
+        Set<String> extendedState = this.findIngestion(dataHistory,start,end);
+        state.addAll(extendedState);
 
         return state;
     }
 
-    private JsonArray findIngestion(List<JsonArray> dataHistory,OffsetDateTime time){
-        JsonArray ingestion = null;
-        long stopTime = time.toEpochSecond();
+    private Set<String> findIngestion(List<JsonArray> dataHistory,OffsetDateTime start,OffsetDateTime end){
+        Set<String> ingestion = new LinkedHashSet<>();
+
+        long startTime = start.toEpochSecond();
+        long endTime = end.toEpochSecond();
+
         for(JsonArray local:dataHistory){
             JsonObject top = local.get(0).getAsJsonObject();
-            long timestamp = Long.parseLong(top.get("timestamp").getAsString());
-            if(timestamp <= stopTime){
-                ingestion = local;
+            long timestamp = top.get("timestamp").getAsLong();
+            if(timestamp < startTime){
+                continue;
             }
-            else
-            {
-                return ingestion;
+            if(timestamp > endTime){
+                break;
+            }
+
+            Iterator<JsonElement> iterator = local.iterator();
+            while(iterator.hasNext()){
+                JsonObject jsonObject = iterator.next().getAsJsonObject();
+                ingestion.add(jsonObject.get("oid").getAsString());
             }
         }
+
         return ingestion;
     }
 
@@ -898,6 +942,22 @@ public class DataHistory {
             JsonObject data = new JsonObject();
             ingestion.add(data);
             data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestionTime.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        return ingestion;
+    }
+
+    private JsonArray mockIngestion(OffsetDateTime ingestionTime,int size) throws NoSuchAlgorithmException {
+        JsonArray ingestion = new JsonArray();
+        for(int i=0; i<size; i++){
+            JsonObject data = new JsonObject();
+            ingestion.add(data);
+            data.addProperty("oid",UUID.randomUUID().toString());
             data.addProperty("1", UUID.randomUUID().toString());
             data.addProperty("2",UUID.randomUUID().toString());
             data.addProperty("3", UUID.randomUUID().toString());
