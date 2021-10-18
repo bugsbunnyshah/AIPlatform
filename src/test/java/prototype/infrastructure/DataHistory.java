@@ -2,6 +2,7 @@ package prototype.infrastructure;
 
 import com.github.wnameless.json.flattener.JsonFlattener;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.util.JsonUtil;
@@ -726,8 +727,116 @@ public class DataHistory {
         System.out.println(this.detectDeletes(ingestion1,ingestion2));
     }
 
-    private List<String> detectUpdates(JsonArray top,JsonArray next){
-        List<String> results = new ArrayList<>();
+    @Test
+    public void createStateByTimeline() throws Exception
+    {
+        Map<Integer,String> oids = new HashMap<>();
+        oids.put(0,UUID.randomUUID().toString());
+        oids.put(1,UUID.randomUUID().toString());
+        oids.put(2,UUID.randomUUID().toString());
+        oids.put(3,UUID.randomUUID().toString());
+        oids.put(4,UUID.randomUUID().toString());
+
+
+        //timeline0
+        JsonArray ingestion0 = new JsonArray();
+        OffsetDateTime ingestion1Time = OffsetDateTime.now();
+        for(int i=0; i<2; i++){
+            JsonObject data = new JsonObject();
+            ingestion0.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion1Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion0);
+
+        //timeline1
+        JsonArray ingestion1 = new JsonArray();
+        OffsetDateTime ingestion2Time = OffsetDateTime.now();
+        ingestion2Time = ingestion2Time.plus(5, ChronoUnit.MINUTES);
+        for(int i=0; i<3; i++){
+            JsonObject data = new JsonObject();
+            ingestion1.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion2Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion1);
+
+        //timeline2
+        JsonArray ingestion2 = new JsonArray();
+        OffsetDateTime ingestion3Time = OffsetDateTime.now();
+        ingestion3Time = ingestion3Time.plus(5, ChronoUnit.MINUTES);
+        for(int i=0; i<1; i++){
+            JsonObject data = new JsonObject();
+            ingestion2.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestion3Time.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        JsonUtil.print(ingestion2);
+
+        Set<String> state = this.calculateState(ingestion0,ingestion1,ingestion2);
+        System.out.println("********************");
+        System.out.println(state);
+    }
+
+    private Set<String> calculateState(JsonArray start, JsonArray next, JsonArray last){
+        Set<String> state = new HashSet<>();
+
+        Set<String> adds = this.detectAdds(start,next);
+        //List<String> deletes = this.detectDeletes(start,next);
+
+        //start state
+        Iterator<JsonElement> iterator = start.iterator();
+        while(iterator.hasNext()){
+            JsonObject jsonObject = iterator.next().getAsJsonObject();
+            state.add(jsonObject.get("oid").getAsString());
+        }
+
+        //next
+        state.addAll(adds);
+        //state.removeAll(deletes);
+
+        //currentState
+        JsonArray currentState = new JsonArray();
+        iterator = next.iterator();
+        while(iterator.hasNext()){
+            JsonObject jsonObject = iterator.next().getAsJsonObject();
+            String oid = jsonObject.get("oid").getAsString();
+            if(state.contains(oid)){
+                currentState.add(jsonObject);
+            }
+        }
+
+        //next-last
+        adds = this.detectAdds(currentState,last);
+        //deletes = this.detectDeletes(currentState,last);
+
+        state.addAll(adds);
+        //state.removeAll(deletes);
+
+        return state;
+    }
+
+    private JsonObject findObject(String oid,JsonArray array){
+        return null;
+    }
+
+    private Set<String> detectUpdates(JsonArray top, JsonArray next){
+        Set<String> results = new HashSet<>();
 
         Map<String, Object> topMap = JsonFlattener.flattenAsMap(top.toString());
         Map<String, Object> nextMap = JsonFlattener.flattenAsMap(next.toString());
@@ -752,8 +861,8 @@ public class DataHistory {
         return results;
     }
 
-    private List<String> detectAdds(JsonArray top,JsonArray next){
-        List<String> results = new ArrayList<>();
+    private Set<String> detectAdds(JsonArray top, JsonArray next){
+        Set<String> results = new HashSet<>();
 
         Map<String, Object> topMap = JsonFlattener.flattenAsMap(top.toString());
         Map<String, Object> nextMap = JsonFlattener.flattenAsMap(next.toString());
@@ -778,8 +887,8 @@ public class DataHistory {
         return results;
     }
 
-    private List<String> detectDeletes(JsonArray top,JsonArray next){
-        List<String> results = new ArrayList<>();
+    private Set<String> detectDeletes(JsonArray top, JsonArray next){
+        Set<String> results = new HashSet<>();
 
         Map<String, Object> topMap = JsonFlattener.flattenAsMap(top.toString());
         Map<String, Object> nextMap = JsonFlattener.flattenAsMap(next.toString());
