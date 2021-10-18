@@ -19,6 +19,8 @@ import java.util.*;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.crypto.Data;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class DataHistory {
 
     @Test
@@ -102,21 +104,31 @@ public class DataHistory {
         //Create State
         Set<String> state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion2Time);
         JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(7,state.size());
 
         state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion1Time);
         JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(5,state.size());
 
         state = this.generateState(datalake,dataHistory,ingestion0Time,ingestion3Time);
         JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(10,state.size());
 
         state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion3Time);
         JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(10,state.size());
+
+        state = this.generateState(datalake,dataHistory,ingestion2Time,ingestion3Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(10,state.size());
 
         state = this.generateState(datalake,dataHistory,ingestion2Time,ingestion2Time);
         JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(7,state.size());
 
         state = this.generateState(datalake,dataHistory,ingestion3Time,ingestion3Time);
         JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(10,state.size());
     }
     //------------------
 
