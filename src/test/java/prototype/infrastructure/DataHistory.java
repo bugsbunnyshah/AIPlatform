@@ -17,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import javax.xml.bind.DatatypeConverter;
+import javax.xml.crypto.Data;
 
 public class DataHistory {
 
@@ -788,12 +789,126 @@ public class DataHistory {
         }
         JsonUtil.print(ingestion2);
 
-        Set<String> state = this.calculateState(ingestion0,ingestion1,ingestion2);
+        Set<String> state = this.calculateState(ingestion1,ingestion2);
         System.out.println("********************");
         System.out.println(state);
     }
 
-    private Set<String> calculateState(JsonArray start, JsonArray next, JsonArray last){
+    @Test
+    public void createStateByTimelineReal() throws Exception
+    {
+        Map<Integer,String> oids = new HashMap<>();
+        oids.put(0,UUID.randomUUID().toString());
+        oids.put(1,UUID.randomUUID().toString());
+        oids.put(2,UUID.randomUUID().toString());
+        oids.put(3,UUID.randomUUID().toString());
+        oids.put(4,UUID.randomUUID().toString());
+
+        Set<DataLakeObject> datalake = new HashSet<>();
+        List<JsonArray> dataHistory = new ArrayList<>();
+
+
+        //ingestion0
+        OffsetDateTime ingestion0Time = OffsetDateTime.now();
+        JsonArray ingestion0 = this.mockIngestion(oids, ingestion0Time,2);
+        this.performIngestion(datalake,dataHistory,ingestion0);
+
+        //ingestion1
+        OffsetDateTime ingestion1Time = OffsetDateTime.now();
+        ingestion1Time = ingestion1Time.plus(5, ChronoUnit.MINUTES);
+        JsonArray ingestion1 = this.mockIngestion(oids, ingestion1Time,3);
+        this.performIngestion(datalake,dataHistory,ingestion1);
+
+        //ingestion2
+        OffsetDateTime ingestion2Time = OffsetDateTime.now();
+        ingestion2Time = ingestion2Time.plus(10, ChronoUnit.MINUTES);
+        JsonArray ingestion2 = this.mockIngestion(oids, ingestion2Time,2);
+        this.performIngestion(datalake,dataHistory,ingestion2);
+
+        //ingestion3
+        OffsetDateTime ingestion3Time = OffsetDateTime.now();
+        ingestion3Time = ingestion3Time.plus(15, ChronoUnit.MINUTES);
+        JsonArray ingestion3 = this.mockIngestion(oids, ingestion3Time,3);
+        this.performIngestion(datalake,dataHistory,ingestion3);
+
+        JsonUtil.print(JsonParser.parseString(datalake.toString()));
+        JsonUtil.print(JsonParser.parseString(dataHistory.toString()));
+
+        //Create State
+        Set<String> state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion3Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+    }
+
+    private Set<String> generateState(Set<DataLakeObject> datalake,List<JsonArray> dataHistory,
+                                      OffsetDateTime start, OffsetDateTime end){
+        Set<String> state = new HashSet<>();
+
+        long startEpoch = start.toEpochSecond();
+
+        JsonArray startSnapShot = new JsonArray();
+        for(DataLakeObject local:datalake){
+            JsonObject object = local.getJson();
+            String timestamp = object.get("timestamp").getAsString();
+            long stamp = Long.parseLong(timestamp);
+            if(stamp <= startEpoch){
+                startSnapShot.add(object);
+                state.add(object.get("oid").getAsString());
+            }
+        }
+        JsonUtil.print(startSnapShot);
+
+        JsonArray top = this.findIngestion(dataHistory,start);
+        JsonArray next = this.findIngestion(dataHistory,end);
+
+        Set<String> extendedState = this.calculateState(top,next);
+        extendedState.addAll(extendedState);
+
+        return state;
+    }
+
+    private JsonArray findIngestion(List<JsonArray> dataHistory,OffsetDateTime time){
+        JsonArray ingestion = null;
+        long stopTime = time.toEpochSecond();
+        for(JsonArray local:dataHistory){
+            JsonObject top = local.get(0).getAsJsonObject();
+            long timestamp = Long.parseLong(top.get("timestamp").getAsString());
+            if(timestamp <= stopTime){
+                ingestion = local;
+            }
+            else
+            {
+                return ingestion;
+            }
+        }
+        return ingestion;
+    }
+
+    private void performIngestion(Set<DataLakeObject> datalake,List<JsonArray> dataHistory,JsonArray ingestion){
+        dataHistory.add(ingestion);
+        Iterator<JsonElement> iterator = ingestion.iterator();
+        while(iterator.hasNext()){
+            DataLakeObject object = new DataLakeObject(iterator.next().getAsJsonObject());
+            datalake.add(object);
+        }
+    }
+
+    private JsonArray mockIngestion(Map<Integer,String> oids, OffsetDateTime ingestionTime,int size) throws NoSuchAlgorithmException {
+        JsonArray ingestion = new JsonArray();
+        for(int i=0; i<size; i++){
+            JsonObject data = new JsonObject();
+            ingestion.add(data);
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("1", UUID.randomUUID().toString());
+            data.addProperty("2",UUID.randomUUID().toString());
+            data.addProperty("3", UUID.randomUUID().toString());
+            String objectHash = this.getJsonHash(data);
+            data.addProperty("timestamp",ingestionTime.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        return ingestion;
+    }
+
+    private Set<String> calculateState(JsonArray start, JsonArray next){
         Set<String> state = new HashSet<>();
 
         Set<String> adds = this.detectAdds(start,next);
@@ -810,29 +925,7 @@ public class DataHistory {
         state.addAll(adds);
         //state.removeAll(deletes);
 
-        //currentState
-        JsonArray currentState = new JsonArray();
-        iterator = next.iterator();
-        while(iterator.hasNext()){
-            JsonObject jsonObject = iterator.next().getAsJsonObject();
-            String oid = jsonObject.get("oid").getAsString();
-            if(state.contains(oid)){
-                currentState.add(jsonObject);
-            }
-        }
-
-        //next-last
-        adds = this.detectAdds(currentState,last);
-        //deletes = this.detectDeletes(currentState,last);
-
-        state.addAll(adds);
-        //state.removeAll(deletes);
-
         return state;
-    }
-
-    private JsonObject findObject(String oid,JsonArray array){
-        return null;
     }
 
     private Set<String> detectUpdates(JsonArray top, JsonArray next){
