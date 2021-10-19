@@ -20,7 +20,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DataHistory {
+public class DataHistoryTests {
 
     @Test
     public void createStateByTimelineReal() throws Exception
