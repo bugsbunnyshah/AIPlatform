@@ -17,7 +17,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import javax.xml.bind.DatatypeConverter;
-import javax.xml.crypto.Data;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -39,33 +38,58 @@ public class DataHistory {
 
         //ingestion0
         OffsetDateTime ingestion0Time = OffsetDateTime.now();
-        JsonArray ingestion0 = this.mockIngestion(oids, ingestion0Time,2);
+        JsonArray ingestion0 = this.mockIngestion(oids, ingestion0Time,1); //1
         this.performIngestion(datalake,dataHistory,ingestion0);
 
         //ingestion1
         OffsetDateTime ingestion1Time = OffsetDateTime.now();
         ingestion1Time = ingestion1Time.plus(5, ChronoUnit.MINUTES);
-        JsonArray ingestion1 = this.mockIngestion(oids, ingestion1Time,3);
+        JsonArray ingestion1 = this.mockIngestion(oids, ingestion1Time,3); //2
         this.performIngestion(datalake,dataHistory,ingestion1);
 
         //ingestion2
         OffsetDateTime ingestion2Time = OffsetDateTime.now();
         ingestion2Time = ingestion2Time.plus(10, ChronoUnit.MINUTES);
-        JsonArray ingestion2 = this.mockIngestion(oids, ingestion2Time,2);
+        JsonArray ingestion2 = this.mockIngestion(oids, ingestion2Time,4); //1
         this.performIngestion(datalake,dataHistory,ingestion2);
 
         //ingestion3
         OffsetDateTime ingestion3Time = OffsetDateTime.now();
         ingestion3Time = ingestion3Time.plus(15, ChronoUnit.MINUTES);
-        JsonArray ingestion3 = this.mockIngestion(oids, ingestion3Time,3);
+        JsonArray ingestion3 = this.mockIngestion(oids, ingestion3Time,5); //1
         this.performIngestion(datalake,dataHistory,ingestion3);
 
         JsonUtil.print(JsonParser.parseString(datalake.toString()));
         JsonUtil.print(JsonParser.parseString(dataHistory.toString()));
 
         //Create State
-        Set<String> state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion3Time);
+        Set<String> state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion2Time);
         JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(4,state.size());
+
+        state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion1Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(3,state.size());
+
+        state = this.generateState(datalake,dataHistory,ingestion0Time,ingestion3Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(5,state.size());
+
+        state = this.generateState(datalake,dataHistory,ingestion1Time,ingestion3Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(5,state.size());
+
+        state = this.generateState(datalake,dataHistory,ingestion2Time,ingestion3Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(5,state.size());
+
+        state = this.generateState(datalake,dataHistory,ingestion2Time,ingestion2Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(4,state.size());
+
+        state = this.generateState(datalake,dataHistory,ingestion3Time,ingestion3Time);
+        JsonUtil.print(JsonParser.parseString(state.toString()));
+        assertEquals(5,state.size());
     }
 
     @Test
