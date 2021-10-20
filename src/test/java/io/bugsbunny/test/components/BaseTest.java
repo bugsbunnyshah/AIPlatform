@@ -1,6 +1,7 @@
 package io.bugsbunny.test.components;
 
 import io.bugsbunny.dataIngestion.service.StreamIngesterContext;
+import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.preprocess.SecurityToken;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
 import io.bugsbunny.util.BackgroundProcessListener;
@@ -18,6 +19,9 @@ public abstract class BaseTest
     private static Logger logger = LoggerFactory.getLogger(BaseTest.class);
 
     @Inject
+    private MongoDBJsonStore mongoDBJsonStore;
+
+    @Inject
     private SecurityTokenMockComponent securityTokenMockComponent;
 
     @Inject
@@ -32,6 +36,20 @@ public abstract class BaseTest
     @AfterEach
     void tearDown() {
         BackgroundProcessListener.getInstance().clear();
+
+        try {
+            if (this.mongoDBJsonStore == null) {
+                this.mongoDBJsonStore = new MongoDBJsonStore();
+            }
+            this.mongoDBJsonStore.start();
+            String principal = this.securityTokenContainer.getTenant().getPrincipal();
+            String databaseName = principal + "_" + "aiplatform";
+            this.mongoDBJsonStore.getMongoClient().getDatabase(databaseName).drop();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     protected void startIngester()

@@ -23,6 +23,7 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.Serializable;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 @Singleton
@@ -35,6 +36,9 @@ public class MongoDBJsonStore implements Serializable
 
     @Inject
     private ProjectStore projectStore;
+
+    @Inject
+    private DataHistoryStore dataHistoryStore;
 
     private MongoClient mongoClient;
     private Map<String,MongoDatabase> databaseMap;
@@ -75,6 +79,10 @@ public class MongoDBJsonStore implements Serializable
     public void stop()
     {
         this.mongoClient.close();
+    }
+
+    public MongoClient getMongoClient() {
+        return mongoClient;
     }
 
     //Data Ingestion related operations-----------------------------------------------------
@@ -554,5 +562,13 @@ public class MongoDBJsonStore implements Serializable
 
     public void updateProject(Tenant tenant, Project project){
         this.projectStore.updateProject(tenant,this.mongoClient,project);
+    }
+    //---DataHistory----------------------------
+    public void storeHistoryObject(Tenant tenant, JsonObject jsonObject){
+        this.dataHistoryStore.storeHistoryObject(tenant, this.mongoClient,jsonObject);
+    }
+
+    public JsonArray readHistory(Tenant tenant, OffsetDateTime endTime){
+        return this.dataHistoryStore.readHistory(tenant, this.mongoClient,endTime);
     }
 }
