@@ -19,8 +19,12 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 public class DataHistoryServiceTests extends BaseTest {
@@ -61,10 +65,95 @@ public class DataHistoryServiceTests extends BaseTest {
         this.performIngestion(ingestion3);
 
         //Generate State
-        OffsetDateTime start = ingestion0Time;
-        OffsetDateTime end = ingestion1Time;
-        JsonArray snapShot = this.service.getDataSnapShot(start,end);
+        JsonArray snapShot = this.service.getDataSnapShot(ingestion1Time,ingestion2Time);
         JsonUtil.print(snapShot);
+        assertEquals(7,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion1Time,ingestion1Time);
+        JsonUtil.print(snapShot);
+        assertEquals(5,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion0Time,ingestion3Time);
+        JsonUtil.print(snapShot);
+        assertEquals(10,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion1Time,ingestion3Time);
+        JsonUtil.print(snapShot);
+        assertEquals(10,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion2Time,ingestion3Time);
+        JsonUtil.print(snapShot);
+        assertEquals(10,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion2Time,ingestion2Time);
+        JsonUtil.print(snapShot);
+        assertEquals(7,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion3Time,ingestion3Time);
+        JsonUtil.print(snapShot);
+        assertEquals(10,snapShot.size());
+    }
+
+    @Test
+    public void getDataSnapShotRepeatingData() throws Exception {
+        Map<Integer,String> oids = new HashMap<>();
+        oids.put(0,UUID.randomUUID().toString());
+        oids.put(1,UUID.randomUUID().toString());
+        oids.put(2,UUID.randomUUID().toString());
+        oids.put(3,UUID.randomUUID().toString());
+        oids.put(4,UUID.randomUUID().toString());
+
+        //ingestion0
+        OffsetDateTime ingestion0Time = OffsetDateTime.now(ZoneOffset.UTC);
+        JsonArray ingestion0 = this.mockIngestion(oids, ingestion0Time,1);//1
+        this.performIngestion(ingestion0);
+
+        //ingestion1
+        OffsetDateTime ingestion1Time = OffsetDateTime.now(ZoneOffset.UTC);
+        ingestion1Time = ingestion1Time.plus(5, ChronoUnit.MINUTES);
+        JsonArray ingestion1 = this.mockIngestion(oids,ingestion1Time,3); //2
+        this.performIngestion(ingestion1);
+
+        //ingestion2
+        OffsetDateTime ingestion2Time = OffsetDateTime.now(ZoneOffset.UTC);
+        ingestion2Time = ingestion2Time.plus(10, ChronoUnit.MINUTES);
+        JsonArray ingestion2 = this.mockIngestion(oids,ingestion2Time,4); //1
+        this.performIngestion(ingestion2);
+
+        //ingestion3
+        OffsetDateTime ingestion3Time = OffsetDateTime.now(ZoneOffset.UTC);
+        ingestion3Time = ingestion3Time.plus(15, ChronoUnit.MINUTES);
+        JsonArray ingestion3 = this.mockIngestion(oids,ingestion3Time,5); //1
+        this.performIngestion(ingestion3);
+
+        //Generate State
+        JsonArray snapShot = this.service.getDataSnapShot(ingestion1Time,ingestion2Time);
+        JsonUtil.print(snapShot);
+        assertEquals(4,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion1Time,ingestion1Time);
+        JsonUtil.print(snapShot);
+        assertEquals(3,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion0Time,ingestion3Time);
+        JsonUtil.print(snapShot);
+        assertEquals(5,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion1Time,ingestion3Time);
+        JsonUtil.print(snapShot);
+        assertEquals(5,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion2Time,ingestion3Time);
+        JsonUtil.print(snapShot);
+        assertEquals(5,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion2Time,ingestion2Time);
+        JsonUtil.print(snapShot);
+        assertEquals(4,snapShot.size());
+
+        snapShot = this.service.getDataSnapShot(ingestion3Time,ingestion3Time);
+        JsonUtil.print(snapShot);
+        assertEquals(5,snapShot.size());
     }
 
     private JsonArray mockIngestion(OffsetDateTime ingestionTime,int size) throws NoSuchAlgorithmException {
@@ -72,10 +161,32 @@ public class DataHistoryServiceTests extends BaseTest {
         for(int i=0; i<size; i++){
             JsonObject data = new JsonObject();
             ingestion.add(data);
-            data.addProperty("oid", UUID.randomUUID().toString());
-            data.addProperty("1", UUID.randomUUID().toString());
-            data.addProperty("2",UUID.randomUUID().toString());
-            data.addProperty("3", UUID.randomUUID().toString());
+            Tenant tenant = this.securityTokenContainer.getTenant();
+            String dataLakeId = UUID.randomUUID().toString();;
+            String chainId = "/" + tenant.getPrincipal() + "/" + dataLakeId;
+            data.addProperty("oid",UUID.randomUUID().toString());
+            data.addProperty("dataLakeId",dataLakeId);
+            data.addProperty("tenant",tenant.getPrincipal());
+            data.addProperty("chainId",chainId);
+            String objectHash = JsonUtil.getJsonHash(data);
+            data.addProperty("timestamp",ingestionTime.toEpochSecond());
+            data.addProperty("objectHash",objectHash);
+        }
+        return ingestion;
+    }
+
+    private JsonArray mockIngestion(Map<Integer,String> oids,OffsetDateTime ingestionTime, int size) throws NoSuchAlgorithmException {
+        JsonArray ingestion = new JsonArray();
+        for(int i=0; i<size; i++){
+            JsonObject data = new JsonObject();
+            ingestion.add(data);
+            Tenant tenant = this.securityTokenContainer.getTenant();
+            String dataLakeId = UUID.randomUUID().toString();;
+            String chainId = "/" + tenant.getPrincipal() + "/" + dataLakeId;
+            data.addProperty("oid",oids.get(i));
+            data.addProperty("dataLakeId",dataLakeId);
+            data.addProperty("tenant",tenant.getPrincipal());
+            data.addProperty("chainId",chainId);
             String objectHash = JsonUtil.getJsonHash(data);
             data.addProperty("timestamp",ingestionTime.toEpochSecond());
             data.addProperty("objectHash",objectHash);

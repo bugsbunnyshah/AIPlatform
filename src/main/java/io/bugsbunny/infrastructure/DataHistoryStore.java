@@ -2,11 +2,13 @@ package io.bugsbunny.infrastructure;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
+import javax.json.Json;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mongodb.client.*;
+import io.bugsbunny.dataScience.model.Project;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -22,9 +24,31 @@ public class DataHistoryStore {
         String principal = tenant.getPrincipal();
         String databaseName = principal + "_" + "aiplatform";
 
+        if(this.exists(tenant,mongoClient,json)){
+            return;
+        }
+
         MongoDatabase database = mongoClient.getDatabase(databaseName);
         MongoCollection<Document> collection = database.getCollection("datahistory");
         collection.insertOne(Document.parse(json.toString()));
+    }
+
+    private boolean exists(Tenant tenant, MongoClient mongoClient, JsonObject json){
+        boolean exists = false;
+
+        String principal = tenant.getPrincipal();
+        String databaseName = principal + "_" + "aiplatform";
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+        MongoCollection<Document> collection = database.getCollection("datahistory");
+
+        String oid = json.get("oid").getAsString();
+        String queryJson = "{\"oid\":\""+oid+"\"}";
+        Bson bson = Document.parse(queryJson);
+        FindIterable<Document> iterable = collection.find(bson);
+        exists = iterable.iterator().hasNext();
+
+        return exists;
     }
 
     public JsonArray readHistory(Tenant tenant, MongoClient mongoClient, OffsetDateTime endTime){
