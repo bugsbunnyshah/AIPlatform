@@ -99,11 +99,16 @@ public class StreamIngesterContext implements Serializable {
             this.securityTokenContainer.setSecurityToken(securityToken);
 
 
+            OffsetDateTime ingestionTime = OffsetDateTime.now(ZoneOffset.UTC);
+            String objectHash = JsonUtil.getJsonHash(jsonObject);
             JsonObject data = new JsonObject();
             data.addProperty("braineous_datalakeid", dataLakeId);
             data.addProperty("tenant", tenant.getPrincipal());
             data.addProperty("data", jsonObject.toString());
             data.addProperty("chainId", chainId);
+            data.addProperty("dataLakeId", dataLakeId);
+            data.addProperty("timestamp", ingestionTime.toEpochSecond());
+            data.addProperty("objectHash", objectHash);
             logger.info("************PERSISTING-" + dataLakeId + "******************");
             logger.info(data.toString());
             logger.info("****************************************");
@@ -113,13 +118,7 @@ public class StreamIngesterContext implements Serializable {
             BackgroundProcessListener.getInstance().decreaseThreshold(data);
 
             //Update DataHistory
-            //TODO: OID calculation support
-            OffsetDateTime ingestionTime = OffsetDateTime.now(ZoneOffset.UTC);
-            data.addProperty("oid", UUID.randomUUID().toString());
-            data.addProperty("dataLakeId", dataLakeId);
-            String objectHash = JsonUtil.getJsonHash(data);
-            data.addProperty("timestamp", ingestionTime.toEpochSecond());
-            data.addProperty("objectHash", objectHash);
+            data.remove("data");
             this.mongoDBJsonStore.storeHistoryObject(tenant, data);
         }
         catch(Exception e){
