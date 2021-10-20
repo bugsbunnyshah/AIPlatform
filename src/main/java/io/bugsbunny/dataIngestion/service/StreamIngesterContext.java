@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 public class StreamIngesterContext implements Serializable {
@@ -87,27 +89,42 @@ public class StreamIngesterContext implements Serializable {
 
     public void ingestData(String principal,String dataLakeId, String chainId, JsonObject jsonObject)
     {
-        //JsonUtil.print(jsonObject);
+        try {
+            //JsonUtil.print(jsonObject);
 
-        Tenant tenant = new Tenant();
-        tenant.setPrincipal(principal);
-        SecurityToken securityToken = new SecurityToken();
-        securityToken.setPrincipal(principal);
-        this.securityTokenContainer.setSecurityToken(securityToken);
+            Tenant tenant = new Tenant();
+            tenant.setPrincipal(principal);
+            SecurityToken securityToken = new SecurityToken();
+            securityToken.setPrincipal(principal);
+            this.securityTokenContainer.setSecurityToken(securityToken);
 
 
-        JsonObject data = new JsonObject();
-        data.addProperty("braineous_datalakeid",dataLakeId);
-        data.addProperty("tenant",tenant.getPrincipal());
-        data.addProperty("data", jsonObject.toString());
-        data.addProperty("chainId",chainId);
-        logger.info("************PERSISTING-"+dataLakeId+"******************");
-        logger.info(data.toString());
-        logger.info("****************************************");
-        this.mongoDBJsonStore.storeIngestion(tenant,data);
-        this.chainIds.put(dataLakeId,chainId);
+            JsonObject data = new JsonObject();
+            data.addProperty("braineous_datalakeid", dataLakeId);
+            data.addProperty("tenant", tenant.getPrincipal());
+            data.addProperty("data", jsonObject.toString());
+            data.addProperty("chainId", chainId);
+            logger.info("************PERSISTING-" + dataLakeId + "******************");
+            logger.info(data.toString());
+            logger.info("****************************************");
+            this.mongoDBJsonStore.storeIngestion(tenant, data);
+            this.chainIds.put(dataLakeId, chainId);
 
-        BackgroundProcessListener.getInstance().decreaseThreshold(data);
+            BackgroundProcessListener.getInstance().decreaseThreshold(data);
+
+            //Update DataHistory
+            //TODO: OID calculation support
+            OffsetDateTime ingestionTime = OffsetDateTime.now(ZoneOffset.UTC);
+            data.addProperty("oid", UUID.randomUUID().toString());
+            data.addProperty("dataLakeId", dataLakeId);
+            String objectHash = JsonUtil.getJsonHash(data);
+            data.addProperty("timestamp", ingestionTime.toEpochSecond());
+            data.addProperty("objectHash", objectHash);
+            this.mongoDBJsonStore.storeHistoryObject(tenant, data);
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
     public void setDataReplayService(DataReplayService dataReplayService){
