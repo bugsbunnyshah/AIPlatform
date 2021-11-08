@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.bugsbunny.dataScience.service.ResettableStreamSplit;
 import io.bugsbunny.util.JsonUtil;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.datavec.api.records.reader.RecordReader;
@@ -35,6 +36,8 @@ import org.nd4j.linalg.lossfunctions.impl.LossMCXENT;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 

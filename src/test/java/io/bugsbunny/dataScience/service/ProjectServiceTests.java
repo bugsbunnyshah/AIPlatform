@@ -418,7 +418,7 @@ public class ProjectServiceTests extends BaseTest {
         }
 
         JsonObject trainingResult = this.projectService.trainModelFromDataLake(project.getProjectId(),
-                project.getArtifacts().get(0).getArtifactId(), dataLakeIds);
+                project.getArtifacts().get(0).getArtifactId(), dataLakeIds,30);
         JsonObject confusion = trainingResult.get("confusion").getAsJsonObject();
         JsonUtil.print(confusion);
         assertNotNull(confusion);

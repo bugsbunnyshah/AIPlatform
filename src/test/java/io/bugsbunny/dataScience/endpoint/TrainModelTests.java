@@ -128,6 +128,7 @@ public class TrainModelTests extends BaseTest {
         json.addProperty("projectId",project.getProjectId());
         json.addProperty("artifactId",project.getArtifacts().get(0).getArtifactId());
         json.add("dataLakeIds",dataLakeIds);
+        json.addProperty("nEpochs",30);
         Response response = given().body(json.toString()).
                 post(url).andReturn();
         response.getBody().prettyPrint();
@@ -198,6 +199,7 @@ public class TrainModelTests extends BaseTest {
         json.addProperty("projectId","blah");
         json.addProperty("artifactId",project.getArtifacts().get(0).getArtifactId());
         json.add("dataLakeIds",new JsonArray());
+        json.addProperty("nEpochs",30);
         response = given().body(json.toString()).
                 post(url).andReturn();
         response.getBody().prettyPrint();
@@ -211,6 +213,7 @@ public class TrainModelTests extends BaseTest {
         json.addProperty("projectId",project.getProjectId());
         json.addProperty("artifactId","blah");
         json.add("dataLakeIds",new JsonArray());
+        json.addProperty("nEpochs",30);
         response = given().body(json.toString()).
                 post(url).andReturn();
         response.getBody().prettyPrint();
@@ -224,6 +227,7 @@ public class TrainModelTests extends BaseTest {
         json.addProperty("projectId",project.getProjectId());
         json.addProperty("artifactId",project.getArtifacts().get(0).getArtifactId());
         json.add("dataLakeIds",new JsonArray());
+        json.addProperty("nEpochs",30);
         response = given().body(json.toString()).
                 post(url).andReturn();
         response.getBody().prettyPrint();

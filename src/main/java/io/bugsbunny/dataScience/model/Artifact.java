@@ -22,6 +22,7 @@ public class Artifact implements Serializable {
     private List<Feature> features;
     private Map<String,String> parameters;
     private int numberOfLabels;
+    private int labelIndex;
 
     private boolean isLive;
 
@@ -116,6 +117,14 @@ public class Artifact implements Serializable {
 
     public void setNumberOfLabels(int numberOfLabels) {
         this.numberOfLabels = numberOfLabels;
+    }
+
+    public int getLabelIndex() {
+        return labelIndex;
+    }
+
+    public void setLabelIndex(int labelIndex) {
+        this.labelIndex = labelIndex;
     }
 
     public String convertJsonToCsv(JsonArray jsonArray){
@@ -278,6 +287,7 @@ public class Artifact implements Serializable {
         }
 
         json.addProperty("numberOfLabels",this.numberOfLabels);
+        json.addProperty("labelIndex",this.labelIndex);
 
         return json;
     }
@@ -336,6 +346,10 @@ public class Artifact implements Serializable {
 
         if(json.has("numberOfLabels")){
             artifact.numberOfLabels = json.get("numberOfLabels").getAsInt();
+        }
+
+        if(json.has("labelIndex")){
+            artifact.labelIndex = json.get("labelIndex").getAsInt();
         }
 
         return artifact;

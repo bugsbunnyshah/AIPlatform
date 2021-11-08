@@ -152,8 +152,169 @@ public class AIModelService
 
         return rollbackDataSetIds;
     }
-
     //PRODUCTION_MODEL_RELATED**************************************************************************************************************************************************************************************************************************************************************************************************
+    public JsonObject trainModelFromDataLake(Artifact artifact,int nEpochs) throws
+            ModelNotFoundException, ModelIsLive {
+        String modelId = artifact.getAiModel().getModelId();
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
+        String[] dataLakeIds = artifact.getDataSet().getDataLakeIds();
+
+        if(modelPackage == null)
+        {
+            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
+        }
+        boolean isLive = modelPackage.get("live").getAsBoolean();
+        if(isLive){
+            throw new ModelIsLive("MODEL_IS_LIVE");
+        }
+
+        String modelString = modelPackage.get("model").getAsString();
+        try
+        {
+            MultiLayerNetwork network = this.activeModels.get(modelId);
+
+            if(network == null)
+            {
+                //logger.info("******************************************");
+                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
+                //logger.info("******************************************");
+                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
+                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
+                this.activeModels.put(modelId, network);
+            }
+
+            String csvData;
+            StringBuilder csvBuilder = new StringBuilder();
+            for(String dataLakeId:dataLakeIds) {
+                JsonArray dataLakeArray = mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
+                //Get the Data
+                boolean isJson = false;
+                boolean isXml = false;
+                JsonArray dataArray = new JsonArray();
+                int size = dataLakeArray.size();
+                for (int i = 0; i < size; i++) {
+                    JsonObject cour = dataLakeArray.get(i).getAsJsonObject();
+                    String data = cour.get("data").getAsString();
+                    if (data.startsWith("{") || data.startsWith("[")) {
+                        //Its json
+                        dataArray.add(JsonParser.parseString(data).getAsJsonObject());
+                        isJson = true;
+                    } else if (data.contains("<") && data.contains(">")) {
+                        //Its xml
+                        JSONObject sourceJson = XML.toJSONObject(data);
+                        String json = sourceJson.toString(4);
+                        JsonObject sourceJsonObject = JsonParser.parseString(json).getAsJsonObject();
+                        dataArray.add(sourceJsonObject);
+                        isXml = true;
+                    } else {
+                        //Its CSV
+                        dataArray.add(data);
+                    }
+                }
+
+                //Convert To Csv
+                if (isJson) {
+                    csvBuilder.append(artifact.convertJsonToCsv(dataArray)+"\n");
+                } else if (isXml) {
+                    csvBuilder.append(artifact.convertXmlToCsv(dataArray)+"\n");
+                } else {
+                    csvBuilder.append(dataArray.get(0).getAsString()+"\n");
+                }
+            }
+
+            csvData = csvBuilder.toString().trim();
+            int batchSize = csvData.length();
+            ResettableStreamSplit inputStreamSplit = new ResettableStreamSplit(
+                    csvData);
+
+            //This should be a parameter
+            int labelIndex = artifact.getLabelIndex();
+            int possibleLabels = artifact.getNumberOfLabels();
+            RecordReader rrTrain = new CSVRecordReader();
+            rrTrain.initialize(inputStreamSplit);
+            DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain,
+                    batchSize, labelIndex, possibleLabels);
+
+            network.fit(trainIter,nEpochs);
+
+            Evaluation evaluation = network.evaluate(trainIter);
+
+            return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public JsonObject trainModelFromDataSet(Artifact artifact) throws
+            ModelNotFoundException, ModelIsLive {
+        String modelId = artifact.getAiModel().getModelId();
+        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
+        String[] dataSetIds = artifact.getDataSet().getDataSetIds();
+
+        if(modelPackage == null)
+        {
+            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
+        }
+        boolean isLive = modelPackage.get("live").getAsBoolean();
+        if(isLive){
+            throw new ModelIsLive("MODEL_IS_LIVE");
+        }
+
+        String modelString = modelPackage.get("model").getAsString();
+        try
+        {
+            MultiLayerNetwork network = this.activeModels.get(modelId);
+
+            if(network == null)
+            {
+                //logger.info("******************************************");
+                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
+                //logger.info("******************************************");
+                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
+                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
+                this.activeModels.put(modelId, network);
+            }
+
+            String storedData;
+            StringBuilder dataSetBuilder = new StringBuilder();
+            for(String dataSetId:dataSetIds) {
+                JsonObject dataSetJson = mongoDBJsonStore.readDataSet(this.securityTokenContainer.getTenant(),
+                        dataSetId);
+                dataSetBuilder.append(dataSetJson.get("data").getAsString()+"\n");
+            }
+            storedData = dataSetBuilder.toString().trim();
+
+            ResettableStreamSplit inputStreamSplit = new ResettableStreamSplit(
+                    storedData);
+
+            //This should be a parameter
+            int batchSize = storedData.length();
+            int nEpochs = 30;
+            int labelIndex = 0;
+            int possibleLabels = 2;
+            RecordReader rrTrain = new CSVRecordReader();
+            rrTrain.initialize(inputStreamSplit);
+            DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain,
+                    batchSize, labelIndex, possibleLabels);
+
+            network.fit(trainIter,nEpochs);
+
+            Evaluation evaluation = network.evaluate(trainIter);
+            //logger.info("*********CLOUD_EVAL**************");
+            //logger.info(evaluation.stats());
+
+            return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();
+        }
+        catch(Exception e)
+        {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public String evalJava(String modelId, String[] dataSetIds) throws ModelNotFoundException, ModelIsNotLive
     {
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
@@ -261,169 +422,6 @@ public class AIModelService
             Evaluation evaluation = network.evaluate(dataSetIterator);
 
             return evaluation.toJson();
-        }
-        catch(Exception e)
-        {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public JsonObject trainModelFromDataSet(Artifact artifact) throws
-            ModelNotFoundException, ModelIsLive {
-        String modelId = artifact.getAiModel().getModelId();
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
-        String[] dataSetIds = artifact.getDataSet().getDataSetIds();
-
-        if(modelPackage == null)
-        {
-            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
-        }
-        boolean isLive = modelPackage.get("live").getAsBoolean();
-        if(isLive){
-            throw new ModelIsLive("MODEL_IS_LIVE");
-        }
-
-        String modelString = modelPackage.get("model").getAsString();
-        try
-        {
-            MultiLayerNetwork network = this.activeModels.get(modelId);
-
-            if(network == null)
-            {
-                //logger.info("******************************************");
-                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
-                //logger.info("******************************************");
-                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
-                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
-                this.activeModels.put(modelId, network);
-            }
-
-            String storedData;
-            StringBuilder dataSetBuilder = new StringBuilder();
-            for(String dataSetId:dataSetIds) {
-                JsonObject dataSetJson = mongoDBJsonStore.readDataSet(this.securityTokenContainer.getTenant(),
-                        dataSetId);
-                dataSetBuilder.append(dataSetJson.get("data").getAsString()+"\n");
-            }
-            storedData = dataSetBuilder.toString().trim();
-
-            ResettableStreamSplit inputStreamSplit = new ResettableStreamSplit(
-                    storedData);
-
-            //This should be a parameter
-            int batchSize = storedData.length();
-            int nEpochs = 30;
-            int labelIndex = 0;
-            int possibleLabels = 2;
-            RecordReader rrTrain = new CSVRecordReader();
-            rrTrain.initialize(inputStreamSplit);
-            DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain,
-                    batchSize, labelIndex, possibleLabels);
-
-            network.fit(trainIter,nEpochs);
-
-            Evaluation evaluation = network.evaluate(trainIter);
-            //logger.info("*********CLOUD_EVAL**************");
-            //logger.info(evaluation.stats());
-
-            return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();
-        }
-        catch(Exception e)
-        {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public JsonObject trainModelFromDataLake(Artifact artifact) throws
-            ModelNotFoundException, ModelIsLive {
-        String modelId = artifact.getAiModel().getModelId();
-        JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
-        String[] dataLakeIds = artifact.getDataSet().getDataLakeIds();
-
-        if(modelPackage == null)
-        {
-            throw new ModelNotFoundException("MODEL_NOT_FOUND:"+modelId);
-        }
-        boolean isLive = modelPackage.get("live").getAsBoolean();
-        if(isLive){
-            throw new ModelIsLive("MODEL_IS_LIVE");
-        }
-
-        String modelString = modelPackage.get("model").getAsString();
-        try
-        {
-            MultiLayerNetwork network = this.activeModels.get(modelId);
-
-            if(network == null)
-            {
-                //logger.info("******************************************");
-                //logger.info("DESERIALZING_THE_MODEL: "+modelId);
-                //logger.info("******************************************");
-                ByteArrayInputStream restoreStream = new ByteArrayInputStream(Base64.getDecoder().decode(modelString));
-                network = ModelSerializer.restoreMultiLayerNetwork(restoreStream, true);
-                this.activeModels.put(modelId, network);
-            }
-
-            String csvData;
-            StringBuilder csvBuilder = new StringBuilder();
-            for(String dataLakeId:dataLakeIds) {
-                JsonArray dataLakeArray = mongoDBJsonStore.getIngestion(this.securityTokenContainer.getTenant(), dataLakeId);
-                //Get the Data
-                boolean isJson = false;
-                boolean isXml = false;
-                JsonArray dataArray = new JsonArray();
-                int size = dataLakeArray.size();
-                for (int i = 0; i < size; i++) {
-                    JsonObject cour = dataLakeArray.get(i).getAsJsonObject();
-                    String data = cour.get("data").getAsString();
-                    if (data.startsWith("{") || data.startsWith("[")) {
-                        //Its json
-                        dataArray.add(JsonParser.parseString(data).getAsJsonObject());
-                        isJson = true;
-                    } else if (data.contains("<") && data.contains(">")) {
-                        //Its xml
-                        JSONObject sourceJson = XML.toJSONObject(data);
-                        String json = sourceJson.toString(4);
-                        JsonObject sourceJsonObject = JsonParser.parseString(json).getAsJsonObject();
-                        dataArray.add(sourceJsonObject);
-                        isXml = true;
-                    } else {
-                        //Its CSV
-                        dataArray.add(data);
-                    }
-                }
-
-                //Convert To Csv
-                if (isJson) {
-                    csvBuilder.append(artifact.convertJsonToCsv(dataArray)+"\n");
-                } else if (isXml) {
-                    csvBuilder.append(artifact.convertXmlToCsv(dataArray)+"\n");
-                } else {
-                    csvBuilder.append(dataArray.get(0).getAsString()+"\n");
-                }
-            }
-
-            csvData = csvBuilder.toString().trim();
-            int batchSize = csvData.length();
-            ResettableStreamSplit inputStreamSplit = new ResettableStreamSplit(
-                    csvData);
-
-            //This should be a parameter
-            int nEpochs = 30;
-            int labelIndex = 0;
-            int possibleLabels = artifact.getNumberOfLabels();
-            RecordReader rrTrain = new CSVRecordReader();
-            rrTrain.initialize(inputStreamSplit);
-            DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain,
-                    batchSize, labelIndex, possibleLabels);
-
-            network.fit(trainIter,nEpochs);
-
-            Evaluation evaluation = network.evaluate(trainIter);
-
-            return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();
         }
         catch(Exception e)
         {

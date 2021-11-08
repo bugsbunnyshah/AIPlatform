@@ -75,6 +75,10 @@ public class ProjectService {
                 artifact.setNumberOfLabels(artifactData.get("numberOfLabels").getAsInt());
             }
 
+            if(artifactData.has("labelIndex")) {
+                artifact.setLabelIndex(artifactData.get("labelIndex").getAsInt());
+            }
+
             project.addArtifact(artifact);
             project.getTeam().addScientist(new Scientist(scientist));
 
@@ -232,6 +236,33 @@ public class ProjectService {
         return result;
     }
 
+    public JsonObject trainModelFromDataLake(String projectId, String artifactId,String[] dataLakeIds,int nEpochs)
+            throws ArtifactNotFoundException, DataNotFoundException, ModelIsLive, ModelNotFoundException{
+        Artifact artifact = this.getArtifact(projectId,artifactId);
+        if(artifact == null){
+            throw new ArtifactNotFoundException("ARTIFACT_NOT_FOUND");
+        }
+
+        if(dataLakeIds == null || dataLakeIds.length == 0){
+            throw new DataNotFoundException("DATA_NOT_SPECIFIED");
+        }
+
+        PortableAIModelInterface aiModel = artifact.getAiModel();
+        String modelId = aiModel.getModelId();
+        aiModel.setModelId(modelId);
+        DataSet dataSet = new DataSet();
+        for(String dataLakeId:dataLakeIds) {
+            DataItem dataItem = new DataItem();
+            dataItem.setDataLakeId(dataLakeId);
+            dataSet.addDataItem(dataItem);
+        }
+        artifact.setDataSet(dataSet);
+        artifact = this.updateArtifact(projectId,artifact);
+
+        JsonObject evaluation = this.aiModelService.trainModelFromDataLake(artifact,nEpochs);
+        return evaluation;
+    }
+
     public JsonObject trainModelFromDataSet(String projectId, String artifactId, String[] dataSetIds)
             throws ArtifactNotFoundException, DataNotFoundException, ModelIsLive, ModelNotFoundException {
 
@@ -257,33 +288,6 @@ public class ProjectService {
         artifact = this.updateArtifact(projectId,artifact);
 
         JsonObject evaluation = this.aiModelService.trainModelFromDataSet(artifact);
-        return evaluation;
-    }
-
-    public JsonObject trainModelFromDataLake(String projectId, String artifactId,String[] dataLakeIds)
-            throws ArtifactNotFoundException, DataNotFoundException, ModelIsLive, ModelNotFoundException{
-        Artifact artifact = this.getArtifact(projectId,artifactId);
-        if(artifact == null){
-            throw new ArtifactNotFoundException("ARTIFACT_NOT_FOUND");
-        }
-
-        if(dataLakeIds == null || dataLakeIds.length == 0){
-            throw new DataNotFoundException("DATA_NOT_SPECIFIED");
-        }
-
-        PortableAIModelInterface aiModel = artifact.getAiModel();
-        String modelId = aiModel.getModelId();
-        aiModel.setModelId(modelId);
-        DataSet dataSet = new DataSet();
-        for(String dataLakeId:dataLakeIds) {
-            DataItem dataItem = new DataItem();
-            dataItem.setDataLakeId(dataLakeId);
-            dataSet.addDataItem(dataItem);
-        }
-        artifact.setDataSet(dataSet);
-        artifact = this.updateArtifact(projectId,artifact);
-
-        JsonObject evaluation = this.aiModelService.trainModelFromDataLake(artifact);
         return evaluation;
     }
 
