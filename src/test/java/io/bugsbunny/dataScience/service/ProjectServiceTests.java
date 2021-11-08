@@ -349,7 +349,7 @@ public class ProjectServiceTests extends BaseTest {
         int seed = 123;
         double learningRate = 0.005;
         int numInputs = 2;
-        int numOutputs = 2;
+        int numOutputs = 2+numInputs;
         int numHiddenNodes = 20;
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
@@ -373,6 +373,7 @@ public class ProjectServiceTests extends BaseTest {
 
         //Deploy the Artifact with the Model
         Artifact artifact = AllModelTests.mockArtifact();
+        artifact.setNumberOfLabels(numOutputs);
         JsonElement labels = artifact.toJson().get("labels");
         JsonElement features = artifact.toJson().get("features");
         JsonElement parameters = artifact.toJson().get("parameters");
@@ -383,6 +384,7 @@ public class ProjectServiceTests extends BaseTest {
         input.add("labels",labels);
         input.add("features",features);
         input.add("parameters",parameters);
+        input.addProperty("numberOfLabels",artifact.getNumberOfLabels());
 
         Scientist scientist = AllModelTests.mockScientist();
         Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
@@ -395,7 +397,7 @@ public class ProjectServiceTests extends BaseTest {
                 Thread.currentThread().getContextClassLoader());
 
         String[] dataLakeIds = new String[3];
-
+        Artifact trainingArtifact = this.projectService.getArtifact(project.getProjectId(),project.getArtifacts().get(0).getArtifactId());
         for(int i=0; i< dataLakeIds.length; i++) {
             String dataLakeId = UUID.randomUUID().toString();
             String chainId = "/" + this.securityTokenContainer.getTenant().getPrincipal() + "/" + dataLakeId;
@@ -409,6 +411,10 @@ public class ProjectServiceTests extends BaseTest {
             logger.info("****************************************");
             this.mongoDBJsonStore.storeIngestion(this.securityTokenContainer.getTenant(), dataJson);
             dataLakeIds[i] = dataLakeId;
+
+            DataItem dataItem = new DataItem();
+            dataItem.setDataLakeId(dataLakeId);
+            trainingArtifact.getDataSet().addDataItem(dataItem);
         }
 
         JsonObject trainingResult = this.projectService.trainModelFromDataLake(project.getProjectId(),

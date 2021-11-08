@@ -413,17 +413,15 @@ public class AIModelService
             //This should be a parameter
             int nEpochs = 30;
             int labelIndex = 0;
-            int possibleLabels = 2;
-            RecordReader rrTest = new CSVRecordReader();
-            rrTest.initialize(inputStreamSplit);
-            DataSetIterator testIter = new RecordReaderDataSetIterator(rrTest,
+            int possibleLabels = artifact.getNumberOfLabels();
+            RecordReader rrTrain = new CSVRecordReader();
+            rrTrain.initialize(inputStreamSplit);
+            DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain,
                     batchSize, labelIndex, possibleLabels);
 
-            network.fit(testIter,nEpochs);
+            network.fit(trainIter,nEpochs);
 
-            Evaluation evaluation = network.evaluate(testIter);
-            //logger.info("*********CLOUD_EVAL**************");
-            //logger.info(evaluation.stats());
+            Evaluation evaluation = network.evaluate(trainIter);
 
             return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();
         }

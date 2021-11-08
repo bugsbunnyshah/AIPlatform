@@ -21,6 +21,7 @@ public class Artifact implements Serializable {
     private List<Label> labels;
     private List<Feature> features;
     private Map<String,String> parameters;
+    private int numberOfLabels;
 
     private boolean isLive;
 
@@ -30,6 +31,7 @@ public class Artifact implements Serializable {
         this.labels = new ArrayList<>();
         this.features = new ArrayList<>();
         this.parameters = new HashMap<>();
+        this.dataSet = new DataSet();
     }
 
     public PortableAIModelInterface getAiModel() {
@@ -106,6 +108,14 @@ public class Artifact implements Serializable {
 
     public void setScientist(String scientist) {
         this.scientist = scientist;
+    }
+
+    public int getNumberOfLabels() {
+        return numberOfLabels;
+    }
+
+    public void setNumberOfLabels(int numberOfLabels) {
+        this.numberOfLabels = numberOfLabels;
     }
 
     public String convertJsonToCsv(JsonArray jsonArray){
@@ -267,6 +277,8 @@ public class Artifact implements Serializable {
             json.addProperty("scientist", this.scientist);
         }
 
+        json.addProperty("numberOfLabels",this.numberOfLabels);
+
         return json;
     }
 
@@ -320,6 +332,10 @@ public class Artifact implements Serializable {
 
         if(json.has("scientist")){
             artifact.scientist = json.get("scientist").getAsString();
+        }
+
+        if(json.has("numberOfLabels")){
+            artifact.numberOfLabels = json.get("numberOfLabels").getAsInt();
         }
 
         return artifact;

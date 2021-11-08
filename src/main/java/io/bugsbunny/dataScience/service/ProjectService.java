@@ -71,6 +71,10 @@ public class ProjectService {
                 artifact.addParameter(entry.getKey(),entry.getValue().getAsString());
             }
 
+            if(artifactData.has("numberOfLabels")) {
+                artifact.setNumberOfLabels(artifactData.get("numberOfLabels").getAsInt());
+            }
+
             project.addArtifact(artifact);
             project.getTeam().addScientist(new Scientist(scientist));
 

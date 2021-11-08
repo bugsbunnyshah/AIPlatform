@@ -4,10 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.dataScience.model.AllModelTests;
-import io.bugsbunny.dataScience.model.Artifact;
-import io.bugsbunny.dataScience.model.Project;
-import io.bugsbunny.dataScience.model.Scientist;
+import io.bugsbunny.dataScience.model.*;
 import io.bugsbunny.dataScience.service.ProjectService;
 import io.bugsbunny.infrastructure.MongoDBJsonStore;
 import io.bugsbunny.preprocess.SecurityTokenContainer;
@@ -82,6 +79,7 @@ public class TrainModelTests extends BaseTest {
 
         //Deploy the Artifact with the Model
         Artifact artifact = AllModelTests.mockArtifact();
+        artifact.setNumberOfLabels(numOutputs);
         JsonElement labels = artifact.toJson().get("labels");
         JsonElement features = artifact.toJson().get("features");
         JsonElement parameters = artifact.toJson().get("parameters");
@@ -92,11 +90,12 @@ public class TrainModelTests extends BaseTest {
         input.add("labels",labels);
         input.add("features",features);
         input.add("parameters",parameters);
+        input.addProperty("numberOfLabels",artifact.getNumberOfLabels());
 
         Scientist scientist = AllModelTests.mockScientist();
         Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
         this.projectService.storeAiModel(project.getProjectId(),project.getArtifacts().get(0).getArtifactId(),
-                "testModel","java",
+                "trainModel","java",
                 modelString);
 
         String data = IOUtils.resourceToString("dataScience/saturn_data_train.csv", StandardCharsets.UTF_8,
@@ -104,6 +103,7 @@ public class TrainModelTests extends BaseTest {
 
         JsonArray dataLakeIds = new JsonArray();
 
+        Artifact trainingArtifact = this.projectService.getArtifact(project.getProjectId(),project.getArtifacts().get(0).getArtifactId());
         for(int i=0; i< 3; i++) {
             String dataLakeId = UUID.randomUUID().toString();
             String chainId = "/" + this.securityTokenContainer.getTenant().getPrincipal() + "/" + dataLakeId;
@@ -117,6 +117,10 @@ public class TrainModelTests extends BaseTest {
             logger.info("****************************************");
             this.mongoDBJsonStore.storeIngestion(this.securityTokenContainer.getTenant(), dataJson);
             dataLakeIds.add(dataLakeId);
+
+            DataItem dataItem = new DataItem();
+            dataItem.setDataLakeId(dataLakeId);
+            trainingArtifact.getDataSet().addDataItem(dataItem);
         }
 
         String url = "/trainModel/trainModelFromDataLake/";
