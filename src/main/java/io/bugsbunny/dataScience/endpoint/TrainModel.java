@@ -297,8 +297,13 @@ public class TrainModel
             if(jsonInput.has("dataSetIds")){
                 dataSetIdsArray = jsonInput.get("dataSetIds").getAsJsonArray();
             }
+            int nEpochs = 0;
+            if(jsonInput.has("nEpochs"))
+            {
+                nEpochs = jsonInput.get("nEpochs").getAsInt();
+            }
 
-            if(projectId == null || artifactId == null || dataSetIdsArray == null){
+            if(projectId == null || artifactId == null || dataSetIdsArray == null || nEpochs == 0){
                 JsonObject response = new JsonObject();
                 if(projectId == null){
                     response.addProperty("project_id_missing","project_id_missing");
@@ -308,6 +313,9 @@ public class TrainModel
                 }
                 if(dataSetIdsArray == null){
                     response.addProperty("data_missing","data_missing");
+                }
+                if(nEpochs == 0){
+                    response.addProperty("nEpochs_not_specified","nEpochs_not_specified");
                 }
                 return Response.status(403).entity(response.toString()).build();
             }
@@ -320,7 +328,7 @@ public class TrainModel
                 dataSetIds[counter] = iterator.next().getAsString();
                 counter++;
             }
-            JsonObject evalJson = this.projectService.trainModelFromDataSet(projectId,artifactId,dataSetIds);
+            JsonObject evalJson = this.projectService.trainModelFromDataSet(projectId,artifactId,dataSetIds,nEpochs);
 
             JsonObject returnValue = new JsonObject();
             returnValue.add("result", evalJson);

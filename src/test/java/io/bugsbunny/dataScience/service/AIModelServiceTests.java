@@ -193,7 +193,7 @@ public class AIModelServiceTests extends BaseTest {
                 Thread.currentThread().getContextClassLoader());
 
         Artifact trainingArtifact = this.projectService.getArtifact(project.getProjectId(),project.getArtifacts().get(0).getArtifactId());
-        for(int i=0; i< 3; i++) {
+        for(int i=0; i< 1; i++) {
             String dataLakeId = UUID.randomUUID().toString();
             String chainId = "/" + this.securityTokenContainer.getTenant().getPrincipal() + "/" + dataLakeId;
             JsonObject dataJson = new JsonObject();
@@ -212,6 +212,82 @@ public class AIModelServiceTests extends BaseTest {
         }
 
         JsonObject result = this.aiModelService.trainModelFromDataLake(trainingArtifact,30);
+        JsonUtil.print(result);
+        JsonObject confusion = result.get("confusion").getAsJsonObject();
+        JsonUtil.print(confusion);
+        assertNotNull(confusion);
+    }
+
+    @Test
+    public void trainModelFromDataSetRealData() throws Exception{
+        int seed = 123;
+        double learningRate = 0.008;
+        double momentum = 0.9;
+        int numInputs = 9;
+        int numOutputs = numInputs+1;
+        int numHiddenNodes = 20;
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .seed(seed)
+                .weightInit(WeightInit.XAVIER)
+                .updater(new Nesterovs(learningRate, momentum))
+                .list()
+                .layer(new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
+                        .activation(Activation.RELU)
+                        .build())
+                .layer(new OutputLayer.Builder(LossFunctions.LossFunction.SQUARED_LOSS)
+                        .activation(Activation.SOFTMAX)
+                        .nIn(numHiddenNodes).nOut(numOutputs).build())
+                .build();
+        MultiLayerNetwork network = new MultiLayerNetwork(conf);
+        network.init();
+        network.setListeners(new ScoreIterationListener(10));
+
+        ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
+        ModelSerializer.writeModel(network, modelBytes, false);
+        String modelString = Base64.getEncoder().encodeToString(modelBytes.toByteArray());
+
+        //Deploy the Artifact with the Model
+        Artifact artifact = AllModelTests.mockArtifact();
+        artifact.setNumberOfLabels(numOutputs);
+
+        JsonElement labels = artifact.toJson().get("labels");
+        JsonElement features = artifact.toJson().get("features");
+        JsonElement parameters = artifact.toJson().get("parameters");
+        JsonObject input = new JsonObject();
+        input.addProperty("name","model");
+        input.addProperty("model",modelString);
+        input.add("labels",labels);
+        input.add("features",features);
+        input.add("parameters",parameters);
+        input.addProperty("numberOfLabels",artifact.getNumberOfLabels());
+        input.addProperty("labelIndex",artifact.getLabelIndex());
+
+        Scientist scientist = AllModelTests.mockScientist();
+        Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
+        JsonObject json = this.projectService.storeAiModel(project.getProjectId(),project.getArtifacts().get(0).getArtifactId(),
+                "trainModel","java",
+                modelString);
+
+        String data = IOUtils.resourceToString("dataScience/aiModelService_california_housing_train.csv", StandardCharsets.UTF_8,
+                Thread.currentThread().getContextClassLoader());
+
+        String[] dataSetIds = new String[1];
+        Artifact trainingArtifact = this.projectService.getArtifact(project.getProjectId(),project.getArtifacts().get(0).getArtifactId());
+        for(int i=0; i< dataSetIds.length; i++) {
+            input = new JsonObject();
+            input.addProperty("format", "csv");
+            input.addProperty("data", data);
+            Response response = given().body(input.toString()).when().post("/dataset/storeTrainingDataSet/").andReturn();
+            JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
+            String dataSetId = returnValue.get("dataSetId").getAsString();
+            dataSetIds[i] = dataSetId;
+
+            DataItem dataItem = new DataItem();
+            dataItem.setDataSetId(dataSetId);
+            trainingArtifact.getDataSet().addDataItem(dataItem);
+        }
+
+        JsonObject result = this.aiModelService.trainModelFromDataSet(trainingArtifact,30);
         JsonUtil.print(result);
         JsonObject confusion = result.get("confusion").getAsJsonObject();
         JsonUtil.print(confusion);

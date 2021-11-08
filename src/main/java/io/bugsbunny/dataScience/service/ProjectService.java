@@ -263,7 +263,7 @@ public class ProjectService {
         return evaluation;
     }
 
-    public JsonObject trainModelFromDataSet(String projectId, String artifactId, String[] dataSetIds)
+    public JsonObject trainModelFromDataSet(String projectId, String artifactId, String[] dataSetIds, int nEpochs)
             throws ArtifactNotFoundException, DataNotFoundException, ModelIsLive, ModelNotFoundException {
 
         Artifact artifact = this.getArtifact(projectId,artifactId);
@@ -287,7 +287,7 @@ public class ProjectService {
         artifact.setDataSet(dataSet);
         artifact = this.updateArtifact(projectId,artifact);
 
-        JsonObject evaluation = this.aiModelService.trainModelFromDataSet(artifact);
+        JsonObject evaluation = this.aiModelService.trainModelFromDataSet(artifact,nEpochs);
         return evaluation;
     }
 

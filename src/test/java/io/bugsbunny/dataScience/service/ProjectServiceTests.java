@@ -305,6 +305,7 @@ public class ProjectServiceTests extends BaseTest {
 
         //Deploy the Artifact with the Model
         Artifact artifact = AllModelTests.mockArtifact();
+        artifact.setNumberOfLabels(numOutputs);
         JsonElement labels = artifact.toJson().get("labels");
         JsonElement features = artifact.toJson().get("features");
         JsonElement parameters = artifact.toJson().get("parameters");
@@ -315,11 +316,13 @@ public class ProjectServiceTests extends BaseTest {
         input.add("labels",labels);
         input.add("features",features);
         input.add("parameters",parameters);
+        input.addProperty("numberOfLabels",artifact.getNumberOfLabels());
+        input.addProperty("labelIndex",artifact.getLabelIndex());
 
         Scientist scientist = AllModelTests.mockScientist();
         Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
         this.projectService.storeAiModel(project.getProjectId(),project.getArtifacts().get(0).getArtifactId(),
-                "testModel","java",
+                "trainModel","java",
                 modelString);
 
 
@@ -327,6 +330,7 @@ public class ProjectServiceTests extends BaseTest {
                 Thread.currentThread().getContextClassLoader());
 
         String[] dataSetIds = new String[3];
+        Artifact trainingArtifact = this.projectService.getArtifact(project.getProjectId(),project.getArtifacts().get(0).getArtifactId());
         for(int i=0; i< dataSetIds.length; i++) {
             input = new JsonObject();
             input.addProperty("format", "csv");
@@ -335,10 +339,14 @@ public class ProjectServiceTests extends BaseTest {
             JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
             String dataSetId = returnValue.get("dataSetId").getAsString();
             dataSetIds[i] = dataSetId;
+
+            DataItem dataItem = new DataItem();
+            dataItem.setDataSetId(dataSetId);
+            trainingArtifact.getDataSet().addDataItem(dataItem);
         }
 
         JsonObject trainingResult = this.projectService.trainModelFromDataSet(project.getProjectId(),
-                project.getArtifacts().get(0).getArtifactId(), dataSetIds);
+                project.getArtifacts().get(0).getArtifactId(), dataSetIds, 30);
         JsonObject confusion = trainingResult.get("confusion").getAsJsonObject();
         JsonUtil.print(confusion);
     }

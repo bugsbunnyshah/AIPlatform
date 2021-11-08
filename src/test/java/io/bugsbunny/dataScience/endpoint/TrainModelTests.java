@@ -265,6 +265,7 @@ public class TrainModelTests extends BaseTest {
 
         //Deploy the Artifact with the Model
         Artifact artifact = AllModelTests.mockArtifact();
+        artifact.setNumberOfLabels(numOutputs);
         JsonElement labels = artifact.toJson().get("labels");
         JsonElement features = artifact.toJson().get("features");
         JsonElement parameters = artifact.toJson().get("parameters");
@@ -275,6 +276,7 @@ public class TrainModelTests extends BaseTest {
         input.add("labels",labels);
         input.add("features",features);
         input.add("parameters",parameters);
+        input.addProperty("numberOfLabels",artifact.getNumberOfLabels());
 
         Scientist scientist = AllModelTests.mockScientist();
         Project project = this.projectService.createArtifactForTraining(scientist.getEmail(),input);
@@ -287,6 +289,7 @@ public class TrainModelTests extends BaseTest {
                 Thread.currentThread().getContextClassLoader());
 
         JsonArray dataSetIds = new JsonArray();
+        Artifact trainingArtifact = this.projectService.getArtifact(project.getProjectId(),project.getArtifacts().get(0).getArtifactId());
         for(int i=0; i< 3; i++) {
             input = new JsonObject();
             input.addProperty("format", "csv");
@@ -295,6 +298,10 @@ public class TrainModelTests extends BaseTest {
             JsonObject returnValue = JsonParser.parseString(response.body().asString()).getAsJsonObject();
             String dataSetId = returnValue.get("dataSetId").getAsString();
             dataSetIds.add(dataSetId);
+
+            DataItem dataItem = new DataItem();
+            dataItem.setDataSetId(dataSetId);
+            trainingArtifact.getDataSet().addDataItem(dataItem);
         }
 
         String url = "/trainModel/trainModelFromDataSet/";
@@ -302,6 +309,7 @@ public class TrainModelTests extends BaseTest {
         json.addProperty("projectId",project.getProjectId());
         json.addProperty("artifactId",project.getArtifacts().get(0).getArtifactId());
         json.add("dataSetIds",dataSetIds);
+        json.addProperty("nEpochs",30);
         Response response = given().body(json.toString()).
                 post(url).andReturn();
         response.getBody().prettyPrint();
@@ -372,6 +380,7 @@ public class TrainModelTests extends BaseTest {
         json.addProperty("projectId","blah");
         json.addProperty("artifactId",project.getArtifacts().get(0).getArtifactId());
         json.add("dataSetIds",new JsonArray());
+        json.addProperty("nEpochs",30);
         response = given().body(json.toString()).
                 post(url).andReturn();
         response.getBody().prettyPrint();
@@ -385,6 +394,7 @@ public class TrainModelTests extends BaseTest {
         json.addProperty("projectId",project.getProjectId());
         json.addProperty("artifactId","blah");
         json.add("dataSetIds",new JsonArray());
+        json.addProperty("nEpochs",30);
         response = given().body(json.toString()).
                 post(url).andReturn();
         response.getBody().prettyPrint();
@@ -398,6 +408,7 @@ public class TrainModelTests extends BaseTest {
         json.addProperty("projectId",project.getProjectId());
         json.addProperty("artifactId",project.getArtifacts().get(0).getArtifactId());
         json.add("dataSetIds",new JsonArray());
+        json.addProperty("nEpochs",30);
         response = given().body(json.toString()).
                 post(url).andReturn();
         response.getBody().prettyPrint();

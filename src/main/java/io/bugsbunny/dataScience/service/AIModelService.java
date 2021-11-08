@@ -248,7 +248,7 @@ public class AIModelService
         }
     }
 
-    public JsonObject trainModelFromDataSet(Artifact artifact) throws
+    public JsonObject trainModelFromDataSet(Artifact artifact, int nEpochs) throws
             ModelNotFoundException, ModelIsLive {
         String modelId = artifact.getAiModel().getModelId();
         JsonObject modelPackage = this.mongoDBJsonStore.getModelPackage(this.securityTokenContainer.getTenant(), modelId);
@@ -287,14 +287,14 @@ public class AIModelService
             }
             storedData = dataSetBuilder.toString().trim();
 
+            //This should be a parameter
+            int batchSize = storedData.length();
             ResettableStreamSplit inputStreamSplit = new ResettableStreamSplit(
                     storedData);
 
             //This should be a parameter
-            int batchSize = storedData.length();
-            int nEpochs = 30;
-            int labelIndex = 0;
-            int possibleLabels = 2;
+            int labelIndex = artifact.getLabelIndex();
+            int possibleLabels = artifact.getNumberOfLabels();
             RecordReader rrTrain = new CSVRecordReader();
             rrTrain.initialize(inputStreamSplit);
             DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrain,
@@ -303,8 +303,6 @@ public class AIModelService
             network.fit(trainIter,nEpochs);
 
             Evaluation evaluation = network.evaluate(trainIter);
-            //logger.info("*********CLOUD_EVAL**************");
-            //logger.info(evaluation.stats());
 
             return JsonParser.parseString(evaluation.toJson()).getAsJsonObject();
         }
