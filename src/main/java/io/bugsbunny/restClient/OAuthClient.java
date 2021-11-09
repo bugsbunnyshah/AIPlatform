@@ -26,6 +26,10 @@ public class OAuthClient
     @Inject
     private Http http;
 
+    public void setHttp(Http http) {
+        this.http = http;
+    }
+
     public JsonObject getAccessToken(String clientId, String clientSecret)
             throws NetworkException,OAuthException
     {
