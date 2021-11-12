@@ -20,35 +20,20 @@ public class CreateModelTests {
 
     @Test
     public void allInputs() throws Exception{
-        CreateModel createModel = new CreateModel();
+        InputLayer inputLayer = new InputLayer(Activation.RELU.name());
+        OutputLayer outputLayer = new OutputLayer(Activation.SOFTMAX.name(),
+                LossFunctions.LossFunction.SQUARED_LOSS.name());
 
-        JsonObject json = new JsonObject();
-        json.addProperty("seed",123);
-        json.addProperty("learningRate",0.008);
-        json.addProperty("momentum",0.9);
-        json.addProperty("inputs",1);
-        json.addProperty("outputs",2);
-        json.addProperty("hiddenNodes",20);
-        json.addProperty("weightInit", WeightInit.XAVIER.name());
-
-        JsonArray layers = new JsonArray();
-        for(int i=0; i<1; i++) {
-            JsonObject layer = new JsonObject();
-            layer.addProperty("activation", Activation.RELU.name());
-            layers.add(layer);
-        }
-        json.add("inputLayers",layers);
-
-        layers = new JsonArray();
-        for(int i=0; i<1; i++) {
-            JsonObject layer = new JsonObject();
-            layer.addProperty("activation", Activation.SOFTMAX.name());
-            layer.addProperty("lossFunction", LossFunctions.LossFunction.SQUARED_LOSS.name());
-            layers.add(layer);
-        }
-        json.add("outputLayers",layers);
-
-        JsonObject model = createModel.execute(json);
+        CreateModel function = new CreateModel(123,
+                0.008,
+                1,WeightInit.XAVIER.name(),
+                new InputLayer[]{inputLayer},
+                new OutputLayer[]{outputLayer}
+                );
+        function.momentum(0.9);
+        function.outputs(2);
+        function.hiddenNodes(20);
+        JsonObject model = function.execute();
         JsonUtil.print(model);
         assertTrue(model.has("serializedModel"));
         assertNotNull(model.get("serializedModel").getAsString());
@@ -56,35 +41,20 @@ public class CreateModelTests {
 
     @Test
     public void requiredInputsOnly() throws Exception{
-        CreateModel createModel = new CreateModel();
+        InputLayer inputLayer = new InputLayer(Activation.RELU.name());
+        OutputLayer outputLayer = new OutputLayer(Activation.SOFTMAX.name(),
+                LossFunctions.LossFunction.SQUARED_LOSS.name());
 
-        JsonObject json = new JsonObject();
-        json.addProperty("seed",123);
-        json.addProperty("learningRate",0.008);
-        json.addProperty("inputs",1);
-        json.addProperty("weightInit", WeightInit.XAVIER.name());
-        //json.addProperty("momentum",0.9);
-        //json.addProperty("outputs",2);
-        //json.addProperty("hiddenNodes",20);
-
-        JsonArray layers = new JsonArray();
-        for(int i=0; i<1; i++) {
-            JsonObject layer = new JsonObject();
-            layer.addProperty("activation", Activation.RELU.name());
-            layers.add(layer);
-        }
-        json.add("inputLayers",layers);
-
-        layers = new JsonArray();
-        for(int i=0; i<1; i++) {
-            JsonObject layer = new JsonObject();
-            layer.addProperty("activation", Activation.SOFTMAX.name());
-            layer.addProperty("lossFunction", LossFunctions.LossFunction.SQUARED_LOSS.name());
-            layers.add(layer);
-        }
-        json.add("outputLayers",layers);
-
-        JsonObject model = createModel.execute(json);
+        CreateModel function = new CreateModel(123,
+                0.008,
+                1,WeightInit.XAVIER.name(),
+                new InputLayer[]{inputLayer},
+                new OutputLayer[]{outputLayer}
+        );
+        //function.momentum(0.9);
+        //function.outputs(2);
+        //function.hiddenNodes(20);
+        JsonObject model = function.execute();
         JsonUtil.print(model);
         assertTrue(model.has("serializedModel"));
         assertNotNull(model.get("serializedModel").getAsString());
@@ -92,37 +62,20 @@ public class CreateModelTests {
 
     @Test
     public void requiredInvalidData() throws Exception{
-        CreateModel createModel = new CreateModel();
+        InputLayer inputLayer = new InputLayer(Activation.RELU.name());
+        OutputLayer outputLayer = new OutputLayer(Activation.SOFTMAX.name(),
+                LossFunctions.LossFunction.SQUARED_LOSS.name());
 
-        JsonObject json = new JsonObject();
-        json.addProperty("seed",123);
-        json.addProperty("learningRate",0.008);
-        json.addProperty("inputs",1);
-        json.addProperty("weightInit", "blah"); //Invalid
-        //json.addProperty("momentum",0.9);
-        //json.addProperty("outputs",2);
-        //json.addProperty("hiddenNodes",20);
-
-        JsonArray layers = new JsonArray();
-        for(int i=0; i<1; i++) {
-            JsonObject layer = new JsonObject();
-            layer.addProperty("activation", Activation.RELU.name());
-            layers.add(layer);
-        }
-        json.add("inputLayers",layers);
-
-        layers = new JsonArray();
-        for(int i=0; i<1; i++) {
-            JsonObject layer = new JsonObject();
-            layer.addProperty("activation", Activation.SOFTMAX.name());
-            layer.addProperty("lossFunction", LossFunctions.LossFunction.SQUARED_LOSS.name());
-            layers.add(layer);
-        }
-        json.add("outputLayers",layers);
+        CreateModel function = new CreateModel(123,
+                0.008,
+                1,"BLAH_WEIGHT",
+                new InputLayer[]{inputLayer},
+                new OutputLayer[]{outputLayer}
+        );
 
         boolean mustFail = false;
         try {
-            createModel.execute(json);
+            function.execute();
         }
         catch(Exception e){
             mustFail = true;
