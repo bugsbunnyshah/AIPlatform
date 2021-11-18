@@ -32,7 +32,7 @@ public class TrainModel
 {
     private static Logger logger = LoggerFactory.getLogger(TrainModel.class);
 
-    private static boolean isPythonDetected = false;
+    public static boolean isPythonDetected = false;
 
     @Inject
     private AITrafficContainer aiTrafficContainer;
@@ -49,16 +49,19 @@ public class TrainModel
         {
             String jepLibraryPath = ConfigProvider.getConfig().getValue("jepLibraryPath", String.class);
             File file = new File(jepLibraryPath);
-            isPythonDetected = file.exists();
-            if(isPythonDetected) {
-                MainInterpreter.setJepLibraryPath(jepLibraryPath);
+            MainInterpreter.setJepLibraryPath(jepLibraryPath);
 
-                String pythonScript = "print('PYTHON_LOADED')";
-                try (Interpreter interp = new SharedInterpreter())
-                {
-                    interp.exec(pythonScript);
-                }
+            String pythonScript = "print('PYTHON_LOADED')";
+            try (Interpreter interp = new SharedInterpreter())
+            {
+                interp.exec(pythonScript);
             }
+
+            isPythonDetected = true;
+
+            logger.info("*******************************************");
+            logger.info("PYTHON_RUNTIME_SUCCESSFULLY_DETECTED");
+            logger.info("*******************************************");
         }
         catch (Exception | UnsatisfiedLinkError e)
         {

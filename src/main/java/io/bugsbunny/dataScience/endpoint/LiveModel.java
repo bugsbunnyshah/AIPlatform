@@ -35,40 +35,11 @@ public class LiveModel
 {
     private static Logger logger = LoggerFactory.getLogger(LiveModel.class);
 
-    private static boolean isPythonDetected = false;
-
     @Inject
     private AITrafficContainer aiTrafficContainer;
 
     @Inject
     private SecurityTokenContainer securityTokenContainer;
-
-    static
-    {
-        try
-        {
-            String jepLibraryPath = ConfigProvider.getConfig().getValue("jepLibraryPath", String.class);
-            File file = new File(jepLibraryPath);
-            isPythonDetected = file.exists();
-            if(isPythonDetected) {
-                MainInterpreter.setJepLibraryPath(jepLibraryPath);
-
-                String pythonScript = "print('PYTHON_LOADED')";
-                try (Interpreter interp = new SharedInterpreter())
-                {
-                    interp.exec(pythonScript);
-                }
-            }
-        }
-        catch (Exception | UnsatisfiedLinkError e)
-        {
-            isPythonDetected = false;
-            logger.info("*******************************************");
-            logger.info("PYTHON_RUNTIME_WAS_NOT_DETECTED");
-            logger.info("PYTHON_AIMODELS_CANNOT_BE_SUPPORTED_FOR_NOW");
-            logger.info("*******************************************");
-        }
-    }
 
     @Inject
     private AIModelService aiModelService;
@@ -218,12 +189,12 @@ public class LiveModel
     {
         try
         {
-            if(!isPythonDetected)
+            /*if(!isPythonDetected)
             {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("message", "PYTHON_RUNTIME_NOT_DETECTED");
                 return Response.status(404).entity(jsonObject.toString()).build();
-            }
+            }*/
 
             logger.info("******************");
             logger.info("EVAL_PYTHON_MODEL");
