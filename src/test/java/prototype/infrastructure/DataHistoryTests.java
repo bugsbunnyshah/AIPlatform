@@ -5,7 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.bugsbunny.util.JsonUtil;
+import com.appgallabs.util.JsonUtil;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 

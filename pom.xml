@@ -174,7 +174,7 @@
     <dependency>
       <groupId>black.ninia</groupId>
       <artifactId>jep</artifactId>
-      <version>3.9.0</version>
+      <version>4.0.0</version>
     </dependency>
 
     <!-- large data processor feature related -->
@@ -346,11 +346,13 @@
           <systemPropertyVariables>
             <maven.home>${maven.home}</maven.home>
           </systemPropertyVariables>
+          <!--
           <environmentVariables>
             <AM_HOME>conf</AM_HOME>
             <LD_LIBRARY_PATH>/Users/babyboy/opt/anaconda3/lib</LD_LIBRARY_PATH>
             <PYTHONHOME>/Users/babyboy/opt/anaconda3</PYTHONHOME>
           </environmentVariables>
+          -->
         </configuration>
       </plugin>
       <!--
